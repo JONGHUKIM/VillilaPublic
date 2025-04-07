@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+    <head th:replace="~{/layout/fragments :: htmlHead('빌리고｜회원가입','/css/signup.css')}">
+    <link rel="stylesheet" th:href="@{/css/global.css}">    </head>
+    
+    <body>
+    <header>
+        <th:block th:replace="~{/layout/fragments :: commonLayout}"></th:block>
+    </header>
+       <div class="container-global">
+            <div class="signup-form-container">
+            <!--밑에 액션 컨트롤러에 넣으시고 지우거나 수정해주세용! -->
+                    <form th:action="@{/member/signup}" method="post">
+                        <div class="input-group">
+                            <label for="username">아이디</label>
+                            <input type="text" id="username" name="username" placeholder="아이디 입력"required>
+                        </div>
+                        <div id="checkUsernameResult" class="text-danger"></div> <!-- 중복 검사 결과를 표시할 영역 -->
+                                    
+                        <div class="input-group">
+                            <label for="password">비밀번호</label>
+                            <div class="password-wrapper">
+                                <input type="password" id="password" name="password" placeholder="비밀번호 입력"required>
+                                <span class="toggle-password">👁️</span>
+                            </div>
+                        </div>
+                        <div id="checkPasswordResult" class="text-danger"></div> <!-- 중복 검사 결과를 표시할 영역 -->
+                        
+                        <div class="input-group">
+                            <label for="nickname">닉네임</label>
+                            <input type="text" id="nickname" name="nickname"placeholder="닉네임 입력"required>
+                        </div>
+                        <div id="checkNicknameResult" class="text-danger"></div> <!-- 중복 검사 결과를 표시할 영역 -->
+            
+                        <div class="input-group">
+                            <label for="email">이메일</label>
+                            <input type="email" id="email" name="email" placeholder="이메일 입력"required>
+                        </div>
+                        <div id="checkEmailResult" class="text-danger"></div> <!-- 중복 검사 결과를 표시할 영역 -->
+            
+                        <div class="input-group">
+                            <label for="phone">휴대전화번호</label>
+                            <input type="tel" id="phone" name="phone" placeholder="휴대전화번호 입력"required>
+                        </div>
+            
+                        <div class="input-group">
+                            <label for="region">거래 희망 지역</label>
+                            <div class="select-box" id="region-select" >
+                                <span id="region-text">선택하세요</span>
+                                <span class="arrow">▼</span>
+                            </div>
+                            <div class="dropdown" id="region-dropdown"></div>
+                        </div>
+            
+                        <div class="input-group">
+                            <label for="interest">관심 상품</label>
+                            <div class="select-box" id="interest-select">
+                                <span id="interest-text">선택하세요</span>
+                                <span class="arrow">▼</span>
+                            </div>
+                            <div class="dropdown" id="interest-dropdown">
+                                <th:block th:each="t : ${themes}" th:object="${t}">
+                                    <div class="option" th:data-value="*{theme}" th:text="*{theme}" th:theme-id="*{id}"></div>
+                                </th:block>
+                            </div>
+                        </div>                      
+                        <div id="checkRegionAndInterestResult" class="text-danger"></div> <!-- 경고 메시지를 표시할 영역 -->
+                        
+                        <!-- 거래 희망 지역과 관심 상품 값을 자바스크립트를 사용해서 input 태그에 저장.
+                         => 폼 데이터를 submit할 때 거래 희망 지역과 관심 상품 값도 서버로 제출됨. -->
+                        <input type="hidden" id="region-hidden" name="region" />
+                        <input type="hidden" id="theme-id-hidden" name="themeId" />
+                    <button id="btnSubmit" type="submit">가입하기</button>
+                    <!-- 구글 계정으로 가입하기 -->
+                    <a href="/oauth2/authorization/google" style="text-decoration: none;">
+                        <button type="button">Google</button>
+                    </a>
+                </form>
+            </div>
+        </div>
+        <th:block th:replace="~{/layout/fragments :: bootstrapJS}"></th:block>
+        <!-- Axios Http JS -->    
+        <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+        <script th:src="@{/js/signup.js}"></script>
+        
+    </body>
+</html>

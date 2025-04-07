@@ -1,0 +1,116 @@
+/* 회원가입 폼이 화면 중앙에 오도록 조정 */
+.signup-form-container {
+    margin: 50px auto 0; /* 상단 여백 120px, 좌우 자동(중앙 정렬), 하단 여백 0 */
+    background-color: #2a2a2a;
+    padding: 25px;
+    border-radius: 10px;
+    width: 320px;
+    text-align: center;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
+}
+
+/* 전역 선택자 대신 특정 클래스 내부의 요소에만 적용 */
+.signup-form-container .input-group {
+    margin-bottom: 15px;
+    text-align: left;
+}
+
+.signup-form-container label {
+    font-size: 14px;
+    display: block;
+    margin-bottom: 6px;
+    color: #ffffff;
+}
+
+.signup-form-container input {
+    width: 100%;
+    padding: 10px;
+    border-radius: 5px;
+    border: 1px solid #444;
+    background-color: #333;
+    color: white;
+}
+
+.signup-form-container .password-wrapper {
+    display: flex;
+    align-items: center; /* 세로 중앙 정렬 */
+    position: relative;
+    width: 100%;
+}
+.signup-form-container .password-wrapper input {
+    width: 100%; /* 다른 입력 칸과 동일하게 너비 조정 */
+    padding-right: 40px; /* 아이콘과 겹치지 않도록 우측 패딩 추가 */
+}
+
+.signup-form-container .toggle-password {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    cursor: pointer;
+}
+
+.signup-form-container .select-box {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #333;
+    border: 1px solid #444;
+    padding: 10px;
+    border-radius: 5px !important;
+    cursor: pointer;
+    width: 60%; /* 🚀 필요에 따라 너비 조정 */
+    margin-left: auto !important; /* 🚀 오른쪽 정렬 */
+    text-align: left;
+    
+}
+
+.signup-form-container .arrow {
+    font-size: 12px;
+}
+
+.signup-form-container .dropdown {
+    display: none;
+    position: absolute;
+    background-color: #444;
+    border: 1px solid #666;
+    width: 100%;
+    margin-top: 5px;
+    border-radius: 5px;
+    z-index: 10;
+    max-height: 200px; /* 🚀 최대 높이 설정 */
+    overflow-y: auto; /* 🚀 목록이 넘치면 스크롤 추가 */
+}
+
+.signup-form-container .dropdown .option {
+    padding: 10px;
+    cursor: pointer;
+    color: white !important; /* 글씨 색상을 흰색으로 변경 */
+    background-color: #444; /* 기본 배경 색상 */
+}
+
+.signup-form-container .dropdown .option:hover {
+    background-color: #555;
+}
+
+/* 버튼 스타일 */
+.signup-form-container button {
+    width: 100%;
+    padding: 12px;
+    background-color: #ffffff;
+    color: black;
+    font-weight: bold;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    margin:10px auto 10px;
+}
+
+.signup-form-container button:hover {
+    background-color: #f1f1f1;
+}
+.signup-form-container .select-box span {
+    color: white !important; 
+.signup-form-container .select-box .arrow {
+    color: white !important; 
+}}

@@ -1,0 +1,319 @@
+       
+        body {
+            margin: 0;
+            background-color: #ffffff;
+        }
+        main{
+            margin-top:100px;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px 0; 
+            background: transparent !important; 
+            border: none !important;
+            box-shadow: none !important; 
+        }
+       
+        .section {
+            margin-bottom: 30px; 
+            padding-bottom: 20px; 
+            border-bottom: 2px solid #ddd; 
+        }
+        .section-title {
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #222; 
+        }
+        
+        h2 {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #222; 
+            padding-bottom: 12px;
+        }
+        
+       .form-label {
+            font-weight: bold;
+            display: block;
+            margin-bottom: 10px;
+            font-size: 1.2rem;
+        }
+        
+        .form-input {
+            width: 100%;
+            padding: 12px;
+            margin-top: 5px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        select, textarea {
+            width: 100%;
+            padding: 10px;
+            margin-top: 5px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        
+        textarea {
+            height: 80px;
+            resize: none;
+        }
+        /*  이미지 업로드 버튼과 미리보기 이미지를 가로 정렬 */
+        .image-upload-container {
+            display: flex;
+            align-items: center; /* 세로 중앙 정렬 */
+            gap: 15px; /*  업로드 버튼과 미리보기 사이 간격 */
+        }
+        
+        /* ✅ 이미지 업로드 버튼 크기 조정 */
+        .image-upload {
+            width: 120px;
+            height: 120px; /*  높이를 미리보기 이미지와 동일하게 설정 */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px dashed #ccc;
+            border-radius: 10px;
+            cursor: pointer;
+            box-sizing: border-box; /*  패딩 포함한 크기 계산 */
+        }
+        
+        /*  미리보기 이미지 크기 조정 */
+        .preview-image {
+            max-width: 120px;
+            max-height: 120px; /*  높이를 이미지 등록 버튼과 동일하게 설정 */
+            object-fit: cover;
+            border-radius: 10px;
+            border: 1px solid #ddd;
+            box-sizing: border-box; /*  패딩 포함한 크기 계산 */
+        }
+
+        
+        /*  미리보기 이미지 컨테이너 */
+        .preview-container {
+            display: flex;
+            gap: 10px; /* 이미지 간격 */
+            overflow-x: auto; /*  가로 스크롤 가능하도록 설정 */
+            align-items: center;
+        }
+       .image-box {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            height: 100%;
+            text-align: center;
+            background: #eee;
+            line-height: 1.2; /*  텍스트 줄 간격 조정 */
+        }
+        
+        .image-box span {
+            color: #888;
+            font-size: 14px;
+        }
+        input[type="file"] {
+            display: none;
+        }
+        
+        .color-options {
+            display: flex;
+            gap: 12px;
+            margin-top: 15px;
+            margin-bottom: 15px;
+        }
+        .color-circle {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            cursor: pointer;
+            border: 2px solid #ccc;
+            
+        }
+        .color-circle:hover {
+            
+             transform: scale(1.1);
+        }
+         /* 선택된 상태 */
+        .color-circle.selected {
+            border: 3px solid #2b2b2b;
+            transform: scale(1.1);
+        }
+        
+        .temp-box {
+            background: #f2f2f2;
+            padding: 15px;
+            text-align: center;
+            border-radius: 5px;
+            margin-top: 5px;
+        }
+        /*  하단 고정 버튼 컨테이너 */
+        .bottom-buttons {
+            position: fixed; /*  스크롤해도 따라오게 고정 */
+            bottom: 0;
+            left: 0;
+            width: 100%; /* 화면 전체 너비 */
+            background: #f8f8f8; 
+            padding: 15px 385px; /* 상하 패딩 */
+            border-top: 2px solid transparent; 
+            border-image: linear-gradient(to right, #4a11be, #b98ff0, #e6d493, #f3cc3c) 1;
+            display: flex;    
+            justify-content: right;
+            gap: 10px; /* 버튼 간격 */
+        }
+        
+        /* ✅ 버튼 스타일 */
+        .bottom-buttons button {
+            padding: 12px 24px;
+            font-size: 16px;
+            border: none;
+            cursor: pointer;
+            
+            border-radius: 5px;
+        }
+       
+        /* ✅ 등록하기 버튼 스타일 */
+        .submit-btn {
+            background: #6b59e8 ;
+            color: white;
+            font-weight: bold;
+        }
+        
+        .submit-btn:hover {
+            background: #543fe4;
+        }
+        /* 연식 선택 섹션 */
+        .year-container {
+          display: flex;
+          align-items: center;
+          justify-content: flex-start;
+          gap: 10px;
+          max-width: 300px;
+          margin-top: 15px;
+          margin-bottom:10px;
+        }
+    
+        /* 연식 조절 버튼 */
+        .year-btn {
+          background-color: #6b59e8 ; 
+          color: white;
+          font-size: 20px;
+          font-weight: bold;
+          border: none;
+          width: 40px;
+          height: 40px;
+          cursor: pointer;
+          border-radius: 5px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          transition: 0.2s;
+          user-select: none; /* 드래그 방지 */
+        }
+    
+        .year-btn:hover {
+          background-color: #5a5ae6;
+        }
+    
+        /* 연식 표시 (readonly) */
+        .year-display {
+          font-size: 18px;
+          text-align: center;
+          width: 80px;
+          height: 40px;
+          border: 1px solid #ccc;
+          border-radius: 5px;
+          background-color: #f9f9f9;
+          font-weight: bold;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          pointer-events: none; /* 입력 방지 */
+        }
+        /* 주행 가능 여부 스타일 */
+        .drive-status-container {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          margin-top:17px;
+          margin-bottom:10px;
+        }
+    
+        .toggle-switch {
+          position: relative;
+          width: 60px;
+          height: 30px;
+        }
+    
+        .toggle-switch input {
+          display: none;
+        }
+    
+        .slider {
+          position: absolute;
+          cursor: pointer;
+          width: 100%;
+          height: 100%;
+          background-color: #ccc;
+          border-radius: 15px;
+          transition: background-color 0.3s;
+        }
+    
+        .slider::before {
+          content: "";
+          position: absolute;
+          width: 24px;
+          height: 24px;
+          left: 3px;
+          bottom: 3px;
+          background-color: white;
+          border-radius: 50%;
+          transition: transform 0.3s;
+        }
+    
+        /* ON 상태 */
+        input:checked + .slider {
+          background-color: #6b59e8 ;
+        }
+    
+        input:checked + .slider::before {
+          transform: translateX(30px);
+        }
+    
+        /* 상태 텍스트 */
+        .status-label {
+          font-size: 16px;
+          font-weight: bold;
+        }
+        .address-input-group {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+ 
+}
+
+.address-input-group .btn {
+  flex-shrink: 0;
+  padding: 10px 16px;
+  background-color: #1d1d1f;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  cursor: pointer;
+  margin-top:2px;
+}
+
+.address-input-group .form-input {
+  flex: 1;
+  height: 41px;
+  border: 1px solid #ccc;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 14px;
+}
+      

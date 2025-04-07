@@ -1,0 +1,203 @@
+body {
+  margin: 0;
+  padding: 20px;
+  background: #ffffff;
+}
+
+.container-global {
+  max-width: 1000px;
+  margin: auto;
+}
+
+.profile-container {
+  background: white;
+  padding: 30px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  border-radius: 12px;
+  margin-bottom: 30px;
+  position: relative;
+  border: 1px solid #070707;
+}
+
+.emoji-frog {
+  width: 100%;
+  height: 100%;
+  font-size: 48px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  background-color: #fff;
+}
+
+.profile-left {
+  display: flex;
+  align-items: center;
+  gap: 40px;
+}
+
+.profile-img {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 1px solid #ddd;
+  display: flex;               /* ✅ 추가 */
+  align-items: center;         /* ✅ 추가 */
+  justify-content: center;     /* ✅ 추가 */
+  background-color: #fff;      /* 배경도 하얗게 */
+}
+
+
+.profile-img img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.profile-info {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.nickname {
+  font-size: 24px;
+  font-weight: bold;
+  margin-bottom: 8px;
+}
+
+.store-meta {
+  margin-top: 12px;
+  font-size: 16px;
+  color: #000000;
+}
+
+.meta-item {
+  display: flex;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+
+.meta-unit {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: #f8f8f8;
+  padding: 6px 10px;
+  border-radius: 8px;
+  font-weight: 500;
+  box-shadow: 0 0 2px rgba(0, 0, 0, 0.05);
+}
+
+.emoji {
+  font-size: 20px;
+}
+
+.tabs {
+  display: flex;
+  gap: 30px;
+  border-bottom: 1px solid #070707;
+  margin-bottom: 24px;
+}
+
+.tab {
+  padding: 10px 16px;
+  cursor: pointer;
+  color: #555;
+}
+
+.tab.active {
+  color: #543fe4;
+  font-weight: bold;
+  border-bottom: 3px solid #543fe4;
+}
+
+.tab-content {
+  display: none;
+}
+
+.tab-content.active {
+  display: block;
+}
+
+h3 {
+  padding: 10px 0 20px 0;
+  font-size: 20px;
+  font-weight: bold;
+}
+
+.product-wrapper {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 30px;
+}
+
+.product-card {
+  width: 240px;
+  text-align: center;
+}
+
+.product-card img {
+  width: 100%;
+  height: 240px;
+  object-fit: cover;
+  border-radius: 6px;
+  margin-bottom: 8px;
+}
+
+.review-item {
+  border-bottom: 1px solid #ddd;
+  padding: 20px 0;
+}
+
+.review-user-info {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  margin-bottom: 8px;
+}
+
+.review-user-img {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 1px solid #ddd;
+}
+
+.review-user-img img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.review-user-meta {
+  display: flex;
+  flex-direction: column;
+}
+
+.review-user-name {
+  font-weight: bold;
+  font-size: 16px;
+  text-decoration: none;
+  color: #000;
+}
+
+.review-score {
+  font-size: 14px;
+  color: #555;
+}
+
+.review-content {
+  font-size: 15px;
+  line-height: 1.6;
+  color: #333;
+  padding-left: 66px;
+}
+a {
+  text-decoration: none;
+  color: inherit;
+}

@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{/layout/fragments :: htmlHead('빌리고｜상세페이지','/css/post-details.css')}">
+</head>
+<body>
+
+    <!-- 공통 헤더 & 푸터 포함 -->
+    <th:block th:replace="~{/layout/fragments :: commonLayout}"></th:block>
+
+    <!-- 메인 컨텐츠 (가방 상세) -->
+    <main class="container-global">
+    <div class="container">
+        <div class="image-slider">
+        
+            <button class="prev-btn" onclick="changeSlide(-1)">&#10094;</button>
+            <div class="image-container">
+                <th:block th:each="image : ${rentalImages}" >
+                    <img th:src="@{'/images/rentals/' + ${image.filePath}}" alt="상품이미지" class="slide-image">
+                </th:block>
+            </div>
+            <button class="next-btn" onclick="changeSlide(1)">&#10095;</button>
+            <div class="dots">
+                <span class="dot active" onclick="currentSlide(1)"></span>
+                <th:block th:if="${rentalImages.size() > 1}">
+                    <th:block th:each="number : ${#numbers.sequence(2, rentalImages.size())}">
+                        <span class="dot" th:attr="onclick='currentSlide(' + ${number} + ')'"></span>
+                    </th:block>
+                </th:block>
+            </div>
+                <div class="user-info-container">
+                    <div class="user-info">
+                        <div class="user-details">
+                            <p class="username">
+                                <a th:href="@{/member/details(userId=${user.id})}">
+                                    <strong th:text="${user.nickname}">닉네임</strong>
+                                </a>
+                            </p>
+                            <p class="user-location" th:text="${user.region}">활동지역</p>
+                        </div>
+						<a th:href="@{/member/details(userId=${user.id})}">
+						    <th:block th:if="${user.avatar != null}">
+						        <img id="profileImage"
+						             th:src="@{/member/images/{avatar}(avatar=${user.avatar})}"
+						             alt="프로필 이미지" />
+						    </th:block>
+						    <th:block th:unless="${user.avatar != null}">
+						        <span id="profileImage" class="emoji-frog">🐸</span>
+						    </th:block>
+						</a>
+                    </div>
+                </div>
+                </div>
+
+            <!-- 가방 정보 -->
+            <div class="section">
+                <h2 class="product-title" th:text="${product.postName}">글제목</h2>
+                <p><strong>브랜드:</strong><th:block th:text="${product.brand.name}">브랜드</th:block></p>
+                <p><strong>제품명:</strong><th:block th:text="${product.productName}">제품명</th:block></p>
+                <div class="color-display">
+                    <p><strong>색상:</strong> </p>
+                    <span class="color-circle selected" th:style="'background-color: ' + ${product.color.colorNumber} + ';'"></span>
+                </div>
+                <p class="description" th:text="${product.detail}" style="white-space: pre-wrap;">가방 설명란</p>
+            </div>
+
+            <!-- ✅ 요금 & 거래 희망 장소 -->
+            <div class="section">
+                <div class="section-title">요금</div>
+                <div class="temp-box">
+                    <p><strong th:text="${product.fee} + 'JJAM'"></strong>/ 분</p>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-title">거래 희망 장소</div>
+                <div class="temp-box" th:object="${address}">
+                    <div id="map" style="width:775px; height:500px; z-index: 0;" 
+                        th:attr="data-lat=*{latitude}, data-lng=*{longitude}">
+                        <a th:href="@{'https://map.kakao.com/link/to/' + *{fullAddress} + ',' + *{latitude} + ',' + *{longitude}}" target="_blank">
+                            <button id="roadViewBtn" class="map-btn" style="bottom: 10px; right: 95px;">길찾기</button></a>
+                        <a th:href="@{'https://map.kakao.com/link/roadview/' + *{latitude} + ',' + *{longitude}}" target="_blank">
+                            <button id="directionBtn" class="map-btn" style="bottom: 10px; right: 10px;">로드뷰</button></a>
+                    </div>
+                    <div class="temp-box">
+                        <p><strong th:text="*{fullAddress}"></strong></p>
+                    </div>
+                    <div class="button-group">
+    
+                    </div>  
+                </div>
+            </div>
+
+            <!-- 물품 등록 유저 모드 (수정 + 삭제) -->
+            <div class="bottom-buttons" th:if="${#authentication.name eq user.username}">
+                <a th:href="@{'/post/modify/bag?id=' + ${product.id}}"><button class="owner-btn">수정하기</button></a>
+                <button class="owner-btn" id="deleteBagBtn" th:data-id="${product.id}">삭제하기</button>
+            </div>
+
+            <!--  일반 유저 모드 (하트 + 예약 버튼) -->
+            <div class="bottom-buttons" th:unless="${#authentication.name eq user.username}">
+                <button class="heart-btn" th:onclick="'toggleHeart(' + ${product.id} + ')'">🤍</button>
+                <button class="reserve-btn" onclick="openReservationPopup()">예약 신청</button>
+            </div>
+        </div>
+    </main>
+
+    <!-- 다음 지도 -->
+    <script type="text/javascript" src="//dapi.kakao.com/v2/maps/sdk.js?appkey=46b5efd1c8351c2b80a3ee8916942201"></script>
+    <!-- 공통 JS -->
+    <th:block th:replace="~{/layout/fragments :: bootstrapJS}"></th:block>
+    <script th:src="@{/js/post-details.js}"></script>
+
+</body>
+</html>
