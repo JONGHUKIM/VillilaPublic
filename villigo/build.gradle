@@ -1,0 +1,90 @@
+buildscript {
+    ext {
+        querydslVersion = '5.1.0'
+    }
+}
+
+plugins {
+    id 'java'
+    id 'org.springframework.boot' version '3.4.3'
+    id 'io.spring.dependency-management' version '1.1.7'
+}
+
+group = 'com.splusz'
+version = '0.0.1-SNAPSHOT'
+
+java {
+   toolchain {
+      languageVersion = JavaLanguageVersion.of(21)
+   }
+}
+
+configurations {
+   compileOnly {
+      extendsFrom annotationProcessor
+   }
+}
+
+repositories {
+    mavenCentral()
+}
+
+ext {
+    set('springAiVersion', "1.0.0-M6")
+}
+
+dependencies {
+   implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+   implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
+   implementation 'org.springframework.boot:spring-boot-starter-security'
+   implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
+   implementation 'org.springframework.boot:spring-boot-starter-web'
+   implementation 'org.springframework.boot:spring-boot-starter-websocket'
+   implementation 'org.thymeleaf.extras:thymeleaf-extras-springsecurity6'
+   developmentOnly 'org.springframework.boot:spring-boot-devtools'
+   runtimeOnly 'com.mysql:mysql-connector-j'
+   testImplementation 'org.springframework.boot:spring-boot-starter-test'
+   testImplementation 'org.springframework.security:spring-security-test'
+   testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+   
+   // Lombok 의존성:
+    compileOnly 'org.projectlombok:lombok'
+    testCompileOnly 'org.projectlombok:lombok'
+    annotationProcessor 'org.projectlombok:lombok'
+    testAnnotationProcessor 'org.projectlombok:lombok'
+    
+    // Querydsl 의존성:
+    implementation "com.querydsl:querydsl-jpa:${querydslVersion}:jakarta"
+    annotationProcessor "com.querydsl:querydsl-apt:${querydslVersion}:jakarta"
+    annotationProcessor 'jakarta.annotation:jakarta.annotation-api'
+    annotationProcessor 'jakarta.persistence:jakarta.persistence-api'
+    // 작은따옴표(''): 문자열. ${변수이름} 템플릿을 사용할 수 없음.
+    // 큰따옴표(""): 문자열. ${변수이름} 템플릿을 사용할 수 있음.
+}
+
+// Querydsl 관련 빌드 옵션들:
+// Gradle task에서 자동으로 생성되는 자바 코드들이 저장되는 폴더 위치
+def querydslDir = "$buildDir/generated/querydsl"
+
+// 소스 폴더(directory)를 빌드 패스에 추가.
+sourceSets {
+    main.java.srcDirs += [ querydslDir ]
+}
+
+// Gradle task 중에서 자바 컴파일(빌드) 작업 구성 - 자동 생성된 폴더를 컴파일.
+tasks.withType(JavaCompile) {
+    options.annotationProcessorGeneratedSourcesDirectory = file(querydslDir)
+}
+
+tasks.named('test') {
+    useJUnitPlatform()
+}
+
+// Gradle task 중에서 클린(clean) 작업 구성 - 자동 생성된 폴더를 지움.
+clean.doLast {
+    file(querydslDir).deleteDir()
+}
+
+tasks.withType(JavaCompile) {
+    options.compilerArgs << "-parameters"
+}

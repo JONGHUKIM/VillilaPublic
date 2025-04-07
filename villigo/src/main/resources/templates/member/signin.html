@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+    <head th:replace="~{/layout/fragments :: htmlHead('빌리고｜로그인','/css/signin.css')}">
+    <link rel="stylesheet" th:href="@{/css/global.css}">
+    </head>
+
+    <body>
+    <header>
+        <th:block th:replace="~{/layout/fragments :: commonLayout}"></th:block>
+    </header>
+
+    <div class="container-global">
+        <div class="signin-form-container">
+            <form method="post">
+                <div id="divUsername" class="input-group">
+                    <label for="username">아이디</label>
+                    <input type="text" id="username" name="username" placeholder="아이디 입력" required>
+                </div>
+
+                <div id="divPassword" class="input-group">
+                    <label for="password">비밀번호</label>
+                    <div class="password-wrapper">
+                        <input type="password" id="password" name="password" placeholder="비밀번호 입력" required>
+                        <span class="toggle-password">👁️</span>
+                    </div>
+                </div>
+                
+                <!-- 로그인 실패 사유를 표시할 영역 -->
+                <div id="notifyMessage" class="text-danger"></div>
+
+                <button id="btnLoginSubmit" type="submit">로그인</button>
+                <!-- 구글 계정으로 로그인 하기 -->
+                <a href="/oauth2/authorization/google" style="text-decoration: none;">
+                    <button id="btnGoogleLogin" type="button">Google</button>
+                </a>
+
+                <div class="extra-links">
+                    <a th:href="@{/member/signup}">회원가입</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <th:block th:replace="~{/layout/fragments :: bootstrapJS}"></th:block>
+    <script th:src="@{/js/signin.js}"></script>
+    
+    </body>
+</html>
