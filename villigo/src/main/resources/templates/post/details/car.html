@@ -108,13 +108,15 @@
             </div>
     	</div>
     </main>
-
-    <!-- 다음 지도 -->
-    <script type="text/javascript" src="//dapi.kakao.com/v2/maps/sdk.js?appkey=46b5efd1c8351c2b80a3ee8916942201"></script>
-    <!-- 공통 JS -->
-    <th:block th:replace="~{/layout/fragments :: bootstrapJS}"></th:block>
     
-    <script th:src="@{/js/post-details.js}"></script>
+	<!-- 먼저 카카오 맵 API 로드 -->
+	<script type="text/javascript" src="//dapi.kakao.com/v2/maps/sdk.js?appkey=cf94a4eafbce0c713bd14afa38fa62da"></script>
+	<!-- 그 다음 post-details.js 로드 -->
+	<script th:src="@{/js/post-details.js}"></script>
+	<!-- 공통 JS -->
+	<th:block th:replace="~{/layout/fragments :: bootstrapJS}"></th:block>
+    
+
 
 </body>
 </html>

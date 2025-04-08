@@ -35,10 +35,10 @@ public class AddressService {
     private final AddressRepository addRepo;
     private final ObjectMapper objectMapper;
 
-    @Value("${naver.api.client-id}")
-    private String clientId;
-    @Value("${naver.api.client-secret}")
-    private String clientSecret;
+   // @Value("${naver.api.client-id}")
+   // private String clientId;
+   // @Value("${naver.api.client-secret}")
+   // private String clientSecret;
     @Value("${kakao.restapi}")
     private String kakaoRestApi;
 
