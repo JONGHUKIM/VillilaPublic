@@ -154,5 +154,12 @@ public class ReservationService {
                 .findFirst()
                 .orElse(null);
     }
+    
+    public List<Reservation> readAllExceptStatuses(Long productId, List<Integer> statuses) {
+        log.info("readAllExceptStatuses(productId={}, statuses={})", productId, statuses);
+        List<Reservation> result = reserveRepo.findByProductIdAndStatusNotIn(productId, statuses);
+        result.forEach(System.out::println);
+        return result;
+    }
 
 }

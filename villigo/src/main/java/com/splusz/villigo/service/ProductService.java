@@ -22,6 +22,7 @@ import com.splusz.villigo.domain.Color;
 import com.splusz.villigo.domain.Product;
 import com.splusz.villigo.domain.RentalCategory;
 import com.splusz.villigo.domain.RentalImage;
+import com.splusz.villigo.domain.Reservation;
 import com.splusz.villigo.dto.BrandReadDto;
 import com.splusz.villigo.dto.PostSummaryDto;
 import com.splusz.villigo.dto.ProductImageMergeDto;
@@ -34,6 +35,7 @@ import com.splusz.villigo.repository.ProductRepository;
 import com.splusz.villigo.repository.RentalCategoryRepository;
 import com.splusz.villigo.repository.RentalImageRepository;
 
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -48,6 +50,7 @@ public class ProductService {
     private final RentalCategoryRepository rentalCateRepo;
     private final RentalImageRepository rentalImgRepo;
     private final AddressRepository addrRepo;
+    private final ReservationService reservationService;
 
     public List<RentalCategory> readRentalCategories() {
         List<RentalCategory> reatalCategories = rentalCateRepo.findAll();
@@ -287,6 +290,29 @@ public class ProductService {
     	resultMap.put("region", regionProductImageMergeDto);
     	
     	return resultMap;
+    }
+    
+    @Transactional
+    public void deleteProduct(Long productId) {
+        // 모든 관련 예약 조회
+        List<Reservation> reservations = reservationService.readAll(productId);
+        
+        if (reservations != null && !reservations.isEmpty()) {
+            // 삭제 가능한 예약만 필터링 후 삭제 (상태 4, 5, 7)
+            reservations.stream()
+                .filter(reservation -> reservation.getStatus() == 4 || reservation.getStatus() == 5 || reservation.getStatus() == 7)
+                .map(Reservation::getId)
+                .forEach(reservationService::delete);
+            
+            // 남은 예약이 있는지 확인
+            List<Reservation> remainingReservations = reservationService.readAll(productId);
+            if (remainingReservations != null && !remainingReservations.isEmpty()) {
+                throw new IllegalStateException("삭제할 수 없는 예약이 존재합니다.");
+            }
+        }
+        
+        // 제품 삭제
+        prodRepo.deleteById(productId);
     }
 
 }

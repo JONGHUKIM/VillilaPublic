@@ -131,7 +131,7 @@ if(deleteCarBtn) {
         console.log(deleteCarBtn.getAttribute("data-id"));
         if (!confirm('정말 삭제할까요?')) return;
     
-        fetch(`/post/delete/bag?id=${deleteCarBtn.getAttribute("data-id")}`, {
+        fetch(`/post/delete/car?id=${deleteCarBtn.getAttribute("data-id")}`, {
             method: 'DELETE'
         }).then(res => {
             if (res.ok) {

@@ -2,6 +2,7 @@ package com.splusz.villigo.web;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -129,17 +130,17 @@ public class BagController {
     
     @DeleteMapping("/delete/bag")
     public ResponseEntity<String> delete(@RequestParam(name="id") Long productId) {
-    	
-    	List<Reservation> reservations = reservServ.readAll(productId);
-    	log.info("reservations={}", reservations);
-    	if(!reservations.isEmpty()) {
+        List<Integer> excludedStatuses = Arrays.asList(4, 5, 7);
+        List<Reservation> activeReservations = reservServ.readAllExceptStatuses(productId, excludedStatuses);
+        log.info("activeReservations={}", activeReservations);
+        if (!activeReservations.isEmpty()) {
             return ResponseEntity.status(HttpStatus.CONFLICT).body("해당 제품에 있는 예약을 처리 후 삭제가 가능합니다.");
-    	} else {
-            log.info("bag delete(productId={})", productId);
+        } else {
+            log.info("car delete(productId={})", productId);
             rentalImgServ.deleteByProductId(productId);
-            prodServ.deleteById(productId);
-        	return ResponseEntity.ok("삭제 완료");
-    	}
+            prodServ.deleteProduct(productId);
+            return ResponseEntity.ok("삭제 완료");
+        }
     }
 
     @GetMapping("/modify/bag")
