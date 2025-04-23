@@ -1005,15 +1005,17 @@ document.addEventListener("DOMContentLoaded", function () {
 	                displayName = otherUserName.replace(regex, '<span class="highlight">$1</span>');
 	            }
 
-                let avatarContent;
-                if (!chat.otherUserAvatar || chat.otherUserAvatar.trim() === "") {
-                    console.log(`채팅방 ID: ${chat.id}의 otherUserAvatar가 비어 있습니다. 기본 이모지 표시.`);
-                    avatarContent = `<div class="chat-avatar emoji">🐸</div>`;
-                } else {
-                    const avatarPath = `/images/avatar/${chat.otherUserAvatar}`;
-                    console.log(`이미지 경로: ${avatarPath}`); // 디버깅 로그 추가
-                    avatarContent = `<img src="${avatarPath}" class="chat-avatar" alt="상대방 이미지" onerror="console.error('이미지 로드 실패: ${avatarPath}'); this.outerHTML='<div class=\\'chat-avatar emoji\\'>🐸</div>'">`;
-                }
+				let avatarContent;
+				if (!chat.otherUserAvatar || chat.otherUserAvatar.trim() === "") {
+				    avatarContent = `<div class="chat-avatar emoji profile-link" data-user-id="${chat.otherUserId}">🐸</div>`;
+				} else {
+				    const avatarPath = `/images/avatar/${chat.otherUserAvatar}`;
+				    avatarContent = `
+				        <img src="${avatarPath}" class="chat-avatar profile-link" data-user-id="${chat.otherUserId}" alt="상대방 이미지"
+				             onerror="this.outerHTML='<div class=\\'chat-avatar emoji profile-link\\' data-user-id=\\'${chat.otherUserId}\\'>🐸</div>'">
+				    `;
+				}
+
 
 	            chatItem.innerHTML = `
 	                <input type="checkbox" class="chat-select-checkbox">
@@ -1588,6 +1590,22 @@ document.addEventListener("DOMContentLoaded", function () {
 
 	    // 모든 삭제 완료 후 UI 갱신
 	    filterAndUpdateChatList();
+	});
+	
+	document.addEventListener("click", function (e) {
+	    const target = e.target;
+	    if (target.classList.contains("profile-link")) {
+	        const userId = target.dataset.userId;
+	        if (userId) {
+	            const popupWidth = 600;
+	            const popupHeight = 700;
+	            const left = (screen.width / 2) - (popupWidth / 2);
+	            const top = (screen.height / 2) - (popupHeight / 2);
+
+	            window.open(`/member/details?userId=${userId}`, '상세프로필',
+	                `width=${popupWidth},height=${popupHeight},left=${left},top=${top},resizable=yes`);
+	        }
+	    }
 	});
 
 });
