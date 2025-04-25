@@ -59,9 +59,11 @@ public class UserService implements UserDetailsService {
         }
     }
     
+    // 중복체크 시 "-" 제거 후 비교
     public Boolean checkPhone(String phone) {
         log.info("checkPhone(phone={})", phone);
-        Optional<User> entity = userRepo.findByPhone(phone);
+        String normalizedPhone = phone.replaceAll("-", "");
+        Optional<User> entity = userRepo.findByPhone(normalizedPhone);
         return entity.isPresent();
     }
 

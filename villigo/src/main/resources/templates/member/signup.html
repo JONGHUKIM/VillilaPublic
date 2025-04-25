@@ -1,15 +1,15 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
     <head th:replace="~{/layout/fragments :: htmlHead('빌리고｜회원가입','/css/signup.css')}">
-    <link rel="stylesheet" th:href="@{/css/global.css}">    </head>
-    
-	<body>
+        <link rel="stylesheet" th:href="@{/css/global.css}">
+    </head>
+    <body>
         <header>
             <th:block th:replace="~{/layout/fragments :: commonLayout}"></th:block>
         </header>
         <div class="container-global">
             <div class="signup-form-container">
-                <form th:action="@{/member/signup}" method="post">
+                <form th:action="@{/member/signup}" method="post" th:object="${userSignUpDto}">
                     <!-- 중복 오류 메시지 표시 -->
                     <div th:if="${error}" class="text-danger" th:text="${error}"></div>
 
@@ -19,9 +19,7 @@
                         <input type="text" id="username" name="username" placeholder="아이디 입력" th:field="*{username}" required>
                     </div>
                     <div id="checkUsernameResult" class="text-danger"></div>
-                    <div th:if="${errors}" th:each="err : ${errors}">
-                        <span class="text-danger" th:if="${err.field == 'username'}" th:text="${err.defaultMessage}"></span>
-                    </div>
+                    <div th:errors="*{username}" class="text-danger"></div>
 
                     <!-- 비밀번호 -->
                     <div class="input-group">
@@ -32,14 +30,15 @@
                         </div>
                     </div>
                     <!-- 비밀번호 확인 -->
-                    <div class="input-group">
+					<div class="input-group">
                         <label for="passwordConfirm">비밀번호 확인</label>
-                        <input type="password" id="passwordConfirm" name="passwordConfirm" required>
+                        <div class="password-wrapper">
+                            <input type="password" id="passwordConfirm" name="passwordConfirm" placeholder="비밀번호 확인" required>
+                            <span class="toggle-password" data-target="passwordConfirm">👁️</span>
+                        </div>
                     </div>
                     <div id="checkPasswordResult" class="text-danger"></div>
-                    <div th:if="${errors}" th:each="err : ${errors}">
-                        <span class="text-danger" th:if="${err.field == 'password'}" th:text="${err.defaultMessage}"></span>
-                    </div>
+                    <div th:errors="*{password}" class="text-danger"></div>
 
                     <!-- 닉네임 -->
                     <div class="input-group">
@@ -47,9 +46,7 @@
                         <input type="text" id="nickname" name="nickname" placeholder="닉네임 입력" th:field="*{nickname}" required>
                     </div>
                     <div id="checkNicknameResult" class="text-danger"></div>
-                    <div th:if="${errors}" th:each="err : ${errors}">
-                        <span class="text-danger" th:if="${err.field == 'nickname'}" th:text="${err.defaultMessage}"></span>
-                    </div>
+                    <div th:errors="*{nickname}" class="text-danger"></div>
 
                     <!-- 이메일 -->
                     <div class="input-group">
@@ -57,19 +54,15 @@
                         <input type="email" id="email" name="email" placeholder="이메일 입력" th:field="*{email}" required>
                     </div>
                     <div id="checkEmailResult" class="text-danger"></div>
-                    <div th:if="${errors}" th:each="err : ${errors}">
-                        <span class="text-danger" th:if="${err.field == 'email'}" th:text="${err.defaultMessage}"></span>
-                    </div>
+                    <div th:errors="*{email}" class="text-danger"></div>
 
                     <!-- 전화번호 -->
-                    <div class="input-group">
-                        <label for="phone">휴대전화번호</label>
-                        <input type="tel" id="phone" name="phone" placeholder="휴대전화번호 입력" th:field="*{phone}" required>
+					<div class="input-group">
+                        <label for="phone">전화번호</label>
+                        <input type="tel" id="phone" name="phone" placeholder="010-1234-5678" th:field="*{phone}" required>
                     </div>
                     <div id="checkPhoneResult" class="text-danger"></div>
-                    <div th:if="${errors}" th:each="err : ${errors}">
-                        <span class="text-danger" th:if="${err.field == 'phone'}" th:text="${err.defaultMessage}"></span>
-                    </div>
+                    <div th:errors="*{phone}" class="text-danger"></div>
 
                     <!-- 거래 희망 지역 -->
                     <div class="input-group">

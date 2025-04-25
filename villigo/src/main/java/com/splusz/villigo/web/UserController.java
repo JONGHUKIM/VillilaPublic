@@ -67,11 +67,12 @@ public class UserController {
     }
     
     @GetMapping("/signup")
-    public void signUp(Model model) {
- 	   log.info("GET signUp()");
- 	   
- 	   List<Theme> themes = themeService.read();
- 	   model.addAttribute("themes", themes);
+    public String signUp(Model model) { // void -> String으로 변경
+        log.info("GET signUp()");
+        List<Theme> themes = themeService.read();
+        model.addAttribute("themes", themes);
+        model.addAttribute("userSignUpDto", new UserSignUpDto()); // DTO 객체 추가
+        return "/member/signup"; // 템플릿 경로 반환
     }
     
     @PostMapping("/signup")
@@ -83,7 +84,8 @@ public class UserController {
             List<Theme> themes = themeService.read();
             model.addAttribute("themes", themes);
             model.addAttribute("errors", bindingResult.getAllErrors());
-            return "/member/signup"; // 오류가 있으면 회원가입 페이지로 돌아감
+            model.addAttribute("userSignUpDto", dto); // 오류 발생 시 DTO 유지
+            return "/member/signup";
         }
 
         try {
@@ -95,7 +97,8 @@ public class UserController {
             model.addAttribute("error", e.getMessage());
             List<Theme> themes = themeService.read();
             model.addAttribute("themes", themes);
-            return "/member/signup"; // 중복 오류 등이 있으면 회원가입 페이지로 돌아감
+            model.addAttribute("userSignUpDto", dto); // 오류 발생 시 DTO 유지
+            return "/member/signup";
         }
     }
     

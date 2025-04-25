@@ -21,16 +21,41 @@ document.addEventListener("DOMContentLoaded", function () {
     const checkPhoneResult = document.querySelector('#checkPhoneResult');
     const checkRegionAndInterestResult = document.querySelector('#checkRegionAndInterestResult');
     const btnSubmit = document.querySelector('#btnSubmit');
+	
+	// 아이디 입력 시 영문 소문자와 숫자만 허용
+	usernameInput.addEventListener('input', function (e) {
+	    e.target.value = e.target.value.replace(/[^a-z0-9]/g, '');
+	});
 
-    // 비밀번호 표시 기능
-    const togglePassword = document.querySelector(".toggle-password");
-    togglePassword.addEventListener("click", function () {
-        if (passwordInput.type === "password") {
-            passwordInput.type = "text";
-        } else {
-            passwordInput.type = "password";
-        }
-    });
+	// 비밀번호 및 비밀번호 확인 표시 토글
+	document.querySelectorAll(".toggle-password").forEach(toggle => {
+	    toggle.addEventListener("click", function () {
+	        const targetInputId = this.getAttribute("data-target");
+	        const targetInput = document.querySelector(`#${targetInputId}`);
+	        if (targetInput.type === "password") {
+	            targetInput.type = "text";
+	        } else {
+	            targetInput.type = "password";
+	        }
+	    });
+	});
+	
+	// 전화번호 입력 시 하이픈 자동 추가
+	phoneInput.addEventListener('input', function (e) {
+	    let value = e.target.value.replace(/\D/g, ''); // 숫자만 추출
+	    let formatted = '';
+	    if (value.length > 0) {
+	        formatted = value.substring(0, 3); // 010
+	        if (value.length >= 4) {
+	            formatted += '-' + value.substring(3, Math.min(7, value.length)); // 1234
+	        }
+	        if (value.length >= 8) {
+	            formatted += '-' + value.substring(7, 11); // 5678
+	        }
+	    }
+	    e.target.value = formatted;
+	    checkPhone(); // 입력 후 즉시 유효성 검사
+	});
 
     // 거래 희망 지역 선택
     const regionSelect = document.getElementById("region-select");
@@ -107,28 +132,28 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }
 
-    function checkUsername(event) {
-        const username = usernameInput.value;
-        const usernameRegex = /^[a-z]{3,}$/;
-        if (username === '') {
-            checkUsernameResult.innerHTML = '아이디는 필수 입력 항목입니다.';
-            isUsernameChecked = false;
-            changeBtnStatus();
-            return;
-        }
-        if (!usernameRegex.test(username)) {
-            checkUsernameResult.innerHTML = '아이디는 영문 소문자로 3글자 이상이어야 합니다.';
-            isUsernameChecked = false;
-            changeBtnStatus();
-            return;
-        }
+	function checkUsername(event) {
+	        const username = usernameInput.value;
+	        const usernameRegex = /^[a-z0-9]{3,}$/;
+	        if (username === '') {
+	            checkUsernameResult.innerHTML = '아이디는 필수 입력 항목입니다.';
+	            isUsernameChecked = false;
+	            changeBtnStatus();
+	            return;
+	        }
+	        if (!usernameRegex.test(username)) {
+	            checkUsernameResult.innerHTML = '아이디는 영문 소문자 또는 영문 소문자,숫자 조합으로 3글자 이상이어야 합니다.';
+	            isUsernameChecked = false;
+	            changeBtnStatus();
+	            return;
+	        }
 
-        const uri = `./checkusername?username=${username}`;
-        axios
-            .get(uri)
-            .then(handleCheckUsernameResult)
-            .catch((error) => console.log(error));
-    }
+	        const uri = `./checkusername?username=${username}`;
+	        axios
+	            .get(uri)
+	            .then(handleCheckUsernameResult)
+	            .catch((error) => console.log(error));
+	    }
 
     function handleCheckUsernameResult({data}) {
         if (data === true) {
@@ -223,36 +248,36 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
 	function checkPhone(event) {
-	    const phone = phoneInput.value;
-	    const phoneRegex = /^\d{10,11}$/;
-	    if (phone === '') {
-	        checkPhoneResult.innerHTML = '전화번호는 필수 입력 항목입니다.';
-	        isPhoneChecked = false;
-	        changeBtnStatus();
-	        return;
-	    }
-	    if (!phoneRegex.test(phone)) {
-	        checkPhoneResult.innerHTML = '전화번호는 10~11자리 숫자여야 합니다.';
-	        isPhoneChecked = false;
-	        changeBtnStatus();
-	        return;
-	    }
-
-	    const uri = `./checkphone?phone=${phone}`;
-	    axios
-	        .get(uri)
-	        .then(({data}) => {
-	            if (data === true) {
-	                checkPhoneResult.innerHTML = '이미 사용중인 전화번호입니다.';
-	                isPhoneChecked = false;
-	            } else {
-	                checkPhoneResult.innerHTML = '';
-	                isPhoneChecked = true;
-	            }
+	        const phone = phoneInput.value;
+	        const phoneRegex = /^\d{3}-\d{3,4}-\d{4}$/;
+	        if (phone === '') {
+	            checkPhoneResult.innerHTML = '전화번호는 필수 입력 항목입니다.';
+	            isPhoneChecked = false;
 	            changeBtnStatus();
-	        })
-	        .catch((error) => console.log(error));
-	}
+	            return;
+	        }
+	        if (!phoneRegex.test(phone)) {
+	            checkPhoneResult.innerHTML = '전화번호는 010-1234-5678 형식으로 입력해야 합니다.';
+	            isPhoneChecked = false;
+	            changeBtnStatus();
+	            return;
+	        }
+
+	        const uri = `./checkphone?phone=${phone}`;
+	        axios
+	            .get(uri)
+	            .then(({data}) => {
+	                if (data === true) {
+	                    checkPhoneResult.innerHTML = '이미 사용중인 전화번호입니다.';
+	                    isPhoneChecked = false;
+	                } else {
+	                    checkPhoneResult.innerHTML = '';
+	                    isPhoneChecked = true;
+	                }
+	                changeBtnStatus();
+	            })
+	            .catch((error) => console.log(error));
+	    }
 
     function testCheckVariables() {
         console.log('유저네임: ' + isUsernameChecked);
