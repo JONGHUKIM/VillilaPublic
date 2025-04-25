@@ -1,28 +1,29 @@
 document.addEventListener("DOMContentLoaded", function () {
-    // 회원가입 검사용
     let isUsernameChecked = false;
     let isPasswordChecked = false;
     let isNicknameChecked = false;
     let isEmailChecked = false;
+    let isPhoneChecked = false;
     let isRegionAndInterestChecked = false;
 
     const usernameInput = document.querySelector('#username');
-    // passwordInput은 아래에서 선언한 변수를 사용.
+    const passwordInput = document.querySelector('#password');
+    const passwordConfirmInput = document.querySelector('#passwordConfirm');
     const nicknameInput = document.querySelector('#nickname');
     const emailInput = document.querySelector('#email');
+    const phoneInput = document.querySelector('#phone');
     const regionHiddenInput = document.querySelector('#region-hidden');
-    const themeIdHiddenInput = document.querySelector('#theme-id-hidden');    
+    const themeIdHiddenInput = document.querySelector('#theme-id-hidden');
     const checkUsernameResult = document.querySelector('#checkUsernameResult');
     const checkPasswordResult = document.querySelector('#checkPasswordResult');
     const checkNicknameResult = document.querySelector('#checkNicknameResult');
     const checkEmailResult = document.querySelector('#checkEmailResult');
+    const checkPhoneResult = document.querySelector('#checkPhoneResult');
     const checkRegionAndInterestResult = document.querySelector('#checkRegionAndInterestResult');
     const btnSubmit = document.querySelector('#btnSubmit');
-    
-    // 비밀번호 표시 기능
-    const passwordInput = document.getElementById("password");
-    const togglePassword = document.querySelector(".toggle-password");
 
+    // 비밀번호 표시 기능
+    const togglePassword = document.querySelector(".toggle-password");
     togglePassword.addEventListener("click", function () {
         if (passwordInput.type === "password") {
             passwordInput.type = "text";
@@ -49,9 +50,7 @@ document.addEventListener("DOMContentLoaded", function () {
         div.addEventListener("click", function () {
             regionText.textContent = this.dataset.value;
             regionDropdown.style.display = "none";
-            // input태그에 값을 추가
-            const regionHidden = document.getElementById('region-hidden');
-            regionHidden.value = regionText.innerText;
+            regionHiddenInput.value = regionText.innerText;
             checkRegionAndInterest();
         });
         regionDropdown.appendChild(div);
@@ -70,9 +69,7 @@ document.addEventListener("DOMContentLoaded", function () {
         option.addEventListener("click", function () {
             interestText.textContent = this.dataset.value;
             interestDropdown.style.display = "none";
-            // input태그에 값을 추가
-            const themeIdHidden = document.getElementById('theme-id-hidden');
-            themeIdHidden.value = option.getAttribute('theme-id');
+            themeIdHiddenInput.value = option.getAttribute('theme-id');
             checkRegionAndInterest();
         });
     });
@@ -90,44 +87,51 @@ document.addEventListener("DOMContentLoaded", function () {
             interestDropdown.style.display = "none";
         }
     });
-    
+
     /* --------------------------- 회원가입 검사 --------------------------- */
     btnSubmit.disabled = true;
     usernameInput.addEventListener('change', checkUsername);
     passwordInput.addEventListener('change', checkPassword);
+    passwordConfirmInput.addEventListener('change', checkPassword);
     nicknameInput.addEventListener('change', checkNickname);
     emailInput.addEventListener('change', checkEmail);
-    
-    /* 콜백 */
+    phoneInput.addEventListener('change', checkPhone);
+
     function changeBtnStatus() {
-        if (isUsernameChecked && isPasswordChecked && isNicknameChecked && isEmailChecked
-            && isRegionAndInterestChecked) {
+        if (isUsernameChecked && isPasswordChecked && isNicknameChecked && 
+            isEmailChecked && isPhoneChecked && isRegionAndInterestChecked) {
             btnSubmit.disabled = false;
-            return;
+        } else {
+            btnSubmit.disabled = true;
+            testCheckVariables();
         }
-        testCheckVariables();
-        btnSubmit.disabled = true;
     }
-    
+
     function checkUsername(event) {
         const username = usernameInput.value;
+        const usernameRegex = /^[a-z]{3,}$/;
         if (username === '') {
             checkUsernameResult.innerHTML = '아이디는 필수 입력 항목입니다.';
             isUsernameChecked = false;
             changeBtnStatus();
             return;
         }
-        
+        if (!usernameRegex.test(username)) {
+            checkUsernameResult.innerHTML = '아이디는 영문 소문자로 3글자 이상이어야 합니다.';
+            isUsernameChecked = false;
+            changeBtnStatus();
+            return;
+        }
+
         const uri = `./checkusername?username=${username}`;
         axios
-        .get(uri)
-        .then(handleCheckUsernameResult)
-        .catch((error) => console.log(error));
+            .get(uri)
+            .then(handleCheckUsernameResult)
+            .catch((error) => console.log(error));
     }
-    
+
     function handleCheckUsernameResult({data}) {
         if (data === true) {
-            checkUsernameResult.innerHTML = '';
             checkUsernameResult.innerHTML = '이미 사용중인 아이디입니다.';
             isUsernameChecked = false;
         } else {
@@ -136,21 +140,34 @@ document.addEventListener("DOMContentLoaded", function () {
         }
         changeBtnStatus();
     }
-    
+
     function checkPassword(event) {
         const password = passwordInput.value;
+        const passwordConfirm = passwordConfirmInput.value;
+        const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{4,}$/;
         if (password === '') {
             checkPasswordResult.innerHTML = '비밀번호는 필수 입력 항목입니다.';
             isPasswordChecked = false;
             changeBtnStatus();
             return;
-        } else {
-            checkPasswordResult.innerHTML = '';
-            isPasswordChecked = true;
-            changeBtnStatus();
         }
+        if (!passwordRegex.test(password)) {
+            checkPasswordResult.innerHTML = '비밀번호는 최소 4글자이며, 영문 대소문자, 숫자, 특수기호를 포함해야 합니다.';
+            isPasswordChecked = false;
+            changeBtnStatus();
+            return;
+        }
+        if (password !== passwordConfirm) {
+            checkPasswordResult.innerHTML = '비밀번호가 일치하지 않습니다.';
+            isPasswordChecked = false;
+            changeBtnStatus();
+            return;
+        }
+        checkPasswordResult.innerHTML = '';
+        isPasswordChecked = true;
+        changeBtnStatus();
     }
-    
+
     function checkNickname(event) {
         const nickname = nicknameInput.value;
         if (nickname === '') {
@@ -162,14 +179,13 @@ document.addEventListener("DOMContentLoaded", function () {
 
         const uri = `./checknickname?nickname=${nickname}`;
         axios
-        .get(uri)
-        .then(handleCheckNicknameResult)
-        .catch((error) => console.log(error));
+            .get(uri)
+            .then(handleCheckNicknameResult)
+            .catch((error) => console.log(error));
     }
-    
+
     function handleCheckNicknameResult({data}) {
         if (data === true) {
-            checkNicknameResult.innerHTML = '';
             checkNicknameResult.innerHTML = '이미 사용중인 닉네임입니다.';
             isNicknameChecked = false;
         } else {
@@ -178,7 +194,7 @@ document.addEventListener("DOMContentLoaded", function () {
         }
         changeBtnStatus();
     }
-    
+
     function checkEmail(event) {
         const email = emailInput.value;
         if (email === '') {
@@ -190,44 +206,72 @@ document.addEventListener("DOMContentLoaded", function () {
 
         const uri = `./checkemail?email=${encodeURIComponent(email)}`;
         axios
-        .get(uri)
-        .then(handleCheckEmailResult)
-        .catch((error) => console.log(error));
+            .get(uri)
+            .then(handleCheckEmailResult)
+            .catch((error) => console.log(error));
     }
 
     function handleCheckEmailResult({data}) {
-        console.log('이메일 체크 서버 응답: ', data);
         if (data === true) {
-            checkEmailResult.innerHTML = '';
             checkEmailResult.innerHTML = '이미 사용중인 이메일입니다.';
-            console.log('이메일 검사 탈락');
             isEmailChecked = false;
         } else {
             checkEmailResult.innerHTML = '';
             isEmailChecked = true;
-            console.log('이메일 검사 통과');
         }
         changeBtnStatus();
-        console.log('isEmailChecked 값:', isEmailChecked); // 비동기 호출 딜레이 확인용
     }
-    
+
+	function checkPhone(event) {
+	    const phone = phoneInput.value;
+	    const phoneRegex = /^\d{10,11}$/;
+	    if (phone === '') {
+	        checkPhoneResult.innerHTML = '전화번호는 필수 입력 항목입니다.';
+	        isPhoneChecked = false;
+	        changeBtnStatus();
+	        return;
+	    }
+	    if (!phoneRegex.test(phone)) {
+	        checkPhoneResult.innerHTML = '전화번호는 10~11자리 숫자여야 합니다.';
+	        isPhoneChecked = false;
+	        changeBtnStatus();
+	        return;
+	    }
+
+	    const uri = `./checkphone?phone=${phone}`;
+	    axios
+	        .get(uri)
+	        .then(({data}) => {
+	            if (data === true) {
+	                checkPhoneResult.innerHTML = '이미 사용중인 전화번호입니다.';
+	                isPhoneChecked = false;
+	            } else {
+	                checkPhoneResult.innerHTML = '';
+	                isPhoneChecked = true;
+	            }
+	            changeBtnStatus();
+	        })
+	        .catch((error) => console.log(error));
+	}
+
     function testCheckVariables() {
         console.log('유저네임: ' + isUsernameChecked);
         console.log('비번: ' + isPasswordChecked);
         console.log('닉네임: ' + isNicknameChecked);
         console.log('이메일: ' + isEmailChecked);
+        console.log('전화번호: ' + isPhoneChecked);
+        console.log('지역/관심: ' + isRegionAndInterestChecked);
     }
-    
+
     function checkRegionAndInterest() {
-        console.log('region.value: ' + regionHiddenInput.value + ', theme.value: ' + themeIdHiddenInput.value);
         if (regionHiddenInput.value !== '' && themeIdHiddenInput.value !== '') {
             isRegionAndInterestChecked = true;
             checkRegionAndInterestResult.innerHTML = '';
             changeBtnStatus();
         } else {
             isRegionAndInterestChecked = false;
-            changeBtnStatus();
             checkRegionAndInterestResult.innerHTML = '지역과 관심 상품을 선택해주세요.';
+            changeBtnStatus();
         }
     }
 });

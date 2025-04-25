@@ -5,17 +5,42 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import com.splusz.villigo.domain.Theme;
 import com.splusz.villigo.domain.User;
 
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
 import lombok.Data;
 
 @Data
 public class UserSignUpDto {
-	private String username;
-	private String password;
-	private String nickname;
-	private String email;
-	private String phone;
+	@NotBlank(message = "아이디는 필수 입력 항목입니다.")
+    @Pattern(regexp = "^[a-z]{3,}$", message = "아이디는 영문 소문자로 3글자 이상이어야 합니다.")
+    private String username;
+	
+	@NotBlank(message = "비밀번호는 필수 입력 항목입니다.")
+    @Pattern(regexp = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]{4,}$", 
+             message = "비밀번호는 최소 4글자이며, 영문 대소문자, 숫자, 특수기호를 포함해야 합니다.")
+    private String password;
+	
+	@NotBlank(message = "비밀번호 확인은 필수 입력 항목입니다.")
+	private String passwordConfirm;
+	
+	@NotBlank(message = "닉네임은 필수 입력 항목입니다.")
+    private String nickname;
+	
+	@NotBlank(message = "이메일은 필수 입력 항목입니다.")
+    private String email;
+	
+    @NotBlank(message = "전화번호는 필수 입력 항목입니다.")
+    @Pattern(regexp = "^\\d{10,11}$", message = "전화번호는 10~11자리 숫자여야 합니다.")
+    private String phone;
+    
 	private String region;
 	private Long themeId;
+	
+	public void validatePasswordMatch() {
+	    if (!password.equals(passwordConfirm)) {
+	        throw new IllegalArgumentException("비밀번호가 일치하지 않습니다.");
+	    }
+	}
 	
 	// DTO객체를 엔터티(User) 객체로 변환
 	public User toEntity(PasswordEncoder passwordEncoder, Theme theme) {

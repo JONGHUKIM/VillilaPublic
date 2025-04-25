@@ -15,6 +15,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -37,6 +38,7 @@ import com.splusz.villigo.service.ReviewService;
 import com.splusz.villigo.service.ThemeService;
 import com.splusz.villigo.service.UserService;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -73,13 +75,34 @@ public class UserController {
     }
     
     @PostMapping("/signup")
-    public String signUp(UserSignUpDto dto) {
-    	log.info("POST signUp(dto={})", dto);
+    public String signUp(@Valid UserSignUpDto dto, BindingResult bindingResult, Model model) {
+        log.info("POST signUp(dto={})", dto);
 
-    	User user = userService.create(dto);
-    	log.info("회원가입 성공: {}", user);
-    	
-    	return "redirect: /member/signin";
+        if (bindingResult.hasErrors()) {
+            log.warn("유효성 검사 오류: {}", bindingResult.getAllErrors());
+            List<Theme> themes = themeService.read();
+            model.addAttribute("themes", themes);
+            model.addAttribute("errors", bindingResult.getAllErrors());
+            return "/member/signup"; // 오류가 있으면 회원가입 페이지로 돌아감
+        }
+
+        try {
+            User user = userService.create(dto);
+            log.info("회원가입 성공: {}", user);
+            return "redirect:/member/signin";
+        } catch (IllegalArgumentException e) {
+            log.warn("회원가입 실패: {}", e.getMessage());
+            model.addAttribute("error", e.getMessage());
+            List<Theme> themes = themeService.read();
+            model.addAttribute("themes", themes);
+            return "/member/signup"; // 중복 오류 등이 있으면 회원가입 페이지로 돌아감
+        }
+    }
+    
+    @GetMapping("/checkphone")
+    public ResponseEntity<Boolean> checkPhone(@RequestParam(name = "phone") String phone) {
+        log.info("checkPhone(phone={})", phone);
+        return ResponseEntity.ok(userService.checkPhone(phone));
     }
     
     @GetMapping("/signup-social")
