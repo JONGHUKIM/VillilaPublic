@@ -1,320 +1,407 @@
 /*  기본 스타일 */
 body {
-    margin: 0;
-    background-color: #ffffff;
+	margin: 0;
+	background-color: #ffffff;
 }
 
 main {
-    margin-top: 100px;
+	margin-top: 100px;
 }
 
 .container {
-    max-width: 800px;
-    margin: 0 auto;
-    padding: 20px 0;
-    background: transparent !important;
-    border: none !important;
-    box-shadow: none !important;
+	max-width: 800px;
+	margin: 0 auto;
+	padding: 20px 0;
+	background: transparent !important;
+	border: none !important;
+	box-shadow: none !important;
 }
 
 /*  제목 스타일 */
 h2 {
-    font-size: 1.5rem;
-    font-weight: bold;
-    margin-bottom: 20px;
-    border-bottom: 2px solid #222;
-    padding-bottom: 12px;
+	font-size: 1.5rem;
+	font-weight: bold;
+	margin-bottom: 20px;
+	border-bottom: 2px solid #222;
+	padding-bottom: 12px;
 }
 
 /*  구분선 스타일 */
 .section {
-    margin-bottom: 30px;
-    padding-bottom: 20px;
-    border-bottom: 2px solid #ddd;
-}
-.section p {
-    font-size: 1.1rem; 
-    margin-bottom: 15px; 
+	margin-bottom: 30px;
+	padding-bottom: 20px;
+	border-bottom: 2px solid #ddd;
 }
 
+.section p {
+	font-size: 1.1rem;
+	margin-bottom: 15px;
+}
 
 .section p strong {
-    font-size: 1.1rem;
-    font-weight: bold; 
-    margin-right: 12px;
+	font-size: 1.1rem;
+	font-weight: bold;
+	margin-right: 12px;
 }
-
 
 .section-title {
-    font-size: 1.2rem;
-    font-weight: bold;
-    margin-bottom: 10px;
-    padding-bottom: 10px;
-    border-bottom: 2px solid #222;
+	font-size: 1.2rem;
+	font-weight: bold;
+	margin-bottom: 10px;
+	padding-bottom: 10px;
+	border-bottom: 2px solid #222;
 }
-.description{
-    border-top: 2px solid #ddd;
-    padding-top: 30px;
+
+.description {
+	border-top: 2px solid #ddd;
+	padding-top: 30px;
 }
-.user-details p strong{
-    font-size: 1.1rem;
-    font-weight: bold;
+
+.user-details p strong {
+	font-size: 1.1rem;
+	font-weight: bold;
 }
+
 .user-location {
-    font-size: 0.9rem !important;
-    font-weight: bold;
-    color: #3c3c3c;
+	font-size: 0.9rem !important;
+	font-weight: bold;
+	color: #3c3c3c;
 }
 
 /* 유저 정보 스타일 (슬라이드 아래쪽 & 오른쪽 정렬) */
-
 .user-info {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 10px 14px;
-    border-radius: 10px;
-    border: 1.9px solid #000000; /*  연한 테두리 */
-    background: white;
-    width: auto; /*  내용 크기에 맞게 자동 조절 */
-    margin-left: auto; /*  오른쪽으로 이동 */
-    margin-top: 10px;
-    position: relative;
-    right: 0; /*  컨테이너 기준으로 오른쪽 끝으로 */
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	padding: 10px 14px;
+	border-radius: 10px;
+	border: 1.9px solid #000000; /*  연한 테두리 */
+	background: white;
+	width: auto; /*  내용 크기에 맞게 자동 조절 */
+	margin-left: auto; /*  오른쪽으로 이동 */
+	margin-top: 10px;
+	position: relative;
+	right: 0; /*  컨테이너 기준으로 오른쪽 끝으로 */
 }
 
 /*  부모 요소를 flex 컨테이너로 설정하여 자연스럽게 이동 */
 .user-info-container {
-    display: flex;
-    justify-content: flex-end; /*  오른쪽 정렬 */
-    margin-top: 10px;
-    align-items: center;
+	display: flex;
+	justify-content: flex-end;
+	align-items: center;
+	margin-top: 10px;
+	margin-bottom: 10px; /* 🔥 아래로 간격 추가 */
 }
 
 /*  유저 아바타 (오른쪽 배치) */
 #profileImage {
-    width: 52px;
-    height: 52px;
-    border-radius: 50%;
-    border: 1px solid #ddd;
-     
+	width: 52px;
+	height: 52px;
+	border-radius: 50%;
+	border: 1px solid #ddd;
 }
 
 .emoji-frog {
-    width: 52px;
-    height: 52px;
-    border-radius: 50%;
-    border: 1px solid #ddd;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    font-size: 30px; /* 이모지 크기 조정 */
-    background-color: #fff; /* 이미지 배경이 흰색일 경우 대비 */
-    text-decoration: none;     /* 밑줄 제거 */
-    color: white;            /* 파란색 제거 (부모 글자색 상속) */
+	width: 52px;
+	height: 52px;
+	border-radius: 50%;
+	border: 1px solid #ddd;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	font-size: 30px; /* 이모지 크기 조정 */
+	background-color: #fff; /* 이미지 배경이 흰색일 경우 대비 */
+	text-decoration: none; /* 밑줄 제거 */
+	color: white; /* 파란색 제거 (부모 글자색 상속) */
 }
 
 a .emoji-frog {
-    text-decoration: none;
-    color: white;
+	text-decoration: none;
+	color: white;
 }
 
 a {
-  text-decoration: none !important;
-  color: inherit !important;
+	text-decoration: none !important;
+	color: inherit !important;
 }
-
-
 
 /*  유저 정보 텍스트 (왼쪽 정렬) */
 .user-details {
-    text-align: right; /*  텍스트 오른쪽 정렬 */
-    
+	text-align: right; /*  텍스트 오른쪽 정렬 */
 }
 
 .user-details p {
-    margin: 0;
-    font-size: 1rem;
+	margin: 0;
+	font-size: 1rem;
 }
 
 /*  이미지 슬라이드 스타일 */
 .image-slider {
-    position: relative;
-    text-align: center;
-    max-width: 100%;
-    overflow: hidden;
+	display: flex;
+	justify-content: center; /* 가로 가운데 정렬 */
+	align-items: center;     /* 세로 가운데 정렬 */
+	flex-direction: column;  /* 아래쪽 요소들 세로 정렬 */
+	position: relative;
+	text-align: center;
+	width: 100%;
+	margin: 0 auto;
+}
+
+.dots {
+	margin-top: 16px; /* 이미지와의 간격 */
+	display: flex;
+	justify-content: center;
 }
 
 .image-container {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    width: 570px;
-    height: 570px;
-    margin: 0 auto;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	width: 480px; /* 🔽 기존 570px → 480px */
+	height: 480px; /* 같이 축소 */
+	margin: 0 auto;
+	overflow: hidden;
+}
+
+.image-modal {
+	position: fixed;
+	top: 0;
+	left: 0;
+	width: 100vw;
+	height: 100vh;
+	background-color: rgba(0, 0, 0, 0.9);
+	display: none;
+	justify-content: center;
+	align-items: center;
+	z-index: 9999;
+	flex-direction: column;
+}
+
+.image-modal-content {
+	width: 70%;
+	height: 70%;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	position: relative;
+}
+
+.image-modal img {
+	max-width: 90%;
+	max-height: 90%;
+	object-fit: contain;
+	border-radius: 8px;
+}
+
+.image-modal .close {
+	position: absolute;
+	top: 20px;
+	right: 30px;
+	color: white;
+	font-size: 36px;
+	cursor: pointer;
+	z-index: 10000;
+}
+
+.image-modal .modal-prev, .image-modal .modal-next {
+	position: absolute;
+	top: 50%;
+	transform: translateY(-50%);
+	font-size: 40px;
+	color: white;
+	cursor: pointer;
+	z-index: 10000;
+	background: none;
+	border: none;
+}
+
+.close:hover, .close:focus {
+	color: #bbb;
+	text-decoration: none;
+	cursor: pointer;
+}
+
+@media ( max-width : 600px) {
+	.image-container {
+		width: 100%;
+		height: auto;
+	}
+	.image-container img {
+		width: 100%;
+		height: auto;
+	}
+}
+
+.image-modal .modal-prev {
+	left: 20px;
+}
+
+.image-modal .modal-next {
+	right: 20px;
 }
 
 .slide-image {
-    width: 100%;
-    height: 100%;
-    border-radius: 10px;
-    object-fit: cover;
-    object-position: center;
+	width: 100%;
+	height: 100%;
+	border-radius: 10px;
+	object-fit: contain;
+	object-position: center;
+	cursor: pointer; /* 확대 가능한 느낌 */
 }
 
 .prev-btn, .next-btn {
-    position: absolute;
-    top: 50%;
-    transform: translateY(-50%);
-    background-color: #6b59e8;
-    color: white;
-    font-size: 20px;
-    border: none;
-    padding: 10px;
-    cursor: pointer;
-    border-radius: 5px;
+	position: absolute;
+	top: 50%;
+	transform: translateY(-50%);
+	background-color: #6b59e8;
+	color: white;
+	font-size: 20px;
+	border: none;
+	padding: 10px;
+	cursor: pointer;
+	border-radius: 5px;
 }
 
-.prev-btn { left: 10px; }
-.next-btn { right: 10px; }
-
-.dots {
-    text-align: center;
-    margin-top: 10px;
+.prev-btn {
+	left: 10px;
 }
+
+.next-btn {
+	right: 10px;
+}
+
 
 .dot {
-    display: inline-block;
-    width: 10px;
-    height: 10px;
-    margin: 5px;
-    background-color: #ccc;
-    border-radius: 50%;
-    cursor: pointer;
+	display: inline-block;
+	width: 10px;
+	height: 10px;
+	margin: 0 5px;
+	background-color: #ccc;
+	border-radius: 50%;
+	cursor: pointer;
 }
 
 .dot.active {
-    background-color: #333;
+	background-color: #333;
 }
 
 /* ✅ 자동차 정보 스타일 */
 .car-info {
-    font-size: 1rem;
-    line-height: 1.6;
+	font-size: 1rem;
+	line-height: 1.6;
 }
 
 .color-display {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin-top: 10px;
-    margin-bottom: 15px; 
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	margin-top: 10px;
+	margin-bottom: 15px;
 }
 
 .color-circle {
-    width: 30px;
-    height: 30px;
-    border-radius: 50%;
-    cursor: pointer;
-    border: 2px solid #ccc;
+	width: 30px;
+	height: 30px;
+	border-radius: 50%;
+	cursor: pointer;
+	border: 2px solid #ccc;
 }
 
 .color-circle.selected {
-    border: 2px solid #c0c0c0;
-    transform: scale(1.1);
+	border: 2px solid #c0c0c0;
+	transform: scale(1.1);
 }
 
 /* ✅ 요금 & 거래 희망 장소 박스 */
 .temp-box {
-    padding: 15px;
-    text-align: center;
-    border-radius: 5px;
-    margin-top: 5px;
+	padding: 15px;
+	text-align: center;
+	border-radius: 5px;
+	margin-top: 5px;
 }
 
 /* ✅ 하트(찜하기) & 예약 신청 버튼 */
-
 .bottom-buttons {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    width: 100%;
-    background: #f8f8f8;
-    padding: 15px 550px;
-    display: flex;
-    justify-content: right; 
-    gap: 10px; 
-    border-top: 2px solid transparent;
-    border-image: linear-gradient(to right, #4a11be, #b98ff0, #e6d493, #f3cc3c) 1;
+	position: fixed;
+	bottom: 0;
+	left: 0;
+	width: 100%;
+	background: #f8f8f8;
+	padding: 15px 550px;
+	display: flex;
+	justify-content: right;
+	gap: 10px;
+	border-top: 2px solid transparent;
+	border-image: linear-gradient(to right, #4a11be, #b98ff0, #e6d493, #f3cc3c)
+		1;
 }
 
 /* ✅ 하트(찜하기) 버튼 */
 .heart-btn {
-    font-size: 24px;
-    background: none;
-    border: none;
-    cursor: pointer;
-    transition: 0.2s;
+	font-size: 24px;
+	background: none;
+	border: none;
+	cursor: pointer;
+	transition: 0.2s;
 }
 
 .heart-btn.active {
-    color: red;
+	color: red;
 }
 
 /* ✅ 수정 버튼 */
 .owner-btn {
-    
-    background-color: #6b59e8;
-    color: white;
-    font-size: 16px;
-    padding: 10px 20px;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    font-weight: bold;
+	background-color: #6b59e8;
+	color: white;
+	font-size: 16px;
+	padding: 10px 20px;
+	border: none;
+	border-radius: 5px;
+	cursor: pointer;
+	font-weight: bold;
 }
 
 .owner-btn:hover {
-    background-color: #543fe4;
+	background-color: #543fe4;
 }
 
 /* ✅ 예약 신청 버튼 */
 .reserve-btn {
-    background-color: #6b59e8;
-    color: white;
-    font-size: 16px;
-    padding: 10px 20px;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    font-weight: bold;
+	background-color: #6b59e8;
+	color: white;
+	font-size: 16px;
+	padding: 10px 20px;
+	border: none;
+	border-radius: 5px;
+	cursor: pointer;
+	font-weight: bold;
 }
 
 .reserve-btn:hover {
-    background-color: #543fe4;
-}
-.user-info .username a,
-.user-info .user-avatar a {
-    text-decoration: none; /* 기본 링크 스타일 제거 */
-    color: inherit;
-    display: block; 
+	background-color: #543fe4;
 }
 
-.user-info .username a:hover,
-.user-info .user-avatar a:hover {
-    opacity: 0.7; /* 마우스 오버 시 opacity 효과 */
+.user-info .username a, .user-info .user-avatar a {
+	text-decoration: none; /* 기본 링크 스타일 제거 */
+	color: inherit;
+	display: block;
 }
+
+.user-info .username a:hover, .user-info .user-avatar a:hover {
+	opacity: 0.7; /* 마우스 오버 시 opacity 효과 */
+}
+
 .user-info .user-avatar-link {
-    display: block; /* 링크를 블록으로 처리 */
+	display: block; /* 링크를 블록으로 처리 */
 }
 
 .map-btn {
-    position: absolute;
-    z-index: 10;
-    padding: 8px 12px;
-    background-color: #ffffff;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    font-weight: bold;
-    cursor: pointer;
+	position: absolute;
+	z-index: 10;
+	padding: 8px 12px;
+	background-color: #ffffff;
+	border: 1px solid #ccc;
+	border-radius: 4px;
+	font-weight: bold;
+	cursor: pointer;
 }
