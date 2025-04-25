@@ -220,32 +220,39 @@ document.addEventListener("DOMContentLoaded", function () {
         changeBtnStatus();
     }
 
-    function checkEmail(event) {
-        const email = emailInput.value;
-        if (email === '') {
-            checkEmailResult.innerHTML = '이메일은 필수 입력 항목입니다.';
-            isEmailChecked = false;
-            changeBtnStatus();
-            return;
-        }
+	function checkEmail(event) {
+	        const email = emailInput.value;
+	        const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+	        if (email === '') {
+	            checkEmailResult.innerHTML = '이메일은 필수 입력 항목입니다.';
+	            isEmailChecked = false;
+	            changeBtnStatus();
+	            return;
+	        }
+	        if (!emailRegex.test(email)) {
+	            checkEmailResult.innerHTML = '이메일 형식이 올바르지 않습니다. (예: user@domain.com)';
+	            isEmailChecked = false;
+	            changeBtnStatus();
+	            return;
+	        }
 
-        const uri = `./checkemail?email=${encodeURIComponent(email)}`;
-        axios
-            .get(uri)
-            .then(handleCheckEmailResult)
-            .catch((error) => console.log(error));
-    }
+	        const uri = `./checkemail?email=${encodeURIComponent(email)}`;
+	        axios
+	            .get(uri)
+	            .then(handleCheckEmailResult)
+	            .catch((error) => console.log(error));
+	    }
 
-    function handleCheckEmailResult({data}) {
-        if (data === true) {
-            checkEmailResult.innerHTML = '이미 사용중인 이메일입니다.';
-            isEmailChecked = false;
-        } else {
-            checkEmailResult.innerHTML = '';
-            isEmailChecked = true;
-        }
-        changeBtnStatus();
-    }
+		function handleCheckEmailResult({data}) {
+		        if (data === true) {
+		            checkEmailResult.innerHTML = '이미 사용중인 이메일입니다.';
+		            isEmailChecked = false;
+		        } else {
+		            checkEmailResult.innerHTML = '';
+		            isEmailChecked = true;
+		        }
+		        changeBtnStatus();
+		    }
 
 	function checkPhone(event) {
 	        const phone = phoneInput.value;
