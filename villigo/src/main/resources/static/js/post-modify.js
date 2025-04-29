@@ -1,81 +1,102 @@
-//  미리보기 기능 추가 (바꾸셔도됩니당)
+/**
+ * 문서 로드 완료 시 초기화 함수 실행
+ */
+window.onload = function() {
+    initializeMap();
+    initializeAddressSearch();
+    initializeColorPicker();
+    initializeDriveToggle();
+    initializeDeleteButtons();
+    initializeFormValidation();
+};
+
+
+/**
+ * 이미지 미리보기 기능
+ */
+let selectedFiles = [];
+
 function previewImages() {
     const input = document.getElementById('uploadImage');
     const previewContainer = document.getElementById('imagePreview');
-
     const maxFiles = 10;
-    const maxSizeMB = 10;
+    const maxSizeMB = 100;
 
-    const files = Array.from(input.files);
-    const attachedImgNum = document.querySelectorAll(".preview-container input[name='existingImageIds']").length;
+    const newFiles = Array.from(input.files);
+    const totalFiles = selectedFiles.length + newFiles.length;
 
-    if(files.length + attachedImgNum > 10) {
-        alert(`이미지는 최대 ${maxFiles}개 첨부 가능합니다.`);
+    if (totalFiles > maxFiles) {
+        alert(`이미지는 최대 ${maxFiles}개까지 첨부 가능합니다.`);
         input.value = "";
         return;
     }
 
-    for(let file of files) {
+    for (let file of newFiles) {
         const fileSizeMB = file.size / (1024 * 1024);
-        if(fileSizeMB > maxSizeMB) {
-            alert(`이미지 ${file.name}의 크기가 너무 큽니다.\n (최대 1MB)`)
+        if (fileSizeMB > maxSizeMB) {
+            alert(`이미지 ${file.name}의 크기가 너무 큽니다. (최대 ${maxSizeMB}MB)`);
             input.value = "";
             return;
         }
+
+        const reader = new FileReader();
+        reader.onload = function (e) {
+            const wrapper = document.createElement("div");
+            wrapper.classList.add("position-relative", "d-inline-block", "me-2");
+
+            const img = document.createElement("img");
+            img.src = e.target.result;
+            img.style.width = "120px";
+            img.style.height = "120px";
+            img.style.objectFit = "contain";
+            img.classList.add("preview-image");
+
+            const badge = document.createElement("span");
+            badge.classList.add("position-absolute", "translate-middle", "badge", "rounded-pill", "bg-danger");
+            badge.style.top = "10%";
+            badge.style.left = "90%";
+            badge.textContent = "X";
+
+            badge.addEventListener("click", function () {
+                const index = selectedFiles.indexOf(file);
+                if (index > -1) {
+                    selectedFiles.splice(index, 1);
+                }
+                previewContainer.removeChild(wrapper);
+            });
+
+            wrapper.appendChild(img);
+            wrapper.appendChild(badge);
+            previewContainer.appendChild(wrapper);
+        };
+        reader.readAsDataURL(file);
+
+        selectedFiles.push(file);
     }
-        if (input.files.length > 0) {
-        for (let file of input.files) {
-            if (!file.type.startsWith("image/")) continue;
 
-            const reader = new FileReader();
-            reader.onload = function (e) {
-                const wrapper = document.createElement("div");
-                wrapper.classList.add("position-relative", "d-inline-block", "me-2");
-
-                // 이미지 생성
-                const img = document.createElement("img");
-                img.src = e.target.result;
-                img.style.width = "120px";
-                img.style.height = "120px";
-                img.style.objectFit = "contain";
-                img.classList.add("preview-image");
-
-                // 배지 생성
-                const badge = document.createElement("span");
-                badge.classList.add("position-absolute", "translate-middle", "badge", "rounded-pill", "bg-danger");
-                badge.style.top = "10%";
-                badge.style.left = "90%";
-                badge.textContent = "X";
-                
-                badge.addEventListener("click", function () {
-                    previewContainer.removeChild(wrapper);
-                });
-                
-                wrapper.appendChild(img);
-                wrapper.appendChild(badge);
-                previewContainer.appendChild(wrapper);
-            };
-            reader.readAsDataURL(file);
-        }
-    }
+    input.value = "";
 }
 
-// 기존 이미지 제거 버튼
-document.addEventListener("DOMContentLoaded", function () {
-    const badges = document.querySelectorAll(".delete-badge");
 
+/**
+ * 기존 이미지 삭제 버튼 초기화
+ */
+function initializeDeleteButtons() {
+    const badges = document.querySelectorAll(".delete-badge");
     badges.forEach(function (badge) {
         badge.addEventListener("click", function () {
             const wrapper = badge.closest(".position-relative");
             if (wrapper) wrapper.remove();
         });
     });
-});
-    
-// 컬러칩 (바꾸셔도됩니당)
-document.addEventListener("DOMContentLoaded", function () {
+}
+
+/**
+ * 컬러칩 초기화
+ */
+function initializeColorPicker() {
     const colorCircles = document.querySelectorAll(".color-circle");
-    let selectedColor = "blue"; //  백엔드에서 기존 선택된 색상 불러오기
+    let selectedColor = "blue"; // 백엔드에서 기존 선택된 색상 불러오기
 
     // 기존 선택된 색상 적용
     colorCircles.forEach(circle => {
@@ -97,126 +118,171 @@ document.addEventListener("DOMContentLoaded", function () {
             console.log("선택된 색상:", selectedColor);
         });
     });
-});
+}
 
-
-//  주행 가능 여부 토글 기능
-const driveToggle = document.getElementById("driveStatus");
-let statusText = document.getElementById("status-text");
-let driveStatusInput = document.getElementById("driveStatusInput");
-
-if(driveToggle) {
+/**
+ * 주행 가능 여부 토글 초기화
+ */
+function initializeDriveToggle() {
+    const driveToggle = document.getElementById("driveStatus");
+    if (!driveToggle) return;
+    
+    const statusText = document.getElementById("status-text");
+    const driveStatusInput = document.getElementById("driveStatusInput");
+    
+    // 초기값 설정
     statusText.innerHTML = (JSON.parse(driveStatusInput.value)) ? "가능" : "불가능";
+    
+    // 토글 이벤트 설정
     driveToggle.addEventListener("change", () => {
-        driveStatus = driveToggle.checked;
+        const driveStatus = driveToggle.checked;
         statusText.textContent = driveStatus ? "가능" : "불가능";
         driveStatusInput.value = driveStatus;
     });
 }
 
-// 지도 표시 기능
-var container = document.getElementById('map');
-var latitude = parseFloat(container.getAttribute('data-lat'));
-var longitude = parseFloat(container.getAttribute('data-lng'));
-console.log(latitude, longitude);
-var options = {
-    center: new kakao.maps.LatLng(latitude, longitude),
-    level: 3
-};
-var map = new kakao.maps.Map(container, options);
+/**
+ * 카카오맵 초기화
+ */
+function initializeMap() {
+    const container = document.getElementById('map');
+    if (!container) return;
 
-var control = new kakao.maps.ZoomControl();
-map.addControl(control, kakao.maps.ControlPosition.TOPRIGHT);
-
-var marker = new kakao.maps.Marker({
-    map: map,
-    position: new kakao.maps.LatLng(latitude, longitude)
-});
-
-// 주소 검색 기능
-document.getElementById("addressBtn").addEventListener('click', function() {
-    new daum.Postcode({
-        oncomplete: function(data) {
-            document.getElementById("zonecode").value=data.zonecode;
-            document.getElementById("sido").value=data.sido;
-            document.getElementById("fullAddress").setAttribute("value", data.address);
-            document.getElementById("fullAddress").value=data.address;
-            document.getElementById("sigungu").value=data.sigungu;
-            document.getElementById("bname").value=data.bname;
-
-            const changeEvent = new Event("change", { bubbles: true });
-            document.getElementById("fullAddress").dispatchEvent(changeEvent);
-        }
-    }).open();
-});
-
-// 주소 검색하면 전체주소 넣어주고 좌표 가져오기
-document.getElementById("fullAddress").addEventListener('change', function() {
-    const address = this.value;
-    if (address) {
-        fetch(`/api/address/latlng?addr=${address}`)
-            .then(response => response.json())
-            .then(data => {
-                document.getElementById("latitude").value=data.latitude;
-                document.getElementById("longitude").value=data.longitude;
-                const newLatLng = new kakao.maps.LatLng(data.latitude, data.longitude);
-                map.setCenter(newLatLng);
-                marker.setPosition(newLatLng);
-            })
-            .catch(error => {
-                console.error("좌표 변환 실패:", error);
-                alert("주소의 위치 정보를 가져올 수 없습니다.");
-            });
+    if (typeof kakao === 'undefined' || !kakao.maps) {
+        console.error('Kakao Maps API가 로드되지 않았습니다.');
+        return;
     }
-});
 
-// 지도 표시 기능
-var container = document.getElementById('map');
-var latitude = parseFloat(container.getAttribute('data-lat'));
-var longitude = parseFloat(container.getAttribute('data-lng'));
-console.log(latitude, longitude);
-var options = {
-    center: new kakao.maps.LatLng(latitude, longitude),
-    level: 3
-};
-var map = new kakao.maps.Map(container, options);
+    let latitude = parseFloat(container.getAttribute('data-lat'));
+    let longitude = parseFloat(container.getAttribute('data-lng'));
 
-var control = new kakao.maps.ZoomControl();
-map.addControl(control, kakao.maps.ControlPosition.TOPRIGHT);
+    // 위도/경도가 유효하지 않은 경우 기본값 설정 (예: 서울 시청)
+    if (isNaN(latitude) || isNaN(longitude)) {
+        console.warn('유효한 위도/경도 값이 없어 기본값으로 설정합니다.');
+        latitude = 37.5665; // 서울 시청 위도
+        longitude = 126.9780; // 서울 시청 경도
+    }
 
-var marker = new kakao.maps.Marker({
-    map: map,
-    position: new kakao.maps.LatLng(latitude, longitude)
-});
+    console.log("지도 초기화:", latitude, longitude);
+    
+    const options = {
+        center: new kakao.maps.LatLng(latitude, longitude),
+        level: 3
+    };
 
-// 내용 미입력 알림창
-const submitBtn = document.getElementById("submitBtn");
-submitBtn.addEventListener('click', function(event) {
-    event.preventDefault();
+    window.map = new kakao.maps.Map(container, options);
+    window.marker = new kakao.maps.Marker({
+        map: window.map,
+        position: new kakao.maps.LatLng(latitude, longitude)
+    });
 
-    const categoryNumInput = document.getElementById("categoryNum");
-    const imagePreviewDiv = document.getElementById("imagePreview");
-    const postNameInput = document.getElementById("postName");
-    const feeInput = document.getElementById("fee");
-    const minRentalTimeInput = document.getElementById("minRentalTime");
+    const control = new kakao.maps.ZoomControl();
+    window.map.addControl(control, kakao.maps.ControlPosition.TOPRIGHT);
+}
+
+/**
+ * 주소 검색 기능 초기화
+ */
+function initializeAddressSearch() {
+    const addressBtn = document.getElementById("addressBtn");
     const fullAddressInput = document.getElementById("fullAddress");
-    if(imagePreviewDiv.childElementCount == 0 || imagePreviewDiv.innerHTML === "") {
-        alert('사진을 하나 이상 첨부해주세요!');
-        return;
-    } else if(postNameInput.value === "") {
-        alert('제목을 입력해주세요!');
-        return;
-    } else if(feeInput.value === "") {
-        alert('요금을 입력해주세요!');
-        return;
-    } else if(categoryNumInput.value == 2 && minRentalTimeInput.value === "") {
-        alert('최소시간을 입력해주세요!');
-        return;
-    } else if(fullAddressInput.value === "") {
-        alert('주소를 입력해주세요!');
-        return;
-    }
-    document.getElementById("uploadForm").submit();
+    
+    if (!addressBtn || !fullAddressInput) return;
 
-});
-  
+    // 주소 검색 버튼 클릭 이벤트
+    addressBtn.addEventListener('click', function() {
+        new daum.Postcode({
+            oncomplete: function(data) {
+                document.getElementById("zonecode").value = data.zonecode;
+                document.getElementById("sido").value = data.sido;
+                document.getElementById("fullAddress").value = data.address;
+                document.getElementById("sigungu").value = data.sigungu;
+                document.getElementById("bname").value = data.bname;
+
+                const changeEvent = new Event("change", { bubbles: true });
+                fullAddressInput.dispatchEvent(changeEvent);
+            }
+        }).open();
+    });
+
+    // 주소 변경 시 좌표 업데이트 이벤트
+    fullAddressInput.addEventListener('change', function() {
+        const address = this.value;
+        if (address) {
+            fetch(`/api/address/latlng?addr=${address}`)
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById("latitude").value = data.latitude;
+                    document.getElementById("longitude").value = data.longitude;
+                    
+                    if (window.map && window.marker) {
+                        const newLatLng = new kakao.maps.LatLng(data.latitude, data.longitude);
+                        window.map.setCenter(newLatLng);
+                        window.marker.setPosition(newLatLng);
+                    }
+                })
+                .catch(error => {
+                    console.error("좌표 변환 실패:", error);
+                    alert("주소의 위치 정보를 가져올 수 없습니다.");
+                });
+        }
+    });
+}
+
+/**
+ * 폼 유효성 검사 초기화
+ */
+function initializeFormValidation() {
+    const submitBtn = document.getElementById("submitBtn");
+    if (!submitBtn) return;
+    
+    submitBtn.addEventListener('click', function(event) {
+        event.preventDefault();
+
+        const categoryNumInput = document.getElementById("categoryNum");
+        const imagePreviewDiv = document.getElementById("imagePreview");
+        const postNameInput = document.getElementById("postName");
+        const feeInput = document.getElementById("fee");
+        const minRentalTimeInput = document.getElementById("minRentalTime");
+        const fullAddressInput = document.getElementById("fullAddress");
+        
+        if (imagePreviewDiv.childElementCount == 0 || imagePreviewDiv.innerHTML === "") {
+            alert('사진을 하나 이상 첨부해주세요!');
+            return;
+        } else if (postNameInput.value === "") {
+            alert('제목을 입력해주세요!');
+            return;
+        } else if (feeInput.value === "") {
+            alert('요금을 입력해주세요!');
+            return;
+        } else if (categoryNumInput.value == 2 && minRentalTimeInput.value === "") {
+            alert('최소시간을 입력해주세요!');
+            return;
+        } else if (fullAddressInput.value === "") {
+            alert('주소를 입력해주세요!');
+            return;
+        }
+
+        // 여기서 바로 FormData를 만들고 전송한다
+        const form = document.getElementById("uploadForm");
+        const formData = new FormData(form);
+
+        formData.delete("images");
+        selectedFiles.forEach(file => formData.append("images", file));
+
+        fetch(form.action, {
+            method: "POST",
+            body: formData
+        }).then(response => {
+            if (response.redirected) {
+                window.location.href = response.url;
+            } else {
+                alert("등록 실패");
+            }
+        }).catch(err => {
+            console.error("전송 오류", err);
+            alert("에러가 발생했습니다.");
+        });
+
+    });
+}
