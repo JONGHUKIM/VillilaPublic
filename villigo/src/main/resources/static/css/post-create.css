@@ -110,6 +110,7 @@
             text-align: center;
             background: #eee;
             line-height: 1.2; /*  텍스트 줄 간격 조정 */
+            cursor: pointer;
         }
         
         .image-box span {

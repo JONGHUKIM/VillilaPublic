@@ -17,15 +17,16 @@
                 <div class="section">
                     <div class="image-upload-container">
                         <!-- 이미지 업로드 버튼 -->
-                        <div class="image-upload">
-                            <label for="uploadImage" class="image-box">
-                                <span>이미지 등록</span>
-                            </label>
-                            <input type="file" id="uploadImage" name="images" accept="image/*" multiple onchange="previewImages()">
-                        </div>
-
+						  <div class="image-upload">
+						    <label for="uploadImage" class="image-box">
+						      <span>이미지 등록</span>
+						    </label>
+						    <input type="file" id="uploadImage" name="images" accept="image/*" multiple onchange="previewImages()">
+						  </div>
                         <!-- 미리보기 이미지 출력 영역 -->
+                          <div style="overflow-x: auto; flex: 1;">
                         <div class="preview-container" id="imagePreview" style="maxwidth:200px; maxheight:200px; display:flex; align-items: center;"></div>
+                          </div>
                     </div>
                 </div>
 
