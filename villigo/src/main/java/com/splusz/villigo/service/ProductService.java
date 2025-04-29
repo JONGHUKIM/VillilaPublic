@@ -159,6 +159,42 @@ public class ProductService {
 
         return new PageImpl<>(subList, pageable, list.size());
     }
+    
+    public List<ProductImageMergeDto> addFirstImageInProduct(List<Product> products) {
+        List<Long> ids = products.stream()
+            .map(Product::getId)
+            .collect(Collectors.toList());
+
+        List<RentalImage> rentalImages = rentalImgRepo.findAllByProductIdIn(ids);
+
+        Map<Long, List<RentalImage>> imagesMap = rentalImages.stream()
+            .collect(Collectors.groupingBy(img -> img.getProduct().getId()));
+
+        List<ProductImageMergeDto> result = new ArrayList<>();
+
+        for (Product product : products) {
+            Long productId = product.getId();
+
+            List<RentalImage> imageList = imagesMap.getOrDefault(productId, Collections.emptyList());
+            RentalImage pickedImage = imageList.isEmpty() ? new RentalImage() : imageList.get(0); // ❗ 첫 번째 이미지 고정
+
+            ProductImageMergeDto dto = ProductImageMergeDto.builder()
+                .id(productId)
+                .rentalCategoryId(product.getRentalCategory().getId())
+                .rentalCategory(product.getRentalCategory().getCategory())
+                .productName(product.getProductName())
+                .fee(product.getFee())
+                .postName(product.getPostName())
+                .imageId(pickedImage.getId())
+                .filePath(pickedImage.getFilePath())
+                .build();
+
+            result.add(dto);
+        }
+
+        return result;
+    }
+
 
     public List<ProductImageMergeDto> addRandomImageInProduct(List<Product> products) {
         List<Long> ids = products.stream()
@@ -269,28 +305,29 @@ public class ProductService {
     }
     
     public Map<String, List<ProductImageMergeDto>> readHomeProducts(Long rentalCategoryId, String region) {
-    	Map<String, List<ProductImageMergeDto>> resultMap = new HashMap<>();
-    	
-    	List<Address> readBySido = addrRepo.findTop20BySidoContaining(region);
+        Map<String, List<ProductImageMergeDto>> resultMap = new HashMap<>();
+
+        List<Address> readBySido = addrRepo.findTop20BySidoContaining(region);
         List<Long> ids = readBySido.stream()
-        		.map(address -> address.getProduct().getId())
+                .map(address -> address.getProduct().getId())
                 .collect(Collectors.toList());
-    	
-    			
-    	List<Product> recentProducts = prodRepo.recentProducts();
-    	List<Product> themeProducts = prodRepo.themeProducts(rentalCategoryId);
-    	List<Product> regionProducts = prodRepo.findAllByIdIn(ids);
-    	
-    	List<ProductImageMergeDto> recentProductImageMergeDto = addRandomImageInProduct(recentProducts);
-    	List<ProductImageMergeDto> themeProductImageMergeDto = addRandomImageInProduct(themeProducts);
-    	List<ProductImageMergeDto> regionProductImageMergeDto = addRandomImageInProduct(regionProducts);
-    	
-    	resultMap.put("recent", recentProductImageMergeDto);
-    	resultMap.put("theme", themeProductImageMergeDto);
-    	resultMap.put("region", regionProductImageMergeDto);
-    	
-    	return resultMap;
+
+        List<Product> recentProducts = prodRepo.recentProducts();
+        List<Product> themeProducts = prodRepo.themeProducts(rentalCategoryId);
+        List<Product> regionProducts = prodRepo.findAllByIdIn(ids);
+
+        // recent는 랜덤이 아니라 항상 첫 번째 이미지 고정
+        List<ProductImageMergeDto> recentProductImageMergeDto = addFirstImageInProduct(recentProducts);
+        List<ProductImageMergeDto> themeProductImageMergeDto = addFirstImageInProduct(themeProducts);
+        List<ProductImageMergeDto> regionProductImageMergeDto = addFirstImageInProduct(regionProducts);
+
+        resultMap.put("recent", recentProductImageMergeDto);
+        resultMap.put("theme", themeProductImageMergeDto);
+        resultMap.put("region", regionProductImageMergeDto);
+
+        return resultMap;
     }
+
     
     @Transactional
     public void deleteProduct(Long productId) {
