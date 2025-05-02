@@ -69,7 +69,7 @@
             <div class="section">
                 <div class="section-title">요금</div>
                 <div class="temp-box">
-                    <p><strong th:text="${product.fee} + 'JJAM'"></strong>/ 분</p>
+                    <p><strong th:text="${#numbers.formatInteger(T(java.lang.Math).round(product.fee * 1.05), 0, 'COMMA')} + '원'"></strong>/ 분</p>
                 </div>
             </div>
 

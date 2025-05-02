@@ -100,6 +100,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 } else {
                     mapButtonSection.classList.remove('hidden');
                     response.data.content.forEach(product => {
+						const displayFee = Math.round(product.fee * 1.05); // 5% 수수료 추가
                         html += `
                             <div class="result-item">`
                         switch(product.rentalCategoryId) {

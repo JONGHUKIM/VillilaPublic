@@ -76,14 +76,17 @@
 					<textarea id="description" name="detail" class="form-input" placeholder="신뢰할 수 있는 거래를 위해 자세히 적어주세요."></textarea>
 				</div>
 				
-				<!--  요금 -->
+                <!-- 요금 -->
 				<div class="section">
-					<div class="section-title">요금 (JJAM / 분)</div>
-					<div class="temp-box">
-						<input type="number" id="fee" name="fee" class="form-input" min="0" placeholder="요금을 입력하세요">
-					</div>
+				    <div class="section-title">요금 (원 / 분)</div>
+				    <div class="temp-box">
+				        <input type="number" id="fee" name="fee" class="form-input" min="0" placeholder="요금을 입력하세요">
+				        <span id="feeWithCommission" class="commission-text" style="color: #888; font-size: 12px; display: block; margin-top: 5px; text-align: left;">
+				            수수료 +5% 적용된 가격으로 보여집니다
+				        </span>
+				    </div>
 				</div>
-				
+	
 				<!--  거래 희망 장소 -->
 				<div class="section">
                   <div class="section-title">거래 희망 장소</div>
