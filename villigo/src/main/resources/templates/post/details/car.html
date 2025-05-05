@@ -103,7 +103,9 @@
 
             <!--  일반 유저 모드 (하트 + 예약 버튼) -->
             <div class="bottom-buttons" th:unless="${#authentication.name eq user.username}">
-                <button class="heart-btn" th:onclick="'toggleHeart(' + ${product.id} + ')'">🤍</button>
+                <button class="heart-btn" 
+		        th:attr="data-product-id=${product.id}"
+		        th:onclick="'toggleHeart(' + ${product.id} + ')'">🤍</button>
                 <button class="reserve-btn" onclick="openReservationPopup()">예약 신청</button>
             </div>
     	</div>

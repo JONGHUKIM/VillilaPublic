@@ -15,6 +15,9 @@ document.addEventListener("DOMContentLoaded", function() {
 
     // 지도 초기화
     initializeMap();
+	
+	// 찜 상태 확인
+	initializeHeartState();
 });
 
 function changeSlide(n) {
@@ -107,6 +110,34 @@ function initializeButtons() {
     initializeDeleteButton("deleteBagBtn", "/post/delete/bag");
     initializeDeleteButton("deleteCarBtn", "/post/delete/car");
 }
+
+// 찜 상태 초기화 함수
+function initializeHeartState() {
+    const heartBtn = document.querySelector(".heart-btn");
+    if (!heartBtn) return;
+
+    const productId = heartBtn.getAttribute("data-product-id");
+    if (!productId) {
+        console.warn("productId 속성이 하트 버튼에 없습니다.");
+        return;
+    }
+
+    fetch(`/api/like/check?id=${productId}`)
+        .then(res => res.json()) // true 또는 false
+        .then(isLiked => {
+            if (isLiked) {
+                heartBtn.classList.add("active");
+                heartBtn.textContent = "❤️";
+            } else {
+                heartBtn.classList.remove("active");
+                heartBtn.textContent = "🤍";
+            }
+        })
+        .catch(err => {
+            console.error("찜 상태 확인 실패:", err);
+        });
+}
+
 
 // 삭제 버튼 초기화 함수
 function initializeDeleteButton(buttonId, endpoint) {

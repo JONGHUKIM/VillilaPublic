@@ -40,4 +40,10 @@ public class LikeService {
         log.info("delete(userId={}, productId={})", userId, productId);
         likeRepo.deleteByUser_IdAndProduct_Id(userId, productId);
     }
+    
+    // 찜 여부 체크용
+    public boolean isLiked(Long userId, Long productId) {
+        return likeRepo.existsByUser_IdAndProduct_Id(userId, productId);
+    }
+
 }
