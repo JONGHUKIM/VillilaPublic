@@ -74,33 +74,32 @@
                             </td>
                         </tr>
 
-						<!-- 가격 -->
-						<tr>
-						    <td class="filter-label">가격</td>
-						    <td class="filter-buttons">
-						        <button class="filter-btn price-btn" data-filter="price" data-value="~20000쨈" data-source="0,20000">2만쨈 이하</button>
-						        <button class="filter-btn price-btn" data-filter="price" data-value="20000쨈~40000쨈" data-source="20000,40000">2만쨈 ~ 4만쨈</button>
-						        <button class="filter-btn price-btn" data-filter="price" data-value="40000쨈~80000쨈" data-source="40000,80000">4만쨈 ~ 8만쨈</button>
-						        <button class="filter-btn price-btn" data-filter="price" data-value="80000쨈~" data-source="80000,10000000">8만쨈 이상</button>
-						
-						        <!-- 직접입력 -->
-								
-								<span class="unit-label">직접입력</span>
-								<input type="text" class="price-input" id="priceMin" placeholder="0">
-								<span class="unit-label">쨈</span>
-								<span class="unit-label">~</span>
-								<input type="text" class="price-input" id="priceMax" placeholder="100000">
-								<span class="unit-label">쨈</span>
-								<button id="priceSearchBtn" class="price-search-icon">
-								    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"
-								         stroke-linecap="round" stroke-linejoin="round">
-								        <circle cx="11" cy="11" r="8" />
-								        <line x1="21" y1="21" x2="16.65" y2="16.65" />
-								    </svg>
-								</button>
-						    </td>
-						</tr>
-						
+                        <!-- 가격 -->
+                        <tr>
+                            <td class="filter-label">가격</td>
+                            <td class="filter-buttons">
+                                <button class="filter-btn price-btn" data-filter="price" data-value="~20000쨈" data-source="0,20000">2만쨈 이하</button>
+                                <button class="filter-btn price-btn" data-filter="price" data-value="20000쨈~40000쨈" data-source="20000,40000">2만쨈 ~ 4만쨈</button>
+                                <button class="filter-btn price-btn" data-filter="price" data-value="40000쨈~80000쨈" data-source="40000,80000">4만쨈 ~ 8만쨈</button>
+                                <button class="filter-btn price-btn" data-filter="price" data-value="80000쨈~" data-source="80000,10000000">8만쨈 이상</button>
+                        
+                                <!-- 직접입력 -->
+                                <span class="unit-label">직접입력</span>
+                                <input type="text" class="price-input" id="priceMin" placeholder="0">
+                                <span class="unit-label">쨈</span>
+                                <span class="unit-label">~</span>
+                                <input type="text" class="price-input" id="priceMax" placeholder="100000">
+                                <span class="unit-label">쨈</span>
+                                <button id="priceSearchBtn" class="price-search-icon">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"
+                                         stroke-linecap="round" stroke-linejoin="round">
+                                        <circle cx="11" cy="11" r="8" />
+                                        <line x1="21" y1="21" x2="16.65" y2="16.65" />
+                                    </svg>
+                                </button>
+                            </td>
+                        </tr>
+                        
                         <!-- 컬러 -->
                         <tr>
                             <td class="filter-label">컬러</td>
@@ -117,7 +116,6 @@
                             <td class="filter-label">필터 전체보기</td>
                             <td><div class="selected-filters" id="selectedFilters"></div></td>
                             <td class="refresh-div"><button class="btn" id="refresh-btn" style="font-size: 15px; white-space: nowrap;">필터 제거</button></td>
-                           
                         </tr>
                     </table>
                 </div>
@@ -128,20 +126,19 @@
                 <div class="search-result">검색 결과</div>
                 <div id="searchResultDiv"><!-- 아이템 출력 div --></div>
             </div>
-            <div id="paginationDiv" ><!-- 필터링된 페이징 div --></div>
 
-            <!-- 지도 보기 버튼 -->
+            <!-- 지도 보기 버튼 추후 업데이트 예정
             <div class="map-button-section hidden" id="mapButtonSection" style="z-index: 1000; position: fixed;">
-                
                 <div><button class="map-btn" id="toggleMapBtn" style="z-index: 1200">지도 보기</button></div>
             </div>
-
-            
+			
             <div id="mapOverlay" class="container" style="z-index: 750;">
                 <div id="map">
                     <div class="map-box" id="map-box"></div>
                 </div>
             </div>
+            -->
+            
         </div>
     </main>
 
