@@ -119,7 +119,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 case 4:
                     htmlStr += `
                         <div class="res-buttons">
-                          <button class="btn-rejected" disabled>거절됨</button>
+                          <button class="btn-rejected" disabled>거절함</button>
                           <button class="btn-delete-reserv" data-id="${dto.reservationId}">삭제</button>
                         </div>
                       </div>

@@ -205,6 +205,22 @@ a {
   margin-top: 20px;
 }
 
+.btn-delete-reserv {
+  background-color: #100;
+  color: white;
+  padding: 8px 16px;
+  font-size: 14px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.btn-delete-reserv:hover:not(:disabled) {
+  background-color: #66666688;
+}
+
+
 .reservation-card {
   display: flex;
   gap: 30px;
