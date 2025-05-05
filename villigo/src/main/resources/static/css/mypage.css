@@ -79,7 +79,6 @@ body {
   box-shadow: 0 0 2px rgba(0,0,0,0.05);
 }
 
-
 .emoji-jjam {
   font-size: 20px;
   position: relative;
@@ -88,7 +87,6 @@ body {
 .emoji{
   font-size: 20px;
   position: relative;
-  
 }
 
 .edit-btn {
@@ -135,7 +133,6 @@ h3 {
   padding: 10px 20px 20px 0;
   font-size: 20px;
   font-weight: bold;
-  
 }
 
 .product-wrapper {
@@ -196,8 +193,9 @@ a {
   border: none;
   border-radius: 6px;
   cursor: pointer;
-  display: block;
-  margin-left: auto;
+  position: absolute;
+  bottom: 16px;
+  right: 0;
 }
 
 .reservation-list {
@@ -238,6 +236,7 @@ a {
   align-items: flex-start;
   justify-content: center;
   line-height: 1.8;
+  position: relative; /* .delete-btn의 위치 기준 */
 }
 
 .car-name a {
@@ -548,7 +547,6 @@ a > button.btn-chat:hover {
   font-size: 14px;
   color: #666;
   text-align: center;
-  
 }
 
 /* 점수에 따른 색상 클래스 */
@@ -564,7 +562,6 @@ a > button.btn-chat:hover {
   background: linear-gradient(to right,#e9ebf2, #6b59e8);
 }
 
-
 .emoji-frog {
   font-size: 60px; 
   line-height: 100px; 
@@ -577,7 +574,6 @@ a > button.btn-chat:hover {
 }
 .product-name strong {
     font-size: 19px !important;  
-    
 }
 #review {
   border-bottom: 1px solid #000000;
