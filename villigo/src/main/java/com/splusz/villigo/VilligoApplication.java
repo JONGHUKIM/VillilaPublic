@@ -9,17 +9,27 @@ import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 @SpringBootApplication
 public class VilligoApplication {
 
-    public static void main(String[] args) {
-        // .env 파일 로딩
-        Dotenv dotenv = Dotenv.configure()
-                .ignoreIfMissing() // .env 없을 경우 무시
-                .load();
+	public static void main(String[] args) {
+	    Dotenv dotenv = Dotenv.configure()
+	            .ignoreIfMissing()
+	            .load();
 
-        // 환경변수 → 시스템 프로퍼티로 설정 (Spring Boot가 인식하게)
-        System.setProperty("DB_URL", dotenv.get("DB_URL"));
-        System.setProperty("DB_USERNAME", dotenv.get("DB_USERNAME"));
-        System.setProperty("DB_PASSWORD", dotenv.get("DB_PASSWORD"));
+	    // DB
+	    System.setProperty("DB_URL", dotenv.get("DB_URL"));
+	    System.setProperty("DB_USERNAME", dotenv.get("DB_USERNAME"));
+	    System.setProperty("DB_PASSWORD", dotenv.get("DB_PASSWORD"));
 
-        SpringApplication.run(VilligoApplication.class, args);
-    }
+	    // 구글 OAuth
+	    System.setProperty("GOOGLE_CLIENT_ID", dotenv.get("GOOGLE_CLIENT_ID"));
+	    System.setProperty("GOOGLE_CLIENT_SECRET", dotenv.get("GOOGLE_CLIENT_SECRET"));
+
+	    // 카카오 REST API
+	    System.setProperty("KAKAO_RESTAPI", dotenv.get("KAKAO_RESTAPI"));
+
+	    // 파일 업로드 경로
+	    System.setProperty("UPLOAD_PATH", dotenv.get("UPLOAD_PATH"));
+
+	    SpringApplication.run(VilligoApplication.class, args);
+	}
+
 }
