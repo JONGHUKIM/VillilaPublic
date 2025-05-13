@@ -43,7 +43,7 @@ public class HomeController {
 		Map<String, List<ProductImageMergeDto>> homeProducts = new HashMap<>();
 		
 		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-		log.info("authentication: ", authentication);
+		log.info("authentication: {}", authentication);
 		Boolean a = authentication.isAuthenticated();
 		log.info("authentication.isAuthenticated(): ", a.toString());
 
