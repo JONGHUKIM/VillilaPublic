@@ -119,7 +119,7 @@ public class UserController {
     
     @PostMapping("/signup-social")
     public String signUpSocial(Authentication authentication, SocialUserSignUpDto dto) {
-    	log.info("POST signUpSocial(dto={})", dto);
+    	log.info("POST signUpSocial(dto={})", dto); 
     	String realname = null;
     	String email = null;
     	log.info("authentication: {}", authentication);
