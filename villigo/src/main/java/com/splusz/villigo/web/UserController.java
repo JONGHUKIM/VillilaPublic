@@ -122,7 +122,7 @@ public class UserController {
     	log.info("POST signUpSocial(dto={})", dto);
     	String realname = null;
     	String email = null;
-    	log.info("authentication: ", authentication);
+    	log.info("authentication: {}", authentication);
     	if (authentication.getPrincipal() instanceof CustomOAuth2User) {
     		CustomOAuth2User oauth2user = (CustomOAuth2User) authentication.getPrincipal();
     		// 구글에서 받은 인증정보에서 이름과 이메일 데이터를 가져옴.
