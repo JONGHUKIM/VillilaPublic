@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout/fragments :: htmlHead('빌리고｜상품 등록','/css/post-create.css')}">
+</head>
+<body>
+    <!--  공통 헤더 & 푸터 포함 -->
+    <th:block th:replace="~{layout/fragments :: commonLayout}"></th:block>
+
+        <!-- 메인 컨텐츠 (상품 등록 폼) -->
+		<main class="container-global">
+			<div class="container">
+				
+			<h2>상품 등록</h2>
+			<form id="uploadForm" action="/post/create/bag" method="post" enctype="multipart/form-data">
+				<input id="categoryNum" value="1" type="hidden">
+				<!--  사진 등록 (미리보기) -->
+				<div class="section">
+					<div class="image-upload-container">
+						<!--  이미지 업로드 버튼 -->
+						  <div class="image-upload">
+						    <label for="uploadImage" class="image-box">
+						      <span>이미지 등록</span>
+						    </label>
+						    <input type="file" id="uploadImage" name="images" accept="image/*" multiple onchange="previewImages()">
+						  </div>
+                        <!-- 미리보기 이미지 출력 영역 -->
+                          <div style="overflow-x: auto; flex: 1;">
+                        <div class="preview-container" id="imagePreview" style="maxwidth:200px; maxheight:200px; display:flex; align-items: center;"></div>
+                          </div>
+					</div>
+				</div>
+
+				<!-- 글제목 입력 -->
+				<div class="section">
+					<label for="postName" class="form-label">제목</label>
+					<input type="text" id="postName" name="postName" class="form-input" placeholder="제목을 입력하세요.">
+				</div>
+
+				<!-- 상품명 입력 -->
+				<div class="section">
+					<label for="productName" class="form-label">상품명</label>
+					<input type="text" id="productName" name="productName" class="form-input" placeholder="상품명을 입력하세요.">
+				</div>
+				
+				<!-- 브랜드 선택 -->
+				<div class="section">
+					<label for="brand" class="form-label">브랜드 선택</label>
+					<select id="brand" name="brandId" class="form-input" onchange="toggleCustomBrand()">
+						<option value="" selected>브랜드를 선택하세요</option>
+						<th:block th:each="brand : ${brands}">
+							<option th:value="${brand.id}" th:text="${brand.name}"></option>
+						</th:block>
+						<option value="0">직접 입력</option>
+					</select>
+					<!--  직접 입력하는 경우에 나타나는 입력 필드 -->
+					<input type="text" id="customBrand" class="form-input" name="customBrand" placeholder="브랜드명을 입력하세요." style="display: none;">
+				</div>
+				
+				<!-- 컬러 선택 -->
+				<div class="section">
+					<label for="color" class="form-label">컬러 선택</label>
+					<div class="color-options">
+						<th:block th:each="color : ${colors}">
+							<span class="color-circle" 
+								th:data-color-id="${color.id}"
+								th:style="'background: ' + (${color.colorNumber} ?: '#ffffff') + ';'">
+							</span>
+						</th:block>
+						<input type="hidden" id="selectedColor" name="colorId">
+					</div>
+				</div>
+
+				<!-- 설명 입력 -->
+				<div class="section">
+					<label for="description" class="form-label">설명</label>
+					<textarea id="description" name="detail" class="form-input" placeholder="신뢰할 수 있는 거래를 위해 자세히 적어주세요."></textarea>
+				</div>
+				
+                <!-- 요금 -->
+				<div class="section">
+				    <div class="section-title">요금 (원 / 분)</div>
+				    <div class="temp-box">
+				        <input type="number" id="fee" name="fee" class="form-input" min="0" placeholder="요금을 입력하세요">
+				        <span id="feeWithCommission" class="commission-text" style="color: #888; font-size: 12px; display: block; margin-top: 5px; text-align: left;">
+				            수수료 +5% 적용된 가격으로 보여집니다
+				        </span>
+				    </div>
+				</div>
+	
+				<!--  거래 희망 장소 -->
+				<div class="section">
+                  <div class="section-title">거래 희망 장소</div>
+                  <div class="temp-box">
+                    <div class="address-input-group">
+                      <button id="addressBtn" type="button" class="btn">주소검색</button>
+                      <input id="fullAddress" class="form-input" readonly name="fullAddress" />
+                    </div>
+                    <input id="zonecode" type="hidden" name="zonecode" />
+                    <input id="sido" type="hidden" name="sido" />
+                    <input id="sigungu" type="hidden" name="sigungu" />
+                    <input id="bname" type="hidden" name="bname" />
+                  </div>
+                </div>
+
+			
+           		 <!--  하단 고정 버튼 -->
+				<div class="bottom-buttons">
+					<button type="submit" id="submitBtn" class="submit-btn">등록하기</button>
+				</div>
+			</form>
+        </div>
+    </main>
+
+    <!--  공통 JS -->
+    <th:block th:replace="~{layout/fragments :: bootstrapJS}"></th:block>
+    <script th:src="@{/js/post-create.js}"></script>
+
+	<script src="//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
+</body>
+</html>
