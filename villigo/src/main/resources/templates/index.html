@@ -1,9 +1,9 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
-    <head th:replace="~{/layout/fragments :: htmlHead('VilliGo','/css/homeindex.css')}">
+    <head th:replace="~{layout/fragments :: htmlHead('VilliGo','/css/homeindex.css')}">
 </head>
 <body>
-    <th:block th:replace="~{/layout/fragments :: commonLayout}"></th:block>
+    <th:block th:replace="~{layout/fragments :: commonLayout}"></th:block>
         <main class="container-global">    
             <div class="container ">
            		<!-- 공지 배너 -->
@@ -154,7 +154,7 @@
 				</div>-->
             </div>
         </main>
-        <th:block th:replace="~{/layout/fragments :: bootstrapJS}"></th:block>
+        <th:block th:replace="~{layout/fragments :: bootstrapJS}"></th:block>
         <script th:inline="javascript">
             /*<![CDATA[*/
             var bagbrands = JSON.parse(document.getElementById("brandData").dataset.bagbrands);

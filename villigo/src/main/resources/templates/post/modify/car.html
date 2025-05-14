@@ -1,11 +1,11 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
-<head th:replace="~{/layout/fragments :: htmlHead('빌리고｜상품 수정','/css/post-create.css')}">
+<head th:replace="~{layout/fragments :: htmlHead('빌리고｜상품 수정','/css/post-create.css')}">
 </head>
 <body>
 
     <!-- 공통 헤더 & 푸터 포함 -->
-    <th:block th:replace="~{/layout/fragments :: commonLayout}"></th:block>
+    <th:block th:replace="~{layout/fragments :: commonLayout}"></th:block>
 
     <!-- 메인 컨텐츠 (자동차 수정 폼) -->
     <main class="container-global">
@@ -114,7 +114,7 @@
     
     
     <!-- 공통 JS -->
-    <th:block th:replace="~{/layout/fragments :: bootstrapJS}"></th:block>
+    <th:block th:replace="~{layout/fragments :: bootstrapJS}"></th:block>
 
     <script th:src="@{/js/post-modify.js}"></script>
 

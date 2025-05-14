@@ -1,11 +1,11 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
-<head th:replace="~{/layout/fragments :: htmlHead('빌리고｜카테고리', '/css/post-category.css')}">
+<head th:replace="~{layout/fragments :: htmlHead('빌리고｜카테고리', '/css/post-category.css')}">
 <link rel="stylesheet" th:href="@{/css/global.css}">
 </head>
 <body class="container-global">
    
-    <th:block th:replace="~{/layout/fragments :: commonLayout}"></th:block>
+    <th:block th:replace="~{layout/fragments :: commonLayout}"></th:block>
 
     <!-- 🌟 카테고리 선택 영역 -->
     <main class="container d-flex flex-column align-items-center justify-content-center min-vh-100 ">
@@ -27,6 +27,6 @@
     </main>
 
     <!-- ✅ Bootstrap & Custom JS 유지 -->
-    <th:block th:replace="~{/layout/fragments :: bootstrapJS}"></th:block>
+    <th:block th:replace="~{layout/fragments :: bootstrapJS}"></th:block>
 </body>
 </html>

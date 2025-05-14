@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
-<head th:replace="~{/layout/fragments :: htmlHead('빌리고｜검색','/css/search.css')}">
+<head th:replace="~{layout/fragments :: htmlHead('빌리고｜검색','/css/search.css')}">
 </head>
 <body>
     <!-- 공통 헤더 & 푸터 포함 -->
-    <th:block th:replace="~{/layout/fragments :: commonLayout}"></th:block>
+    <th:block th:replace="~{layout/fragments :: commonLayout}"></th:block>
 
     <!-- 메인 컨텐츠 -->
     <main class="container-global">
@@ -143,7 +143,7 @@
     </main>
 
     <!-- 공통 JS -->
-    <th:block th:replace="~{/layout/fragments :: bootstrapJS}"></th:block>
+    <th:block th:replace="~{layout/fragments :: bootstrapJS}"></th:block>
     <script th:src="@{/js/search.js}"></script>
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <script type="text/javascript" src="//dapi.kakao.com/v2/maps/sdk.js?appkey=cf94a4eafbce0c713bd14afa38fa62da"></script>
