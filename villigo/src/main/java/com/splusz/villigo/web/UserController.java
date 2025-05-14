@@ -63,7 +63,7 @@ public class UserController {
             return "redirect:/home";
         }
         
-        return "/member/signin";
+        return "member/signin";
     }
     
     @GetMapping("/signup")
@@ -72,7 +72,7 @@ public class UserController {
         List<Theme> themes = themeService.read();
         model.addAttribute("themes", themes);
         model.addAttribute("userSignUpDto", new UserSignUpDto()); // DTO 객체 추가
-        return "/member/signup"; // 템플릿 경로 반환
+        return "member/signup"; // 템플릿 경로 반환
     }
     
     @PostMapping("/signup")
@@ -85,7 +85,7 @@ public class UserController {
             model.addAttribute("themes", themes);
             model.addAttribute("errors", bindingResult.getAllErrors());
             model.addAttribute("userSignUpDto", dto); // 오류 발생 시 DTO 유지
-            return "/member/signup";
+            return "member/signup";
         }
 
         try {
@@ -98,7 +98,7 @@ public class UserController {
             List<Theme> themes = themeService.read();
             model.addAttribute("themes", themes);
             model.addAttribute("userSignUpDto", dto); // 오류 발생 시 DTO 유지
-            return "/member/signup";
+            return "member/signup";
         }
     }
     
@@ -109,11 +109,11 @@ public class UserController {
     }
     
     @GetMapping("/signup-social")
-    public void signUpSocial(Model model) {
+    public String signUpSocial(Model model) {
         log.info("GET signUpSocial()");
-
         List<Theme> themes = themeService.read(); 
         model.addAttribute("themes", themes);
+        return "member/signup-social"; // 명시적으로 반환
     }
     
     
@@ -178,7 +178,7 @@ public class UserController {
             log.error("Error fetching user profile for modify: {}", e.getMessage(), e);
             return "redirect:/member/signin";
         }
-        return "/member/modify";
+        return "member/modify";
     }
 
     @PostMapping("/modify")
@@ -217,7 +217,7 @@ public class UserController {
             return "redirect:/member/signin";
         }
 
-        return "/mypage";
+        return "mypage";
     }
     
     @GetMapping("/details")
