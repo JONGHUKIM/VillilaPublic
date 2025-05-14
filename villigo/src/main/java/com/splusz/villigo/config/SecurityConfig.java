@@ -61,6 +61,11 @@ public class SecurityConfig {
 		
 		// CORS 설정
 		http.cors(cors -> cors.configurationSource(corsConfigurationSource()));
+		
+	    // iframe 허용 설정
+	    http.headers(headers -> headers
+	        .frameOptions(frameOptions -> frameOptions.sameOrigin())
+	    );
 
 		// 커스텀 로그인 HTML 페이지를 사용
 		http.formLogin((login) -> login
