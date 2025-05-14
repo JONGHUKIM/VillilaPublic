@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout/fragments :: htmlHead('빌리고｜카테고리', '/css/post-category.css')}">
+<link rel="stylesheet" th:href="@{/css/global.css}">
+</head>
+<body class="container-global">
+   
+    <th:block th:replace="~{layout/fragments :: commonLayout}"></th:block>
+
+    <!-- 🌟 카테고리 선택 영역 -->
+    <main class="container d-flex flex-column align-items-center justify-content-center min-vh-100 ">
+        <h2 class="text-center mb-4">어떤 게시물을 올릴까요?</h2>
+
+        <div class="category-buttons">
+            <!-- 🚗 자동차 카테고리 -->
+            <a th:href="@{/post/create/car}" class="category-btn car-btn">
+                <span class="emoji">🚗</span>
+                자동차
+            </a>
+
+            <!-- 👜 가방/백 카테고리 -->
+            <a th:href="@{/post/create/bag}" class="category-btn bag-btn">
+                <span class="emoji">👜</span>
+                가방 / 백
+            </a>
+        </div>
+    </main>
+
+    <!-- ✅ Bootstrap & Custom JS 유지 -->
+    <th:block th:replace="~{layout/fragments :: bootstrapJS}"></th:block>
+</body>
+</html>
