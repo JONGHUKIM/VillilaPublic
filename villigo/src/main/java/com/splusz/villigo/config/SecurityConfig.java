@@ -2,6 +2,7 @@ package com.splusz.villigo.config;
 
 import java.util.List;
 
+import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
@@ -14,6 +15,7 @@ import org.springframework.security.web.context.SecurityContextPersistenceFilter
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.web.filter.ForwardedHeaderFilter;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -119,6 +121,14 @@ public class SecurityConfig {
 	    UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
 	    source.registerCorsConfiguration("/**", config);
 	    return source;
+	}
+	
+	@Bean
+	public FilterRegistrationBean<ForwardedHeaderFilter> forwardedHeaderFilter() {
+	    FilterRegistrationBean<ForwardedHeaderFilter> filter = new FilterRegistrationBean<>();
+	    filter.setFilter(new ForwardedHeaderFilter());
+	    filter.setOrder(0); // 우선순위 높게
+	    return filter;
 	}
 	
 }
