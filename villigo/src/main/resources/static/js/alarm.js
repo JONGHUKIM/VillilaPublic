@@ -129,6 +129,14 @@ document.addEventListener('DOMContentLoaded', () => {
         const url = `/alarm/list/preforward?p=${pageNo}`;
         const loadings = document.querySelectorAll('.alarm-loading');
         loadings.forEach((div) => div.classList.add('active')); // 로딩 표시
+		
+		fetch("/alarm/list")
+		  .then(response => {
+		    if (response.redirected) {
+		      console.warn("Redirected to: ", response.url);
+		    }
+		    return response.json();
+		  });
         
         fetch(url)
         .then((response) => response.json())
@@ -153,6 +161,14 @@ document.addEventListener('DOMContentLoaded', () => {
         const url = `/alarm/list?p=${pageNo}`;
         const loadings = document.querySelectorAll('.alarm-loading');
         loadings.forEach((div) => div.classList.add('active')); // 로딩 표시
+		
+		fetch("/alarm/list")
+		  .then(response => {
+		    if (response.redirected) {
+		      console.warn("Redirected to: ", response.url);
+		    }
+		    return response.json();
+		  });
         
         fetch(url)
         .then((response) => response.json())
