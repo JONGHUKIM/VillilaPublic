@@ -70,6 +70,7 @@ public class SecurityConfig {
 		// 커스텀 로그인 HTML 페이지를 사용
 		http.formLogin((login) -> login
 				.loginPage("/member/signin")
+				.loginProcessingUrl("/member/signin")
 				.defaultSuccessUrl("/home", true)
 		);
 		
