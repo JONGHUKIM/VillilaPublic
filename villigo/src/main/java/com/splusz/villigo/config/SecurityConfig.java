@@ -108,7 +108,6 @@ public class SecurityConfig {
 	    config.setAllowedOrigins(List.of(
 	    	    "http://localhost:3000",
 	    	    "http://localhost:8080",
-	    	    "http://villila.store",
 	    	    "https://villila.store"
 	    	));
 	    config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
