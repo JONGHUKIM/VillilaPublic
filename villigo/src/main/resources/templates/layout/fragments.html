@@ -2,6 +2,8 @@
 <html xmlns:th="http://www.thymeleaf.org"
       xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity6">
 <head th:fragment="htmlHead(title, cssPath)">
+	<meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title th:text="${title}"></title>       
@@ -14,7 +16,9 @@
           rel="stylesheet">
     <!-- 각 페이지에서 추가할 CSS (있으면 로드) -->
     <link rel="stylesheet" th:if="${cssPath != null}" th:href="@{${cssPath}}">
+    
     <link rel="icon" href="/favicon.ico" type="image/x-icon">
+    
 </head>
     
     <body>
