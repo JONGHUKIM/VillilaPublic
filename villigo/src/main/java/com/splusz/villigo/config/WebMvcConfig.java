@@ -14,8 +14,7 @@ public class WebMvcConfig implements WebMvcConfigurer {
 		        .allowedOrigins(
 		                "http://localhost:3000",
 		                "http://localhost:8080",
-		                "https://villila.store",
-		                "http://villila.store"
+		                "https://villila.store"
 		            )
                 .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
                 .allowedHeaders("*")

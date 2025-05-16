@@ -28,8 +28,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 		        .setAllowedOrigins(
 		                "http://localhost:3000",
 		                "http://localhost:8080",
-		                "https://villila.store",
-		                "http://villila.store"
+		                "https://villila.store"
 		            )
                 .addInterceptors(new CustomHandshakeInterceptor())
                 .withSockJS();
