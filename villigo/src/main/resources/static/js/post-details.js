@@ -20,6 +20,54 @@ document.addEventListener("DOMContentLoaded", function() {
 	initializeHeartState();
 });
 
+// 지도 초기화
+function initializeMap() {
+	
+    const container = document.getElementById('map');
+	let retryCount = 0;
+	const maxRetries = 10;
+	
+    if (!container) return;
+
+    // Kakao Maps API가 로드되었는지 확인
+    function tryInitializeMap() {
+		if (retryCount++ > maxRetries) {
+		    console.error('Kakao Maps API 로드 실패: 최대 재시도 횟수 초과');
+		    return;
+		}
+		if (typeof kakao === 'undefined' || !kakao.maps) {
+		    console.log('Kakao Maps API가 아직 로드되지 않았습니다. 0.5초 후 재시도합니다.');
+		    setTimeout(tryInitializeMap, 500);
+		    return;
+		}
+
+        const latitude = parseFloat(container.getAttribute('data-lat'));
+        const longitude = parseFloat(container.getAttribute('data-lng'));
+
+        if (isNaN(latitude) || isNaN(longitude)) {
+            console.error('유효한 위도/경도 값이 없습니다.');
+            return;
+        }
+
+        const options = {
+            center: new kakao.maps.LatLng(latitude, longitude),
+            level: 3
+        };
+
+        const map = new kakao.maps.Map(container, options);
+
+        const control = new kakao.maps.ZoomControl();
+        map.addControl(control, kakao.maps.ControlPosition.TOPRIGHT);
+
+        const marker = new kakao.maps.Marker({
+            map: map,
+            position: new kakao.maps.LatLng(latitude, longitude)
+        });
+    }
+
+    tryInitializeMap();
+}
+
 function changeSlide(n) {
     showSlides(slideIndex += n);
 }
@@ -240,39 +288,4 @@ function openReservationPopup() {
 
     // productId 포함한 URL로 팝업 열기
     window.open(`/reservation?productId=${productId}`, "예약 신청", popupOptions);
-}
-
-// 지도 초기화
-function initializeMap() {
-    const container = document.getElementById('map');
-    if (!container) return;
-    
-    // Kakao 맵 API가 로드되었는지 확인
-    if (typeof kakao === 'undefined' || !kakao.maps) {
-        console.error('Kakao Maps API가 로드되지 않았습니다.');
-        return;
-    }
-    
-    const latitude = parseFloat(container.getAttribute('data-lat'));
-    const longitude = parseFloat(container.getAttribute('data-lng'));
-    
-    if (isNaN(latitude) || isNaN(longitude)) {
-        console.error('유효한 위도/경도 값이 없습니다.');
-        return;
-    }
-    
-    const options = {
-        center: new kakao.maps.LatLng(latitude, longitude),
-        level: 3
-    };
-
-    const map = new kakao.maps.Map(container, options);
-
-    const control = new kakao.maps.ZoomControl();
-    map.addControl(control, kakao.maps.ControlPosition.TOPRIGHT);
-
-    const marker = new kakao.maps.Marker({
-        map: map,
-        position: new kakao.maps.LatLng(latitude, longitude)
-    });
 }
