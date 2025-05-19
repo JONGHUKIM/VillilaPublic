@@ -329,5 +329,17 @@ document.addEventListener("DOMContentLoaded", () => {
         window.open(url, "거래 완료 및 후기", popupOptions);
     };
 
+	window.completeReview = function () {
+	  const currentTab = document.querySelector(".tab.active");
+	  const currentTabIndex = Array.from(document.querySelectorAll(".tab")).indexOf(currentTab);
+
+	  // 예약현황 탭이면
+	  if (currentTabIndex === 1) {
+	    if (typeof getAllReservationRequests === 'function') {
+	      getAllReservationRequests(0); // 예약 카드 다시 불러오기
+	    }
+	  }
+	}
+
 
 });
