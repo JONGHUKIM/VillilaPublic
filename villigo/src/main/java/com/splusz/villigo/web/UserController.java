@@ -275,7 +275,7 @@ public class UserController {
         log.info("GET /member/images/{}", image);
         try {
             // 이미지 파일 경로 (예: /uploads/ 디렉토리에 저장됨)
-            Path filePath = Paths.get("C:/images/avatar/").resolve(image).normalize();
+            Path filePath = Paths.get("/home/ubuntu/images/avatar").resolve(image).normalize();
             Resource resource = new UrlResource(filePath.toUri());
 
             if (resource.exists() && resource.isReadable()) {

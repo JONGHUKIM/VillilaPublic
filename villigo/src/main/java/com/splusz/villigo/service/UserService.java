@@ -45,7 +45,7 @@ public class UserService implements UserDetailsService {
 	private final UserJjamRepository userJjamRepo;
 	
 	// 프로필 사진이 저장될 경로
-	private static final String UPLOAD_DIR = "C:\\images\\avatar";
+	private static final String UPLOAD_DIR = "/home/ubuntu/images/avatar";
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {

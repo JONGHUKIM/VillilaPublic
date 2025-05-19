@@ -30,7 +30,7 @@ public class RentalImageService {
 
     private final RentalImageRepository rentalImgRepo;
     private final ProductRepository prodRepo;
-    private final String rentalImagePath = "C:\\images\\rentals";
+    private final String rentalImagePath = "/home/ubuntu/images/rentals";
 
     public Integer create(Long productId, RentalImageCreateDto dto) throws IOException {
         for(MultipartFile image : dto.getImages())
