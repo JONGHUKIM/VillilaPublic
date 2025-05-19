@@ -27,7 +27,7 @@ document.addEventListener('DOMContentLoaded', () => {
     
     /* ------------------------------- 함수 선언 ------------------------------- */
     function getAllReservationRequests(pageNo = 0) {
-        const url = `reservation/api/requestlist?p=${pageNo}`;
+        const url = `/reservation/api/requestlist?p=${pageNo}`;
         
         axios
         .get(url)

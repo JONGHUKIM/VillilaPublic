@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
-<head th:replace="~{layout/fragments :: htmlHead('빌리고｜마이페이지','/css/mypage.css')}">
+<head th:replace="~{layout/fragments :: htmlHead('Villila｜마이페이지','/css/mypage.css')}">
 </head>
 <body th:data-user-id="${#authentication.principal.id}">
     <th:block th:replace="~{layout/fragments :: commonLayout}"></th:block>
@@ -102,7 +102,7 @@
                         <!-- status가 5일 때 삭제 버튼 추가 -->
                         <div th:if="${reservation.status == 5}">
                             <!-- data-reservation-id만 설정하고 이벤트는 JavaScript에서 처리 -->
-                            <button class="delete-btn" th:data-reservation-id="${reservation.reservationId}">
+                            <button class="delete-btn RLdelete" th:data-reservation-id="${reservation.reservationId}">
                                 삭제
                             </button>
                         </div>
