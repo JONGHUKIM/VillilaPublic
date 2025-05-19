@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>Villila｜후기</title>
+  <link rel="stylesheet" th:href="@{/css/review.css}">
+</head>
+<body>
+  <div class="container">
+    <h2>거래 후기 작성</h2>
+
+    <div class="feedback-options">
+      <div class="checkbox-item">
+        <input type="checkbox" id="option1" value="1">
+        <label for="option1">이 분과 다시는 거래하고 싶지 않아요.</label>
+      </div>
+      <div class="checkbox-item">
+        <input type="checkbox" id="option2" value="2">
+        <label for="option2">거래시간과 장소를 정한 후 연락이 안되요.</label>
+      </div>
+      <div class="checkbox-item">
+        <input type="checkbox" id="option3" value="3">
+        <label for="option3">시간 약속을 잘 지켜요.</label>
+      </div>
+      <div class="checkbox-item">
+        <input type="checkbox" id="option4" value="4">
+        <label for="option4">친절하고 매너가 좋아요.</label>
+      </div>
+      <div class="checkbox-item">
+        <input type="checkbox" id="option5" value="5">
+        <label for="option5">응답이 빨라요.</label>
+      </div>
+    </div>
+
+    <button class="btn-ok" id="submit-review">후기 보내기</button>
+  </div>
+
+  <!-- ✅ axios CDN 먼저 추가 -->
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+
+  <!-- ✅ review.js는 그 다음에 로드 -->
+  <script src="/js/review.js" defer></script>
+</body>
+</html>
