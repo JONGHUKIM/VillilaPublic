@@ -38,7 +38,7 @@ public class ChatImageService {
         try {
             String fileName = UUID.randomUUID() + "_" + file.getOriginalFilename();
 
-            Path uploadPath = Paths.get(uploadDir);
+            Path uploadPath = Paths.get(uploadDir, "chat");
             if (!Files.exists(uploadPath)) {
                 Files.createDirectories(uploadPath);
             }

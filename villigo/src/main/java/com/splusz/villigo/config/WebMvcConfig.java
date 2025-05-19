@@ -22,13 +22,29 @@ public class WebMvcConfig implements WebMvcConfigurer {
                 .maxAge(3600);
     }
 
+//    @Override
+//    public void addResourceHandlers(ResourceHandlerRegistry registry) {
+//        registry.addResourceHandler("/images/rentals/**")
+//            .addResourceLocations("file:///C:/images/rentals/");
+//        
+//        // 프로필 이미지 경로: /images/** -> C:/images/avatar/
+//        registry.addResourceHandler("/images/avatar/**")
+//                .addResourceLocations("file:///C:/images/avatar/");
+//    }
+    
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
+        // 대여 이미지
         registry.addResourceHandler("/images/rentals/**")
-            .addResourceLocations("file:///C:/images/rentals/");
-        
-        // 프로필 이미지 경로: /images/** -> C:/images/avatar/
+                .addResourceLocations("file:/home/ubuntu/images/rentals/");
+
+        // 프로필 이미지
         registry.addResourceHandler("/images/avatar/**")
-                .addResourceLocations("file:///C:/images/avatar/");
+                .addResourceLocations("file:/home/ubuntu/images/avatar/");
+
+        // 채팅 이미지
+        registry.addResourceHandler("/images/chat/**")
+                .addResourceLocations("file:/home/ubuntu/images/chat/");
     }
+
 }

@@ -106,7 +106,7 @@ document.addEventListener('DOMContentLoaded', function () {
         const input = document.getElementById('uploadImage');
         const previewContainer = document.getElementById('imagePreview');
         const maxFiles = 10;
-        const maxSizeMB = 100;
+        const maxSizeMB = 50;
 
         const newFiles = Array.from(input.files);
         const totalFiles = selectedFiles.length + newFiles.length;

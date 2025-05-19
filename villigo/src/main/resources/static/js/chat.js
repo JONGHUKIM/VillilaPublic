@@ -231,7 +231,7 @@ document.addEventListener("DOMContentLoaded", function () {
 	        .then(res => {
 	            if (!res.ok) {
 	                if (res.status === 413) {
-	                    throw new Error("파일 크기가 너무 큽니다. 최대 10MB까지 업로드 가능합니다.");
+	                    throw new Error("파일 크기가 너무 큽니다. 최대 50MB까지 업로드 가능합니다.");
 	                }
 	                throw new Error(`이미지 업로드 실패: ${res.statusText}`);
 	            }
@@ -1241,10 +1241,10 @@ document.addEventListener("DOMContentLoaded", function () {
         let files = Array.from(event.target.files);
         if (files.length === 0) return;
 
-        const MAX_FILE_SIZE = 100 * 1024 * 1024;
+        const MAX_FILE_SIZE = 20 * 1024 * 1024;
         let oversizedFiles = files.filter(file => file.size > MAX_FILE_SIZE);
         if (oversizedFiles.length > 0) {
-            alert(`다음 파일이 100MB를 초과하여 업로드할 수 없습니다: ${oversizedFiles.map(file => file.name).join(", ")}`);
+            alert(`다음 파일이 50MB를 초과하여 업로드할 수 없습니다: ${oversizedFiles.map(file => file.name).join(", ")}`);
             files = files.filter(file => file.size <= MAX_FILE_SIZE);
         }
 
@@ -1261,7 +1261,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
             quality -= 0.2;
             if (quality <= 0) {
-                alert(`다음 파일은 리사이징 후에도 10MB를 초과하여 업로드할 수 없습니다: ${oversizedFiles.map(file => file.name).join(", ")}`);
+                alert(`다음 파일은 리사이징 후에도 50MB를 초과하여 업로드할 수 없습니다: ${oversizedFiles.map(file => file.name).join(", ")}`);
                 resizedFiles = resizedFiles.filter(file => file.size <= MAX_FILE_SIZE);
                 break;
             }
@@ -1372,7 +1372,7 @@ document.addEventListener("DOMContentLoaded", function () {
 	        .then(response => {
 	            if (!response.ok) {
 	                if (response.status === 413) {
-	                    throw new Error("파일 크기가 너무 큽니다. 최대 10MB까지 업로드 가능합니다.");
+	                    throw new Error("파일 크기가 너무 큽니다. 최대 50MB까지 업로드 가능합니다.");
 	                }
 	                throw new Error(`파일 업로드 실패: ${response.statusText}`);
 	            }
