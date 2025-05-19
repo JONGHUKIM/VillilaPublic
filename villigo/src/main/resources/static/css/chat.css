@@ -1,0 +1,887 @@
+/* ✅ 전체 채팅 컨테이너 스타일 (프레임 테두리 추가) */
+.chat-container {
+    display: flex;
+    width: 85%;
+    height: 60vh;
+    margin: 90px auto 0;
+    border: 1px solid #070707;
+    overflow: hidden;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+    border-radius:10px;
+}
+
+/* ✅ 왼쪽 채팅 목록 스타일 */
+.chat-sidebar {
+    display: flex;
+    flex-direction: column;
+    width: 28%;
+    background: #ffffff;
+    border-right: 1px solid #ddd;
+    padding: 15px 10px 0 10px;
+    height: 100%;
+    justify-content: space-between;
+    box-sizing: border-box;
+}
+
+/* ✅ 검색창 컨테이너 */
+.search-chatbox {
+    position: relative;
+    width: 100%;
+}
+
+/* ✅ 검색 입력 필드 */
+.search-chatbox input {
+    width: 100%;
+    padding: 10px 40px 10px 12px;
+    border-radius: 20px;
+    border: 1px solid #ddd;
+    background: white;
+    font-size: 13px;
+}
+
+/* ✅ 돋보기 아이콘 스타일 */
+.search-icon {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    cursor: pointer;
+    font-size: 16px;
+    color: #888;
+}
+
+/* ✅ 안읽음 텍스트 오른쪽 정렬 */
+.chat-options {
+    display: flex;
+    justify-content: flex-end;
+    padding: 10px 0;
+    border-bottom: 1px solid #ddd;
+}
+
+.chat-options label {
+    margin-left: auto;
+}
+
+/* ✅ 채팅 리스트 */
+.chat-list {
+    flex-grow: 1;
+    overflow-y: auto;
+    margin-bottom: 0;
+    padding-bottom: 10px;
+}
+
+/* ✅ 스크롤 안 생기게 설정 (최대 높이) */
+.chat-list::-webkit-scrollbar {
+    display: none;
+}
+
+/* ✅ 휴지통 버튼을 하단에 정렬 */
+#deleteContainer {
+    display: flex;
+    align-items: center;
+    padding: 13.5px 10px;
+    border-top: 1px solid #ddd;
+    width: 100%;
+    box-sizing: border-box;
+    margin: 0;
+    background: #ffffff;
+    position: relative;
+    left: -10px;
+    width: calc(100% + 20px);
+}
+
+/* ✅ 삭제 버튼 스타일 */
+.delete-btn {
+    background: none;
+    border: none;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+/* ✅ 삭제 버튼 호버 효과 */
+.delete-btn:hover {
+    color: red;
+}
+
+/* ✅ 오른쪽: 채팅창 */
+.chat-main {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    width: 72%;
+}
+
+/* ✅ 채팅방 닉네임 아래 구분선 */
+.chat-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #fff;
+    padding: 10px;
+    border-bottom: 1px solid #ddd;
+}
+#chatUserName {
+    font-weight:700;
+}
+
+/* ✅ 채팅 메시지 영역 (길어지면 스크롤 가능) */
+.chat-messages {
+    flex-grow: 1;
+    padding: 15px;
+    overflow-y: auto;
+    position: relative;
+}
+
+/* ✅ 웹사이트에서 자동 스크롤 방지 */
+.chat-messages::-webkit-scrollbar {
+    display: none;
+}
+
+/* ✅ 채팅이 없을 때 메시지 스타일 */
+.no-chat-message {
+    display: none;
+    text-align: center;
+    padding: 20px;
+    color: #666;
+    font-size: 16px;
+}
+
+/* ✅ 타이핑 인디케이터 스타일 */
+#typingIndicator {
+    display: none;
+    position: absolute;
+    bottom: 10px;
+    left: 15px;
+    background: #f1f1f1;
+    padding: 5px 10px;
+    border-radius: 10px;
+    font-size: 12px;
+    color: #666;
+}
+
+/* ✅ 메시지 입력창 */
+.chat-input {
+    display: flex;
+    align-items: center;
+    padding: 8px;
+    border-top: 1px solid #ddd;
+    background: #fff;
+}
+
+/* ✅ 입력 필드 */
+#messageInput {
+    flex-grow: 1;
+    padding: 8px;
+    font-size: 14px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    outline: none;
+}
+
+/* ✅ 버튼 스타일 */
+button {
+    border: none;
+    outline: none;
+    background: none;
+    cursor: pointer;
+}
+
+/* ✅ 전송 버튼 (회색 → 보라색) */
+.send-btn {
+    background: #a69bf1;
+    color: white;
+    font-size: 16px;
+    padding: 8px 12px;
+    border-radius: 5px;
+    transition: background 0.2s ease-in-out;
+    margin-left: 5px;
+}
+
+.send-btn.active {
+    background: #6d50e5;
+    cursor: pointer;
+    opacity: 1;
+}
+
+/* ✅ 신고 & 나가기 버튼 컨테이너 */
+.chat-header-buttons {
+    display: flex;
+    gap: 10px;
+    margin-left: auto;
+}
+
+/* ✅ 신고 버튼 스타일 */
+#reportChat {
+    font-size: 25px;
+    border-radius: 6px;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 50px;
+}
+
+/* ✅ 나가기 버튼 스타일 */
+#leaveChat {
+    background: #c0c0c0;
+    color: white;
+    font-size: 15px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 60px;
+}
+
+.attach-btn svg {
+    width: 28px;
+    height: 28px;
+    stroke: #777;
+    transition: stroke 0.3s ease;
+    margin-right: 5px;
+}
+
+/* ✅ 기본 체크박스 숨기기 */
+.custom-checkbox input {
+    display: none;
+}
+
+/* ✅ 체크박스 스타일 */
+.custom-checkbox {
+    display: flex;
+    align-items: center;
+    font-size: 14px;
+    cursor: pointer;
+}
+
+/* ✅ 체크박스 기본 모양 (테두리 기존 선 색상과 동일하게) */
+.custom-checkbox .checkmark {
+    width: 18px;
+    height: 18px;
+    border: 2px solid #ddd;
+    border-radius: 4px;
+    display: inline-block;
+    margin-right: 8px;
+    position: relative;
+    transition: background 0.3s, border 0.3s;
+}
+
+/* ✅ 체크되었을 때 스타일 */
+.custom-checkbox input:checked + .checkmark {
+    background: #ffffff;
+    border-color: #ffffff;
+}
+
+/* ✅ 체크 표시 아이콘 */
+.custom-checkbox input:checked + .checkmark::after {
+    content: "✔";
+    position: absolute;
+    top: 30%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+/* 메시지 스타일 */
+.message.sent,
+.message.received {
+    display: flex;
+    align-items: flex-end;
+    max-width: 70%;
+    margin-bottom: 10px;
+}
+
+.message.sent {
+    margin-left: auto;
+    flex-direction: row-reverse;
+}
+
+.message.received {
+    margin-right: auto;
+}
+
+.message-wrapper {
+    display: flex;
+    align-items: flex-end;
+}
+
+.message.sent .message-wrapper {
+    flex-direction: row-reverse;
+}
+
+/* 단일 이미지 스타일 */
+.message-content img {
+    width: 150px; /* 고정 너비 */
+    height: 150px; /* 고정 높이 */
+    object-fit: cover; /* 이미지가 잘리지 않도록 조정 */
+    border-radius: 8px; /* 둥근 모서리 */
+    margin: 2px; /* 약간의 여백 */
+}
+
+.message.sent .message-content {
+    background:#a69bf1;
+    color: white;
+    border-radius: 10px 10px 0 10px;
+    padding: 8px 12px; /* 패딩 추가 */
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1); /* 약간의 그림자 */
+}
+
+.message.received .message-content {
+    background: #f1f1f1;
+    color: rgb(0, 0, 0);
+    border-radius: 10px 10px 10px 0;
+    padding: 8px 12px; /* 패딩 추가 */
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1); /* 약간의 그림자 */
+    border: 1px solid #E5E5E5; /* 얇은 테두리 추가 */
+    
+}
+
+.message.sent,
+.message.received {
+    display: flex;
+    align-items: flex-end;
+    max-width: 70%;
+    margin-bottom: 10px;
+    background: none; /* 배경 제거 */
+}
+
+.message-status {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    margin: 0 5px;
+}
+
+.message.sent .message-status {
+    align-items: flex-start;
+}
+
+.unread-indicator {
+    display: block;
+    font-size: 12px;
+    color: #ff9800;
+    white-space: nowrap;
+}
+
+.read-indicator {
+    display: block;
+    font-size: 12px;
+    color: #2196f3;
+    white-space: nowrap;
+}
+
+.message-time {
+    display: block;
+    font-size: 10px;
+    color: #999;
+    white-space: nowrap;
+}
+
+.date-separator {
+    text-align: center;
+    margin: 10px 0;
+    color: #777;
+    font-size: 14px;
+    position: relative;
+}
+
+.date-separator::before,
+.date-separator::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    width: 40%;
+    height: 1px;
+    background-color: #ddd;
+}
+
+.date-separator::before {
+    left: 0;
+}
+
+.date-separator::after {
+    right: 0;
+}
+
+.message.preview {
+    background-color: #f0f0f0;
+    opacity: 0.8;
+}
+
+.message.preview .message-content {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.message.preview img {
+    width: 50px;
+    height: 50px;
+    object-fit: cover;
+    border-radius: 5px;
+}
+
+.message.preview .preview-actions {
+    display: flex;
+    gap: 5px;
+}
+
+.message.preview .preview-actions button {
+    padding: 5px 10px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 12px;
+}
+
+.message.preview .preview-actions .send-preview {
+    background-color: #007bff;
+    color: white;
+}
+
+.message.preview .preview-actions .cancel-preview {
+    background-color: #dc3545;
+    color: white;
+}
+
+.chat-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.chat-item {
+    display: flex;
+    align-items: center;
+    padding: 12px 10px;
+    border-bottom: 1px solid #e5e5e5;
+    cursor: pointer;
+}
+
+.chat-item:hover {
+    background-color: #f0f0f0;
+}
+
+.chat-avatar-wrapper {
+    position: relative;
+    margin-right: 12px;
+}
+
+.chat-avatar {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.status-indicator {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    font-size: 12px;
+    line-height: 1;
+    width: 16px; /* 작은 원형 배경 */
+    height: 16px;
+    background: white; /* 배경색 */
+    border-radius: 50%; /* 원형 */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 0 0 1px #ddd; /* 테두리 효과 */
+}
+
+.chat-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.chat-title {
+    display: flex;
+    justify-content: space-between;
+    font-size: 15px;
+    font-weight: 600;
+    margin-bottom: 4px;
+    color: #000;
+}
+
+.chat-title span:first-child {
+    flex: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.chat-time {
+    font-size: 11px;
+    color: #888;
+}
+
+.chat-preview {
+    display: flex;
+    justify-content: space-between;
+    font-size: 13px;
+    color: #666;
+}
+
+.chat-preview span {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.chat-avatar-wrapper {
+    position: relative;
+    width: 40px;
+    height: 40px;
+}
+
+.chat-avatar {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    object-fit: cover; /* 이미지가 원형 프레임에 맞게 채워짐 */
+    object-position: center; /* 이미지 중앙 정렬 */
+    display: block; /* 불필요한 여백 제거 */
+}
+
+.chat-avatar.emoji {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    background-color: #f0f0f0;
+}
+
+.status-indicator {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    border: 2px solid white;
+}
+
+.sender-name {
+    font-size: 12px;
+    color: #888;
+    margin-bottom: 2px;
+}
+
+.chat-item.active-room {
+    background-color: #e6e0ff; /* 연한 파란색 배경 강조 */
+    border-left: 4px solid #5400ff; /* 선택 느낌 강조 */
+}
+
+.chat-item input.chat-select-checkbox {
+    cursor: pointer;
+}
+
+
+.chat-select-checkbox {
+  margin-right: 6px;
+  cursor: pointer;
+  transform: scale(1.2);
+}
+
+.unread-badge.small {
+    font-size: 12px;  /* 글자 크기 적당히 조정 */
+    padding: 3px 7px; /* 패딩 조정 */
+    border-radius: 50%; /* 원 모양 */
+    font-weight: 500;
+    background-color: #ff3c3c;
+    color: white;  /* 글자 색을 하얀색 */
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    width: 18px;  /* 원 크기 */
+    height: 18px;  /* 원 크기 */
+    text-align: center;  /* 텍스트를 가운데 정렬 */
+}
+
+
+
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 999;
+    padding-top: 60px;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background-color: rgba(0,0,0,0.85);
+}
+
+.modal img {
+    margin: auto;
+    display: block;
+    max-width: 80%;
+    max-height: 80%;
+    object-fit: contain;
+    border-radius: 8px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3); /* 그림자 추가 */
+}
+
+.modal .close {
+    position: absolute;
+    top: 20px;
+    right: 35px;
+    color: #fff;
+    font-size: 40px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.modal .nav {
+    position: absolute;
+    top: 50%;
+    color: white;
+    font-size: 40px;
+    padding: 10px;
+    cursor: pointer;
+    user-select: none;
+}
+
+.modal .left {
+    left: 10px;
+}
+
+.modal .right {
+    right: 10px;
+}
+
+/* 그룹 이미지 컨테이너 */
+.grouped-images {
+    display: flex;
+    flex-wrap: nowrap; /* 줄 바꿈 제거 */
+    gap: 8px; /* 이미지 간 간격 */
+    justify-content: flex-start; /* 왼쪽 정렬 */
+    overflow-x: auto; /* 가로 스크롤 추가 */
+    white-space: nowrap; /* 한 줄로 유지 */
+    padding-top: 5px;
+    padding-bottom: 5px; /* 스크롤바와의 간격 */
+    background: none; /* 배경 제거 */
+    position: relative; /* 이미지 개수 표시를 위한 위치 설정 */
+}
+
+/* 스크롤바 커스터마이징 */
+.grouped-images::-webkit-scrollbar {
+    display: none; /* 스크롤바 숨기기 */
+}
+
+.grouped-images::-webkit-scrollbar-thumb {
+    background-color: #ccc;
+    border-radius: 3px;
+}
+
+.grouped-images::-webkit-scrollbar-track {
+    background-color: #f0f0f0;
+}
+
+/* 그룹 이미지 스타일 */
+.group-image {
+    width: 100px; /* 고정 너비 */
+    height: 100px; /* 고정 높이 */
+    object-fit: cover; /* 이미지가 잘리지 않도록 조정 */
+    border-radius: 8px; /* 둥근 모서리 */
+    cursor: pointer;
+    flex-shrink: 0; /* 크기 축소 방지 */
+    background: none; /* 배경 제거 */
+}
+
+/* 그룹 이미지 호버 효과 */
+.group-image:hover {
+    opacity: 0.9;
+    transform: scale(1.02);
+    transition: transform 0.2s ease-in-out;
+}
+
+/* 미리보기 이미지 정렬 */
+.preview-images {
+    display: flex;
+    flex-wrap: nowrap; /* 줄 바꿈 제거 */
+    gap: 8px; /* 이미지 간 간격 */
+    margin-bottom: 10px; /* 버튼과의 간격 */
+    overflow-x: auto; /* 가로 스크롤 추가 */
+    white-space: nowrap; /* 한 줄로 유지 */
+    padding-bottom: 5px; /* 스크롤바와의 간격 */
+}
+
+/* 스크롤바 커스터마이징 */
+.preview-images::-webkit-scrollbar {
+    height: 6px;
+}
+
+.preview-images::-webkit-scrollbar-thumb {
+    background-color: #ccc;
+    border-radius: 3px;
+}
+
+.preview-images::-webkit-scrollbar-track {
+    background-color: #f0f0f0;
+}
+
+/* 미리보기 이미지 스타일 */
+.preview-image {
+    width: 80px; /* 고정 너비 */
+    height: 80px; /* 고정 높이 */
+    object-fit: cover; /* 이미지가 잘리지 않도록 조정 */
+    border-radius: 6px;
+    border: 1px solid #ccc;
+    flex-shrink: 0; /* 크기 축소 방지 */
+}
+
+/* 미리보기 버튼 컨테이너 */
+.preview-actions {
+    display: flex;
+    justify-content: flex-end; /* 버튼을 오른쪽으로 정렬 */
+    gap: 8px;
+    margin-top: 5px;
+}
+
+/* 전송 버튼 스타일 */
+.send-preview {
+    background-color: #007bff;
+    color: white;
+    padding: 5px 10px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 12px;
+}
+
+/* 취소 버튼 스타일 */
+.cancel-preview {
+    background-color: #dc3545;
+    color: white;
+    padding: 5px 10px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 12px;
+}
+
+.send-preview:hover {
+    background-color: #0056b3; /* 더 어두운 파란색 */
+}
+
+.cancel-preview:hover {
+    background-color: #c82333; /* 더 어두운 빨간색 */
+}
+
+.message-content .single-image {
+    width: 150px; /* 고정 너비 */
+    height: 150px; /* 고정 높이 */
+    object-fit: cover; /* 이미지가 잘리지 않도록 조정 */
+    border-radius: 8px; /* 둥근 모서리 */
+    margin: 2px; /* 약간의 여백 */
+    background: none; /* 배경 제거 */
+}
+
+/* 이미지 개수 표시 */
+.image-count {
+    position: absolute;
+    bottom: 10px;
+    right: 10px;
+    background: rgba(0, 0, 0, 0.6);
+    color: white;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: bold;
+}
+
+/* 검색 결과 없음 메시지 스타일 */
+.chat-list .no-results {
+    padding: 10px;
+    text-align: center;
+    color: #888;
+    font-size: 14px;
+}
+
+/* 검색어 하이라이팅 스타일 */
+.highlight {
+    background-color: #ffeb3b;
+    font-weight: bold;
+}
+
+/* 검색 입력창 스타일 (필요 시 조정) */
+.search-chatbox {
+    position: relative;
+    margin-bottom: 10px;
+}
+
+#searchChat {
+    width: 100%;
+    padding: 8px 8px 8px 30px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+#searchChat:focus {
+    outline: none;
+    border-color: #007bff;
+    box-shadow: 0 0 5px rgba(0, 123, 255, 0.3);
+}
+
+.search-icon {
+    position: absolute;
+    left: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    pointer-events: none; /* 아이콘이 클릭 이벤트를 방해하지 않도록 설정 */
+}
+
+.no-chat-message {
+    padding: 15px;
+    text-align: center;
+    color: #777;
+    display: none; /* 기본 숨김 */
+}
+
+.warning-box {
+  background-color: #fff8e1;
+  border: 1px solid #ffe8a1;
+  border-radius: 10px;
+  padding: 20px;
+  max-width: 500px;
+  margin: 0 auto;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+  text-align: center;
+}
+
+.warning-text {
+  color: #6b4d17;
+  font-size: 14px;
+  line-height: 1.6;
+  margin-bottom: 12px;
+}
+
+.warning-text .warning-icon {
+  display: block;
+  font-size: 24px;
+  margin-bottom: 8px;
+}
+
+.warning-text strong {
+  color: #d9534f;
+  font-weight: bold;
+}
+
+.warning-action button {
+  padding: 8px 20px;
+  font-size: 14px;
+  background-color: #d9534f;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.warning-action button:hover {
+  background-color: #c9302c;
+}
