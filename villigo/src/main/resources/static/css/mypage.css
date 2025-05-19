@@ -220,6 +220,45 @@ a {
   background-color: #66666688;
 }
 
+/* 반응형 스타일 */
+@media (max-width: 768px) {
+  .btn-delete-reserv {
+    width: 100%;
+    font-size: 16px;
+    padding: 12px 0;
+    border-radius: 10px;
+  }
+}
+
+.delete-btn.RLdelete {
+  background-color: #100;
+  color: white;
+  padding: 8px 16px;
+  font-size: 14px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: all 0.2s ease-in-out;
+  position: absolute;
+  bottom: 16px;
+  right: 0;
+}
+
+.delete-btn.RLdelete:hover:not(:disabled) {
+  background-color: #66666688;
+}
+
+@media (max-width: 768px) {
+  .delete-btn.RLdelete {
+    width: 100%;
+    font-size: 16px;
+    padding: 12px 0;
+    border-radius: 10px;
+  }
+}
+
+
 
 .reservation-card {
   display: flex;
