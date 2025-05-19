@@ -12,12 +12,14 @@ document.addEventListener("DOMContentLoaded", function() {
 
     // 버튼 이벤트 리스너 설정
     initializeButtons();
-
-    // 지도 초기화
-    initializeMap();
 	
 	// 찜 상태 확인
 	initializeHeartState();
+	
+	// 지도는 Kakao Maps가 완전히 로드된 후에만 초기화
+	kakao.maps.load(function() {
+	    initializeMap(); // 여기가 진짜 실행 시점
+	});
 });
 
 // 지도 초기화
