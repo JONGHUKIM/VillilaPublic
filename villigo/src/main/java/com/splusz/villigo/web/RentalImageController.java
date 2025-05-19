@@ -17,7 +17,8 @@ import java.nio.file.Paths;
 @RequestMapping("/api/images")
 public class RentalImageController {
 
-    private static final String RENTAL_IMAGE_PATH = "C:/images/rentals/";
+    // private static final String RENTAL_IMAGE_PATH = "C:/images/rentals/"; 로컬 환경
+    private static final String RENTAL_IMAGE_PATH = "/home/ubuntu/images/rentals";
 
     @GetMapping("/{imageName:.+}")
     public ResponseEntity<Resource> getRentalImage(@PathVariable String imageName) {
