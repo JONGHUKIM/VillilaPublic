@@ -21,4 +21,8 @@ public interface ChatRoomReservationRepository extends JpaRepository<ChatRoomRes
     @Modifying
     @Query("DELETE FROM ChatRoomReservation crr WHERE crr.chatRoom.id = :roomId")
     void deleteByChatRoomId(@Param("roomId") Long roomId);
+    
+    @Modifying
+    @Query("DELETE FROM ChatRoomReservation crr WHERE crr.reservationId = :reservationId")
+    void deleteByReservationId(@Param("reservationId") Long reservationId);
 }
