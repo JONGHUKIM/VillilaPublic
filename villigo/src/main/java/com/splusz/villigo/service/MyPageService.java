@@ -28,14 +28,13 @@ public class MyPageService {
     private final ProductService prodServ;
     
     public Page<ProductImageMergeDto> readMyProductPaging(Long userId, Integer pageNum) {
-        
         Pageable pageable = PageRequest.of(pageNum, 9);
         List<Product> myProductList = prodRepo.findByUser_IdOrderByCreatedTimeDesc(userId);
-        List<ProductImageMergeDto> myDtoList = prodServ.addRandomImageInProduct(myProductList);
-        Page<ProductImageMergeDto> myDtoPage = prodServ.listToPage(myDtoList, pageable);
-        log.info("myDtoList={}", myDtoList);
 
-        return myDtoPage;
+        // 🔄 랜덤 이미지 → 첫 이미지 고정
+        List<ProductImageMergeDto> myDtoList = prodServ.addFirstImageInProduct(myProductList);
+        
+        return prodServ.listToPage(myDtoList, pageable);
     }
 
     public Page<ProductImageMergeDto> readLikeProductPaging(Long userId, Integer pageNum) {
@@ -48,7 +47,7 @@ public class MyPageService {
         .collect(Collectors.toList());
 
         List<Product> likeProductList = prodRepo.findAllByIdIn(likeIds);
-        List<ProductImageMergeDto> likeDtoList = prodServ.addRandomImageInProduct(likeProductList);
+        List<ProductImageMergeDto> likeDtoList = prodServ.addFirstImageInProduct(likeProductList);
         Page<ProductImageMergeDto> likeDtoPage = prodServ.listToPage(likeDtoList, pageable);
         
         return likeDtoPage;

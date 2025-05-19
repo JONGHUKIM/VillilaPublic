@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
-<head th:replace="~{/layout/fragments :: htmlHead('빌리고｜유저페이지','/css/memberdetails.css')}">
+<head th:replace="~{layout/fragments :: htmlHead('빌리고｜유저페이지','/css/memberdetails.css')}">
 </head>
 <body>
   <!-- 공통 헤더 & 푸터 포함 -->
-  <th:block th:replace="~{/layout/fragments :: commonLayout}"></th:block>
+  <th:block th:replace="~{layout/fragments :: commonLayout}"></th:block>
 
   <main class="container-global">
     <!-- 프로필 영역 -->
@@ -98,7 +98,7 @@
   </main>
 
   <!-- 공통 JS -->
-  <th:block th:replace="~{/layout/fragments :: bootstrapJS}"></th:block>
+  <th:block th:replace="~{layout/fragments :: bootstrapJS}"></th:block>
   <script th:src="@{/js/member-details.js}"></script>
 </body>
 </html>

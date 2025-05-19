@@ -1,13 +1,13 @@
 <!-- index.html -->
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
-<head th:replace="~{/layout/fragments :: htmlHead('빌리고｜채팅','/css/chat.css')}">
+<head th:replace="~{layout/fragments :: htmlHead('빌리고｜채팅','/css/chat.css')}">
     <link rel="stylesheet" th:href="@{/css/global.css}">
     <link rel="stylesheet" th:href="@{/css/chat.css}">
 </head>
 	<body th:data-user-id="${#authentication.principal.id}">
 	    <header>
-	        <th:block th:replace="~{/layout/fragments :: commonLayout}"></th:block>
+	        <th:block th:replace="~{layout/fragments :: commonLayout}"></th:block>
 	    </header>
 	    <div class="container-global">
 	        <div class="chat-container">
@@ -78,7 +78,7 @@
 	    </div>
 	
 	    <!-- 공통 스크립트 및 외부 라이브러리 -->
-	    <th:block th:replace="~{/layout/fragments :: bootstrapJS}"></th:block>
+	    <th:block th:replace="~{layout/fragments :: bootstrapJS}"></th:block>
 		<script src="https://cdn.jsdelivr.net/npm/sockjs-client@1.6.1/dist/sockjs.min.js"></script>
 		<script src="https://cdn.jsdelivr.net/npm/@stomp/stompjs@7.1.0/bundles/stomp.umd.min.js"></script>
 	

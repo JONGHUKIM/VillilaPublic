@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
-<head th:replace="~{/layout/fragments :: htmlHead('빌리고｜JJAM 충전', '/css/jjam.css')}">
+<head th:replace="~{layout/fragments :: htmlHead('빌리고｜JJAM 충전', '/css/jjam.css')}">
     <link rel="stylesheet" th:href="@{/css/global.css}">
 </head>
 <body>
-    <th:block th:replace="~{/layout/fragments :: commonLayout}"></th:block>
+    <th:block th:replace="~{layout/fragments :: commonLayout}"></th:block>
 
     <!-- ✅ 헤더 아래, 충전 카드 위에 보유 젤리 개수 추가 -->
     
@@ -112,7 +112,7 @@
         </div>
     </main>
 
-    <th:block th:replace="~{/layout/fragments :: bootstrapJS}"></th:block>
+    <th:block th:replace="~{layout/fragments :: bootstrapJS}"></th:block>
     <script th:src="@{/js/jjam.js}"></script>
 </body>
 </html>

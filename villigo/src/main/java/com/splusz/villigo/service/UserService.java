@@ -29,6 +29,7 @@ import com.splusz.villigo.repository.UserJjamRepository;
 import com.splusz.villigo.repository.UserRepository;
 
 import jakarta.transaction.Transactional;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -44,7 +45,7 @@ public class UserService implements UserDetailsService {
 	private final UserJjamRepository userJjamRepo;
 	
 	// 프로필 사진이 저장될 경로
-	private static final String UPLOAD_DIR = "C:\\images\\avatar";
+	private static final String UPLOAD_DIR = "/home/ubuntu/images/avatar";
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
@@ -57,12 +58,34 @@ public class UserService implements UserDetailsService {
             throw new UsernameNotFoundException(username + "과(와) 일치하는 사용자 정보가 없습니다.");
         }
     }
+    
+    // 중복체크 시 "-" 제거 후 비교
+    public Boolean checkPhone(String phone) {
+        log.info("checkPhone(phone={})", phone);
+        String normalizedPhone = phone.replaceAll("-", "");
+        Optional<User> entity = userRepo.findByPhone(normalizedPhone);
+        return entity.isPresent();
+    }
 
     // 회원가입 서비스
-    public User create(UserSignUpDto dto) {
+    @Transactional
+    public User create(@Valid UserSignUpDto dto) {
         log.info("create(dto={})", dto);
-        
-        Theme theme = themeRepo.findById(dto.getThemeId()).orElseThrow();
+        dto.validatePasswordMatch();
+
+        // 중복 체크
+        if (checkUsername(dto.getUsername())) {
+            throw new IllegalArgumentException("이미 사용 중인 아이디입니다.");
+        }
+        if (checkNickname(dto.getNickname())) {
+            throw new IllegalArgumentException("이미 사용 중인 닉네임입니다.");
+        }
+        if (checkEmail(dto.getEmail())) {
+            throw new IllegalArgumentException("이미 사용 중인 이메일입니다.");
+        }
+
+        Theme theme = themeRepo.findById(dto.getThemeId())
+            .orElseThrow(() -> new IllegalArgumentException("테마를 찾을 수 없습니다."));
         User entity = dto.toEntity(passwordEncoder, theme).addRole(UserRole.USER);
         entity = userRepo.save(entity);
 

@@ -68,7 +68,7 @@ public class ChatImageController {
         try {
             // URL 디코딩
             String decodedFilename = URLDecoder.decode(filename, StandardCharsets.UTF_8);
-            Path filePath = Paths.get(uploadDir).resolve(decodedFilename).normalize();
+            Path filePath = Paths.get(uploadDir, "chat").resolve(decodedFilename).normalize();
             Resource resource = new UrlResource(filePath.toUri());
 
             // 파일 존재 여부 확인

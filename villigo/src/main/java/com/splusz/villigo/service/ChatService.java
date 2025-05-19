@@ -323,64 +323,61 @@ public class ChatService {
     }
 
 
-    @Transactional(readOnly = true)
-    public List<ChatRoomDto> getUserChatRooms(Long userId) {
-        List<ChatRoom> chatRooms = chatRoomParticipantRepo.findActiveChatRoomsByUserId(userId);
-        chatRooms = chatRooms.stream()
-                .filter(chatRoom -> "ACTIVE".equals(chatRoom.getStatus()))
-                .collect(Collectors.toList());
-        return chatRooms.stream().map(chatRoom -> {
-            List<ChatMessage> messages = chatMessageRepo.findByChatRoom_IdOrderByCreatedTimeDesc(chatRoom.getId());
-            ChatMessage lastMessageEntity = messages.isEmpty() ? null : messages.get(0);
-            chatRoom.setLastMessage(lastMessageEntity != null ? lastMessageEntity.getContent() : null);
-            chatRoom.setLastMessageTime(lastMessageEntity != null ? lastMessageEntity.getCreatedTime() : null);
+	@Transactional(readOnly = true)
+	public List<ChatRoomDto> getUserChatRooms(Long userId) {
+	    List<ChatRoom> chatRooms = chatRoomParticipantRepo.findActiveChatRoomsByUserId(userId);
+	    return chatRooms.stream().map(chatRoom -> {
+	        List<ChatMessage> messages = chatMessageRepo.findByChatRoom_IdOrderByCreatedTimeDesc(chatRoom.getId());
+	        ChatMessage lastMessageEntity = messages.isEmpty() ? null : messages.get(0);
+	        chatRoom.setLastMessage(lastMessageEntity != null ? lastMessageEntity.getContent() : null);
+	        chatRoom.setLastMessageTime(lastMessageEntity != null ? lastMessageEntity.getCreatedTime() : null);
 
-            chatRoom.setUnreadCount(chatMessageRepo.countUnreadMessages(chatRoom.getId(), userId));
+	        chatRoom.setUnreadCount(chatMessageRepo.countUnreadMessages(chatRoom.getId(), userId));
 
-            Long otherUserId = chatRoom.getParticipantsAsUsers().stream()
-                .map(User::getId)
-                .filter(id -> !id.equals(userId))
-                .findFirst()
-                .orElse(null);
+	        Long otherUserId = chatRoom.getParticipantsAsUsers().stream()
+	            .map(User::getId)
+	            .filter(id -> !id.equals(userId))
+	            .findFirst()
+	            .orElse(null);
 
-            String otherUserNickName = "알 수 없는 사용자";
-            String otherUserAvatar = null;
-            boolean otherUserIsOnline = false;
-            if (otherUserId != null) {
-                User otherUser = userRepo.findById(otherUserId).orElse(null);
-                if (otherUser != null) {
-                    String nickname = otherUser.getNickname();
-                    String username = otherUser.getUsername();
-                    if (nickname != null && !nickname.trim().isEmpty()) {
-                        otherUserNickName = nickname;
-                    } else if (username != null && !username.trim().isEmpty()) {
-                        otherUserNickName = username;
-                        log.info("사용자 ID {}의 nickname이 비어 있어 username을 사용합니다: {}", otherUserId, username);
-                    } else {
-                        log.warn("사용자 ID {}의 nickname과 username이 모두 비어 있습니다. 기본 이름으로 설정합니다.", otherUserId);
-                        otherUserNickName = "사용자_" + otherUserId;
-                    }
-                    otherUserAvatar = otherUser.getAvatar();
-                    otherUserIsOnline = WebSocketEventListener.isUserOnline(otherUserId);
-                } else {
-                    log.error("사용자 ID {}를 찾을 수 없습니다. 데이터베이스 상태를 확인하세요.", otherUserId);
-                }
-            }
+	        String otherUserNickName = "알 수 없는 사용자";
+	        String otherUserAvatar = null;
+	        boolean otherUserIsOnline = false;
+	        if (otherUserId != null) {
+	            User otherUser = userRepo.findById(otherUserId).orElse(null);
+	            if (otherUser != null) {
+	                String nickname = otherUser.getNickname();
+	                String username = otherUser.getUsername();
+	                if (nickname != null && !nickname.trim().isEmpty()) {
+	                    otherUserNickName = nickname;
+	                } else if (username != null && !username.trim().isEmpty()) {
+	                    otherUserNickName = username;
+	                    log.info("사용자 ID {}의 nickname이 비어 있어 username을 사용합니다: {}", otherUserId, username);
+	                } else {
+	                    log.warn("사용자 ID {}의 nickname과 username이 모두 비어 있습니다. 기본 이름으로 설정합니다.", otherUserId);
+	                    otherUserNickName = "사용자_" + otherUserId;
+	                }
+	                otherUserAvatar = otherUser.getAvatar();
+	                otherUserIsOnline = WebSocketEventListener.isUserOnline(otherUserId);
+	            } else {
+	                log.error("사용자 ID {}를 찾을 수 없습니다. 데이터베이스 상태를 확인하세요.", otherUserId);
+	            }
+	        }
 
-            return ChatRoomDto.builder()
-                .id(chatRoom.getId())
-                .name(chatRoom.getName())
-                .status(chatRoom.getStatus())
-                .lastMessage(chatRoom.getLastMessage())
-                .lastMessageTime(chatRoom.getLastMessageTime())
-                .unreadCount(chatRoom.getUnreadCount())
-                .otherUserId(otherUserId)
-                .otherUserNickName(otherUserNickName)
-                .otherUserAvatar(otherUserAvatar)
-                .otherUserIsOnline(otherUserIsOnline)
-                .build();
-        }).collect(Collectors.toList());
-    }
+	        return ChatRoomDto.builder()
+	            .id(chatRoom.getId())
+	            .name(chatRoom.getName())
+	            .status(chatRoom.getStatus())
+	            .lastMessage(chatRoom.getLastMessage())
+	            .lastMessageTime(chatRoom.getLastMessageTime())
+	            .unreadCount(chatRoom.getUnreadCount())
+	            .otherUserId(otherUserId)
+	            .otherUserNickName(otherUserNickName)
+	            .otherUserAvatar(otherUserAvatar)
+	            .otherUserIsOnline(otherUserIsOnline)
+	            .build();
+	    }).collect(Collectors.toList());
+	}
 
     @Transactional(readOnly = true)
     public List<ChatMessageDto> getChatMessages(Long chatRoomId, Long currentUserId) {
@@ -760,8 +757,8 @@ public class ChatService {
             .orElseThrow(() -> new IllegalArgumentException("참가자 정보를 찾을 수 없습니다."));
         
         participant.markAsLeft();
-        chatRoomParticipantRepo.save(participant);
-        log.info("사용자 {}가 채팅방 {}에서 나감 처리됨", userId, roomId);
+        chatRoomParticipantRepo.markParticipantAsLeft(roomId, userId, participant.getLeftAt());
+        log.info("사용자 {}가 채팅방 {}에서 나감 처리됨, leftAt: {}", userId, roomId, participant.getLeftAt());
 
         ChatRoom chatRoom = chatRoomRepo.findByIdWithParticipants(roomId)
             .orElseThrow(() -> new IllegalArgumentException("채팅방을 찾을 수 없습니다: " + roomId));
@@ -778,17 +775,17 @@ public class ChatService {
             isDeleted = true;
         } else {
             log.info("채팅방 {}에 아직 {}명의 참가자가 남아 있습니다. 채팅방 유지", roomId, activeCount);
-            // WebSocket으로 상대방과 본인에게 채팅방 목록 갱신 알림 전송
-            Long otherUserId = getReceiverId(chatRoom, userId);
-            messagingTemplate.convertAndSend(
-            	    "/topic/chatrooms." + otherUserId,
-            	    Map.of("chatRoomId", roomId, "action", "leave")
-            	);
-            	messagingTemplate.convertAndSend(
-            	    "/topic/chatrooms." + userId,
-            	    Map.of("chatRoomId", roomId, "action", "leave")
-            	);
         }
+
+        Long otherUserId = getReceiverId(chatRoom, userId);
+        messagingTemplate.convertAndSend(
+            "/topic/chatrooms." + otherUserId,
+            Map.of("chatRoomId", roomId, "action", "leave", "userId", userId, "isDeleted", isDeleted)
+        );
+        messagingTemplate.convertAndSend(
+            "/topic/chatrooms." + userId,
+            Map.of("chatRoomId", roomId, "action", "leave", "userId", userId, "isDeleted", isDeleted)
+        );
 
         return isDeleted;
     }

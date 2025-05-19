@@ -1,17 +1,17 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
-    <head th:replace="~{/layout/fragments :: htmlHead('빌리고｜로그인','/css/signin.css')}">
+    <head th:replace="layout/fragments :: htmlHead('빌리고｜로그인','/css/signin.css')">
     <link rel="stylesheet" th:href="@{/css/global.css}">
     </head>
 
     <body>
     <header>
-        <th:block th:replace="~{/layout/fragments :: commonLayout}"></th:block>
+        <th:block th:replace="layout/fragments :: commonLayout"></th:block>
     </header>
 
     <div class="container-global">
         <div class="signin-form-container">
-            <form method="post">
+            <form method="post" th:action="@{/member/signin}">
                 <div id="divUsername" class="input-group">
                     <label for="username">아이디</label>
                     <input type="text" id="username" name="username" placeholder="아이디 입력" required>
@@ -41,7 +41,7 @@
         </div>
     </div>
 
-    <th:block th:replace="~{/layout/fragments :: bootstrapJS}"></th:block>
+    <th:block th:replace="layout/fragments :: bootstrapJS"></th:block>
     <script th:src="@{/js/signin.js}"></script>
     
     </body>

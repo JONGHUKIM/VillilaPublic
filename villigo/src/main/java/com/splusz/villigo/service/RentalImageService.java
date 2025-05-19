@@ -30,7 +30,7 @@ public class RentalImageService {
 
     private final RentalImageRepository rentalImgRepo;
     private final ProductRepository prodRepo;
-    private final String rentalImagePath = "C:\\images\\rentals";
+    private final String rentalImagePath = "/home/ubuntu/images/rentals";
 
     public Integer create(Long productId, RentalImageCreateDto dto) throws IOException {
         for(MultipartFile image : dto.getImages())
@@ -40,7 +40,7 @@ public class RentalImageService {
                     continue;
                 }
                 
-                if (image.getSize() > 10 * 1024 * 1024) {
+                if (image.getSize() > 20 * 1024 * 1024) {
                     throw new IllegalArgumentException("파일 용량이 너무 큽니다.");
                 }
                 // 저장업로드 시간 숫자형식으로만 이미지에 파일명 추가용임!

@@ -130,8 +130,10 @@
 }
 
 .brand-item {
-  flex: 0 0 100px;
-  text-align: center;
+    flex: 0 0 100px;
+    text-align: center;
+    cursor: pointer; /* 마우스 커서를 손 모양으로 변경 */
+    transition: transform 0.2s ease; /* 호버 시 확대 효과를 위한 전환 */
 }
 
 .brand-item:focus {
@@ -139,14 +141,24 @@
 }
 
 .brand-item img {
-  width: 120px;
-  height: 100px;
-  object-fit: contain;
-  display: block;
-  margin: 0 auto 6px;
-  background-color: #f8f9fc;
-  border-radius: 50%;
-  padding: 5px;
+    width: 80px; /* 이미지 크기 조정 */
+    height: 80px;
+    object-fit: contain;
+    display: block;
+    margin: 0 auto 8px; /* 텍스트와의 간격 조정 */
+    background-color: #f8f9fc;
+    border-radius: 50%;
+    padding: 5px;
+}
+
+.brand-item div {
+    font-size: 14px;
+    font-weight: 500;
+    color: #333;
+}
+
+.brand-item:hover {
+    transform: scale(1.1); /* 호버 시 확대 효과 */
 }
 
 /* 프로모션 슬라이드 */

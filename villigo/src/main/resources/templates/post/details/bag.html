@@ -1,55 +1,57 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
-<head th:replace="~{/layout/fragments :: htmlHead('빌리고｜상세페이지','/css/post-details.css')}">
+<head th:replace="~{layout/fragments :: htmlHead('빌리고｜상세페이지','/css/post-details.css')}">
 </head>
 <body>
 
     <!-- 공통 헤더 & 푸터 포함 -->
-    <th:block th:replace="~{/layout/fragments :: commonLayout}"></th:block>
+    <th:block th:replace="~{layout/fragments :: commonLayout}"></th:block>
 
     <!-- 메인 컨텐츠 (가방 상세) -->
     <main class="container-global">
     <div class="container">
-        <div class="image-slider">
-        
-            <button class="prev-btn" onclick="changeSlide(-1)">&#10094;</button>
-            <div class="image-container">
-                <th:block th:each="image : ${rentalImages}" >
-                    <img th:src="@{'/images/rentals/' + ${image.filePath}}" alt="상품이미지" class="slide-image">
-                </th:block>
-            </div>
-            <button class="next-btn" onclick="changeSlide(1)">&#10095;</button>
-            <div class="dots">
-                <span class="dot active" onclick="currentSlide(1)"></span>
-                <th:block th:if="${rentalImages.size() > 1}">
-                    <th:block th:each="number : ${#numbers.sequence(2, rentalImages.size())}">
-                        <span class="dot" th:attr="onclick='currentSlide(' + ${number} + ')'"></span>
-                    </th:block>
-                </th:block>
-            </div>
-                <div class="user-info-container">
-                    <div class="user-info">
-                        <div class="user-details">
-                            <p class="username">
-                                <a th:href="@{/member/details(userId=${user.id})}">
-                                    <strong th:text="${user.nickname}">닉네임</strong>
-                                </a>
-                            </p>
-                            <p class="user-location" th:text="${user.region}">활동지역</p>
-                        </div>
-						<a th:href="@{/member/details(userId=${user.id})}">
-						    <th:block th:if="${user.avatar != null}">
-						        <img id="profileImage"
-						             th:src="@{/member/images/{avatar}(avatar=${user.avatar})}"
-						             alt="프로필 이미지" />
-						    </th:block>
-						    <th:block th:unless="${user.avatar != null}">
-						        <span id="profileImage" class="emoji-frog">🐸</span>
-						    </th:block>
-						</a>
-                    </div>
-                </div>
-                </div>
+			<!-- ✅ 이미지 슬라이드 (user-info 제거됨) -->
+			<div class="image-slider">
+			    <button class="prev-btn" onclick="changeSlide(-1)">&#10094;</button>
+			    <div class="image-container">
+			        <th:block th:each="image : ${rentalImages}" >
+			            <img th:src="@{'/images/rentals/' + ${image.filePath}}" alt="상품이미지" class="slide-image">
+			        </th:block>
+			    </div>
+			    <button class="next-btn" onclick="changeSlide(1)">&#10095;</button>
+			</div>
+				<div class="dots">
+			        <span class="dot active" onclick="currentSlide(1)"></span>
+			        <th:block th:if="${rentalImages.size() > 1}">
+			            <th:block th:each="number : ${#numbers.sequence(2, rentalImages.size())}">
+			                <span class="dot" th:attr="onclick='currentSlide(' + ${number} + ')'"></span>
+			            </th:block>
+			        </th:block>
+			    </div>
+			
+			<!-- ✅ user-info는 바깥으로 분리 -->
+			<div class="user-info-container">
+			    <div class="user-info">
+			        <div class="user-details">
+			            <p class="username">
+			                <a th:href="@{/member/details(userId=${user.id})}">
+			                    <strong th:text="${user.nickname}">닉네임</strong>
+			                </a>
+			            </p>
+			            <p class="user-location" th:text="${user.region}">활동지역</p>
+			        </div>
+			        <a th:href="@{/member/details(userId=${user.id})}">
+			            <th:block th:if="${user.avatar != null}">
+			                <img id="profileImage"
+			                     th:src="@{/member/images/{avatar}(avatar=${user.avatar})}"
+			                     alt="프로필 이미지" />
+			            </th:block>
+			            <th:block th:unless="${user.avatar != null}">
+			                <span id="profileImage" class="emoji-frog">🐸</span>
+			            </th:block>
+			        </a>
+			    </div>
+			</div>
 
             <!-- 가방 정보 -->
             <div class="section">
@@ -67,7 +69,7 @@
             <div class="section">
                 <div class="section-title">요금</div>
                 <div class="temp-box">
-                    <p><strong th:text="${product.fee} + 'JJAM'"></strong>/ 분</p>
+                    <p><strong th:text="${#numbers.formatInteger(T(java.lang.Math).round(product.fee * 1.05), 0, 'COMMA')} + '원'"></strong>/ 분</p>
                 </div>
             </div>
 
@@ -98,17 +100,30 @@
 
             <!--  일반 유저 모드 (하트 + 예약 버튼) -->
             <div class="bottom-buttons" th:unless="${#authentication.name eq user.username}">
-                <button class="heart-btn" th:onclick="'toggleHeart(' + ${product.id} + ')'">🤍</button>
+                <button class="heart-btn" 
+		        th:attr="data-product-id=${product.id}"
+		        th:onclick="'toggleHeart(' + ${product.id} + ')'">🤍</button>
                 <button class="reserve-btn" onclick="openReservationPopup()">예약 신청</button>
             </div>
         </div>
     </main>
+    
+	<div id="imageModal" class="image-modal">
+		<span class="close">&times;</span>
+		<div class="image-modal-content">
+			<button class="modal-prev">&#10094;</button>
+			<img id="modalImg" src="">
+			<button class="modal-next">&#10095;</button>
+		</div>
+	</div>
 
-    <!-- 다음 지도 -->
-    <script type="text/javascript" src="//dapi.kakao.com/v2/maps/sdk.js?appkey=46b5efd1c8351c2b80a3ee8916942201"></script>
-    <!-- 공통 JS -->
-    <th:block th:replace="~{/layout/fragments :: bootstrapJS}"></th:block>
-    <script th:src="@{/js/post-details.js}"></script>
+	<!-- 먼저 카카오 맵 API 로드 -->
+	<script src="https://dapi.kakao.com/v2/maps/sdk.js?appkey=cf94a4eafbce0c713bd14afa38fa62da&libraries=services&autoload=false"></script>
+
+	<!-- 그 다음 post-details.js 로드 -->
+	<script th:src="@{/js/post-details.js}"></script>
+	<!-- 공통 JS -->
+	<th:block th:replace="~{layout/fragments :: bootstrapJS}"></th:block>
 
 </body>
 </html>

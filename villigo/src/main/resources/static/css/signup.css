@@ -1,6 +1,6 @@
 /* 회원가입 폼이 화면 중앙에 오도록 조정 */
 .signup-form-container {
-    margin: 50px auto 0; /* 상단 여백 120px, 좌우 자동(중앙 정렬), 하단 여백 0 */
+    margin: 50px auto 0;
     background-color: #2a2a2a;
     padding: 25px;
     border-radius: 10px;
@@ -9,7 +9,6 @@
     box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
 }
 
-/* 전역 선택자 대신 특정 클래스 내부의 요소에만 적용 */
 .signup-form-container .input-group {
     margin-bottom: 15px;
     text-align: left;
@@ -33,13 +32,14 @@
 
 .signup-form-container .password-wrapper {
     display: flex;
-    align-items: center; /* 세로 중앙 정렬 */
+    align-items: center;
     position: relative;
     width: 100%;
 }
+
 .signup-form-container .password-wrapper input {
-    width: 100%; /* 다른 입력 칸과 동일하게 너비 조정 */
-    padding-right: 40px; /* 아이콘과 겹치지 않도록 우측 패딩 추가 */
+    width: 100%;
+    padding-right: 40px;
 }
 
 .signup-form-container .toggle-password {
@@ -59,10 +59,9 @@
     padding: 10px;
     border-radius: 5px !important;
     cursor: pointer;
-    width: 60%; /* 🚀 필요에 따라 너비 조정 */
-    margin-left: auto !important; /* 🚀 오른쪽 정렬 */
+    width: 60%;
+    margin-left: auto !important;
     text-align: left;
-    
 }
 
 .signup-form-container .arrow {
@@ -78,22 +77,21 @@
     margin-top: 5px;
     border-radius: 5px;
     z-index: 10;
-    max-height: 200px; /* 🚀 최대 높이 설정 */
-    overflow-y: auto; /* 🚀 목록이 넘치면 스크롤 추가 */
+    max-height: 200px;
+    overflow-y: auto;
 }
 
 .signup-form-container .dropdown .option {
     padding: 10px;
     cursor: pointer;
-    color: white !important; /* 글씨 색상을 흰색으로 변경 */
-    background-color: #444; /* 기본 배경 색상 */
+    color: white !important;
+    background-color: #444;
 }
 
 .signup-form-container .dropdown .option:hover {
     background-color: #555;
 }
 
-/* 버튼 스타일 */
 .signup-form-container button {
     width: 100%;
     padding: 12px;
@@ -103,14 +101,22 @@
     border: none;
     border-radius: 5px;
     cursor: pointer;
-    margin:10px auto 10px;
+    margin: 10px auto 10px;
 }
 
 .signup-form-container button:hover {
     background-color: #f1f1f1;
 }
-.signup-form-container .select-box span {
-    color: white !important; 
+
+.signup-form-container .select-box span,
 .signup-form-container .select-box .arrow {
-    color: white !important; 
-}}
+    color: white !important;
+}
+
+/* 오류 메시지 스타일링 */
+.text-danger {
+    color: #ff4d4d;
+    font-size: 0.9em;
+    margin-top: 5px;
+    display: block;
+}

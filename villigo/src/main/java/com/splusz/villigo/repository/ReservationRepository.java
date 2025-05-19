@@ -17,4 +17,6 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
 	List<Reservation> findByProductRentalCategoryId(Long id);
 	
 	Page<Reservation> findByProductUserId(Long id, Pageable pageable);
+	
+	List<Reservation> findByProductIdAndStatusNotIn(Long productId, List<Integer> statuses);
 }

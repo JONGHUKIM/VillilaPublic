@@ -68,13 +68,20 @@ body{
 /* 알림 개수 배지 */
 .badge {
   position: absolute;
-  top: 3px;
+  top: 15px;
   right: -5px;
   font-size: 0.75rem;
   padding: 4px 6px;
   border-radius: 50%;
   display: inline-block;
 }
+
+.badge:hover, .badge:focus {
+	color: #bbb;
+	text-decoration: none;
+	cursor: pointer;
+}
+
 #blck{
     color: black !important;
     }

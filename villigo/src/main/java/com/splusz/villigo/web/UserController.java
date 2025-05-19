@@ -15,6 +15,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -37,6 +38,7 @@ import com.splusz.villigo.service.ReviewService;
 import com.splusz.villigo.service.ThemeService;
 import com.splusz.villigo.service.UserService;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -61,42 +63,66 @@ public class UserController {
             return "redirect:/home";
         }
         
-        return "/member/signin";
+        return "member/signin";
     }
     
     @GetMapping("/signup")
-    public void signUp(Model model) {
- 	   log.info("GET signUp()");
- 	   
- 	   List<Theme> themes = themeService.read();
- 	   model.addAttribute("themes", themes);
+    public String signUp(Model model) { // void -> String으로 변경
+        log.info("GET signUp()");
+        List<Theme> themes = themeService.read();
+        model.addAttribute("themes", themes);
+        model.addAttribute("userSignUpDto", new UserSignUpDto()); // DTO 객체 추가
+        return "member/signup"; // 템플릿 경로 반환
     }
     
     @PostMapping("/signup")
-    public String signUp(UserSignUpDto dto) {
-    	log.info("POST signUp(dto={})", dto);
+    public String signUp(@Valid UserSignUpDto dto, BindingResult bindingResult, Model model) {
+        log.info("POST signUp(dto={})", dto);
 
-    	User user = userService.create(dto);
-    	log.info("회원가입 성공: {}", user);
-    	
-    	return "redirect: /member/signin";
+        if (bindingResult.hasErrors()) {
+            log.warn("유효성 검사 오류: {}", bindingResult.getAllErrors());
+            List<Theme> themes = themeService.read();
+            model.addAttribute("themes", themes);
+            model.addAttribute("errors", bindingResult.getAllErrors());
+            model.addAttribute("userSignUpDto", dto); // 오류 발생 시 DTO 유지
+            return "member/signup";
+        }
+
+        try {
+            User user = userService.create(dto);
+            log.info("회원가입 성공: {}", user);
+            return "redirect:/member/signin";
+        } catch (IllegalArgumentException e) {
+            log.warn("회원가입 실패: {}", e.getMessage());
+            model.addAttribute("error", e.getMessage());
+            List<Theme> themes = themeService.read();
+            model.addAttribute("themes", themes);
+            model.addAttribute("userSignUpDto", dto); // 오류 발생 시 DTO 유지
+            return "member/signup";
+        }
+    }
+    
+    @GetMapping("/checkphone")
+    public ResponseEntity<Boolean> checkPhone(@RequestParam(name = "phone") String phone) {
+        log.info("checkPhone(phone={})", phone);
+        return ResponseEntity.ok(userService.checkPhone(phone));
     }
     
     @GetMapping("/signup-social")
-    public void signUpSocial(Model model) {
+    public String signUpSocial(Model model) {
         log.info("GET signUpSocial()");
-
         List<Theme> themes = themeService.read(); 
         model.addAttribute("themes", themes);
+        return "member/signup-social"; // 명시적으로 반환
     }
     
     
     @PostMapping("/signup-social")
     public String signUpSocial(Authentication authentication, SocialUserSignUpDto dto) {
-    	log.info("POST signUpSocial(dto={})", dto);
+    	log.info("POST signUpSocial(dto={})", dto); 
     	String realname = null;
     	String email = null;
-    	log.info("authentication: ", authentication);
+    	log.info("authentication: {}", authentication);
     	if (authentication.getPrincipal() instanceof CustomOAuth2User) {
     		CustomOAuth2User oauth2user = (CustomOAuth2User) authentication.getPrincipal();
     		// 구글에서 받은 인증정보에서 이름과 이메일 데이터를 가져옴.
@@ -152,7 +178,7 @@ public class UserController {
             log.error("Error fetching user profile for modify: {}", e.getMessage(), e);
             return "redirect:/member/signin";
         }
-        return "/member/modify";
+        return "member/modify";
     }
 
     @PostMapping("/modify")
@@ -191,7 +217,7 @@ public class UserController {
             return "redirect:/member/signin";
         }
 
-        return "/mypage";
+        return "mypage";
     }
     
     @GetMapping("/details")
@@ -249,7 +275,7 @@ public class UserController {
         log.info("GET /member/images/{}", image);
         try {
             // 이미지 파일 경로 (예: /uploads/ 디렉토리에 저장됨)
-            Path filePath = Paths.get("C:/images/avatar/").resolve(image).normalize();
+            Path filePath = Paths.get("/home/ubuntu/images/avatar").resolve(image).normalize();
             Resource resource = new UrlResource(filePath.toUri());
 
             if (resource.exists() && resource.isReadable()) {

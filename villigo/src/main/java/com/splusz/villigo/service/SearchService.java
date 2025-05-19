@@ -32,47 +32,46 @@ public class SearchService {
     private final ProductService prodServ;
 
     public Page<SearchedProductDto> searchProduct(Map<String, List<String>> filters) {
-        
         log.info("searchProduct(filters={})", filters);
+
         List<SearchedProductDto> searchedProducts = new ArrayList<>();
-        List<ProductImageMergeDto> ImageMergeProducts = new ArrayList<>();
+        List<ProductImageMergeDto> imageMergedProducts = new ArrayList<>();
+
         List<String> locations = filters.remove("location");
         List<String> page = filters.remove("page");
-        Integer pageNum = (page.getFirst() == null)? 0 : Integer.parseInt(page.getFirst());
+        Integer pageNum = (page == null || page.isEmpty() || page.get(0) == null)
+            ? 0 : Integer.parseInt(page.get(0));
+
         log.info("pageNum={}", pageNum);
 
         List<Product> products = prodRepo.searchedProduct(filters);
         List<Long> productIds = products.stream()
-            .map(product -> product.getId())
+            .map(Product::getId)
             .collect(Collectors.toList());
-        
+
         List<Address> addresses = addrRepo.findAllByProduct_IdIn(productIds);
 
-        if(locations != null) {
+        if (locations != null) {
             List<Long> filteredProductIdByLocation = addresses.stream()
                 .filter(address -> locations.contains(address.getSido()))
-                .map(address -> address.getId())
+                .map(address -> address.getProduct().getId()) // 여기 중요! getId() → getProduct().getId()
                 .collect(Collectors.toList());
-        
-            List<Product> fileterdProductsByLocation = products.stream()
+
+            List<Product> filteredProductsByLocation = products.stream()
                 .filter(product -> filteredProductIdByLocation.contains(product.getId()))
                 .collect(Collectors.toList());
 
-            ImageMergeProducts = prodServ.addRandomImageInProduct(fileterdProductsByLocation);
-            log.info("products={}", ImageMergeProducts);
-
+            // ✅ 여기서 랜덤 → 첫 이미지 고정으로 변경
+            imageMergedProducts = prodServ.addFirstImageInProduct(filteredProductsByLocation);
         } else {
-
-            ImageMergeProducts = prodServ.addRandomImageInProduct(products);
-            log.info("products={}", ImageMergeProducts);
+            imageMergedProducts = prodServ.addFirstImageInProduct(products);
         }
 
-        searchedProducts = prodServ.addAddressInProduct(ImageMergeProducts);
+        searchedProducts = prodServ.addAddressInProduct(imageMergedProducts);
 
         Pageable pageable = PageRequest.of(pageNum, 6);
-        Page<SearchedProductDto> searchedProductsPaging = prodServ.listToPage(searchedProducts, pageable);
-        
-        return searchedProductsPaging;
+        return prodServ.listToPage(searchedProducts, pageable);
     }
+
 
 }

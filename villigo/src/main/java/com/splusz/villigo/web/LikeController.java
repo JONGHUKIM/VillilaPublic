@@ -65,4 +65,25 @@ public class LikeController {
         }
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("unliked failed");
     }
+    
+    @GetMapping("/check")
+    public ResponseEntity<Boolean> checkLike(@RequestParam(name = "id") Long productId) {
+        log.info("checkLike(productId={})", productId);
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        if (authentication != null && authentication.isAuthenticated()) {
+            Object principal = authentication.getPrincipal();
+
+            if (principal instanceof User) {
+                User user = (User) principal;
+                Long userId = user.getId();
+
+                boolean liked = likeServ.isLiked(userId, productId);
+                return ResponseEntity.ok(liked);
+            }
+        }
+
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(false);
+    }
+
 }

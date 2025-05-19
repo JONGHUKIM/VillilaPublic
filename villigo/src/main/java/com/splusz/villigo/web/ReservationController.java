@@ -164,12 +164,19 @@ public class ReservationController {
     
     // 예약 삭제
     @DeleteMapping("/delete/{reservationId}")
-    public ResponseEntity<Long> deleteReservation(@PathVariable(name = "reservationId") Long reservationId) {
-    	log.info("deleteReservation(id={})", reservationId);
-    	
-    	reserveService.changeStatusTodelete(reservationId);
-    	
-    	return ResponseEntity.ok(reservationId);
+    public ResponseEntity<Long> deleteReservation(@PathVariable(name = "reservationId") Long reservationId, @CurrentUser User user) {
+        log.info("deleteReservation(id={}, user={})", reservationId, user);
+        
+        Reservation reservation = reserveService.read(reservationId);
+        if (reservation.getRenter().getId().equals(user.getId())) {
+            // 예약자가 자신의 예약을 삭제하는 경우: 하드 삭제
+            reserveService.delete(reservationId);
+        } else {
+            // 상품 소유자가 예약을 삭제하는 경우: 소프트 삭제 (status를 5로 설정)
+            reserveService.changeStatusTodelete(reservationId);
+        }
+        
+        return ResponseEntity.ok(reservationId);
     }
     
     // 마이 페이지 - 예약현황: 현재 로그인한 사용자에게 들어온 예약들을 PagedModel로 리턴

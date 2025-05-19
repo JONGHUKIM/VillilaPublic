@@ -2,6 +2,8 @@ package com.splusz.villigo.config;
 
 import java.util.List;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
@@ -14,6 +16,7 @@ import org.springframework.security.web.context.SecurityContextPersistenceFilter
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.web.filter.ForwardedHeaderFilter;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -25,6 +28,10 @@ import lombok.extern.slf4j.Slf4j;
 @EnableMethodSecurity
 //-> 각각의 컨트롤러 메서드에서 인증(로그인), 권한 설정을 하기 위해서 
 public class SecurityConfig {
+	
+	@Autowired
+	private HttpsEnforcedRedirectStrategy redirectStrategy;
+
 	
 	// Spring Security 5 버전부터 비밀번호는 반드시 암호화(encoding)를 해야만 함 
 	// 만약 비밀번호를 암호화하지 않으면 HTTP 403(access denied, 접근 거부) 또는
@@ -61,12 +68,26 @@ public class SecurityConfig {
 		
 		// CORS 설정
 		http.cors(cors -> cors.configurationSource(corsConfigurationSource()));
+		
+	    // iframe 허용 설정
+	    http.headers(headers -> headers
+	        .frameOptions(frameOptions -> frameOptions.sameOrigin())
+	    );
 
 		// 커스텀 로그인 HTML 페이지를 사용
 		http.formLogin((login) -> login
 				.loginPage("/member/signin")
+				.loginProcessingUrl("/member/signin")
 				.defaultSuccessUrl("/home", true)
+				.permitAll()
 		);
+		
+	    http.exceptionHandling(exception -> 
+        exception.authenticationEntryPoint((request, response, authException) -> {
+            // redirectStrategy 사용
+            redirectStrategy.sendRedirect(request, response, "/member/signin");
+        })
+    );
 		
 		// 구글 로그인 인증 설정
 		http
@@ -99,7 +120,11 @@ public class SecurityConfig {
 	@Bean
 	CorsConfigurationSource corsConfigurationSource() {
 	    CorsConfiguration config = new CorsConfiguration();
-	    config.setAllowedOrigins(List.of("http://localhost:3000", "http://localhost:8080"));
+	    config.setAllowedOrigins(List.of(
+	    	    "http://localhost:3000",
+	    	    "http://localhost:8080",
+	    	    "https://villila.store"
+	    	));
 	    config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
 	    config.setAllowedHeaders(List.of("Authorization", "Content-Type", "x-requested-with"));
 	    config.setExposedHeaders(List.of("Authorization"));
@@ -109,6 +134,14 @@ public class SecurityConfig {
 	    UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
 	    source.registerCorsConfiguration("/**", config);
 	    return source;
+	}
+	
+	@Bean
+	public FilterRegistrationBean<ForwardedHeaderFilter> forwardedHeaderFilter() {
+	    FilterRegistrationBean<ForwardedHeaderFilter> filter = new FilterRegistrationBean<>();
+	    filter.setFilter(new ForwardedHeaderFilter());
+	    filter.setOrder(0); // 우선순위 높게
+	    return filter;
 	}
 	
 }

@@ -1,11 +1,11 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
-<head th:replace="~{/layout/fragments :: htmlHead('빌리고｜상품 수정','/css/post-create.css')}">
+<head th:replace="~{layout/fragments :: htmlHead('빌리고｜상품 수정','/css/post-create.css')}">
 </head>
 <body>
 
     <!-- 공통 헤더 & 푸터 포함 -->
-    <th:block th:replace="~{/layout/fragments :: commonLayout}"></th:block>
+    <th:block th:replace="~{layout/fragments :: commonLayout}"></th:block>
 
     <!-- 메인 컨텐츠 (상품 수정 폼) -->
     <main class="container-global">
@@ -88,11 +88,12 @@
     </main>
 
     <!-- 다음 api -->
+    <script type="text/javascript" src="//dapi.kakao.com/v2/maps/sdk.js?appkey=cf94a4eafbce0c713bd14afa38fa62da"></script>
     <script src="//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
-    <script type="text/javascript" src="//dapi.kakao.com/v2/maps/sdk.js?appkey=46b5efd1c8351c2b80a3ee8916942201"></script>
+    
 
     <!-- 공통 JS -->
-    <th:block th:replace="~{/layout/fragments :: bootstrapJS}"></th:block>
+    <th:block th:replace="~{layout/fragments :: bootstrapJS}"></th:block>
 
     <script th:src="@{/js/post-modify.js}"></script>
 

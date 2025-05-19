@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
-<head th:replace="~{/layout/fragments :: htmlHead('빌리고｜정보 수정','/css/membermodify.css')}"></head>
+<head th:replace="~{layout/fragments :: htmlHead('빌리고｜정보 수정','/css/membermodify.css')}"></head>
 <body>
-<th:block th:replace="~{/layout/fragments :: commonLayout}"></th:block>
+<th:block th:replace="~{layout/fragments :: commonLayout}"></th:block>
 
 <div class="container-global">
   <div class="signup-form-container">
@@ -81,7 +81,7 @@
 </div>
 
 <!-- 공통 JS -->
-<th:block th:replace="~{/layout/fragments :: bootstrapJS}"></th:block>
+<th:block th:replace="~{layout/fragments :: bootstrapJS}"></th:block>
 <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 <script th:src="@{/js/member-modify.js}"></script>
 

@@ -1,19 +1,19 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
-<head th:replace="~{/layout/fragments :: htmlHead('빌리고｜마이페이지','/css/mypage.css')}">
+<head th:replace="~{layout/fragments :: htmlHead('빌리고｜마이페이지','/css/mypage.css')}">
 </head>
 <body th:data-user-id="${#authentication.principal.id}">
-    <th:block th:replace="~{/layout/fragments :: commonLayout}"></th:block>
+    <th:block th:replace="~{layout/fragments :: commonLayout}"></th:block>
     <main class="container-global">
         <div class="profile-container">
             <div class="profile-left">
-				<div class="profile-img">
-					<th:block th:if="${#authentication.principal.avatar != null}">
-		               <img id="profileImage" th:src="@{|/images/avatar/${#strings.replace(#authentication.principal.avatar, '^/', '')}|}" />
-		            </th:block>
-		            <th:block th:unless="${#authentication.principal.avatar != null}">
-		                <span id="profileImage" class="emoji-frog">🐸</span>
-		            </th:block>
+                <div class="profile-img">
+                    <th:block th:if="${#authentication.principal.avatar != null}">
+                       <img id="profileImage" th:src="@{|/images/avatar/${#strings.replace(#authentication.principal.avatar, '^/', '')}|}" />
+                    </th:block>
+                    <th:block th:unless="${#authentication.principal.avatar != null}">
+                        <span id="profileImage" class="emoji-frog">🐸</span>
+                    </th:block>
                 </div>
                 <div class="profile-info">
                     <div class="nickname" id="nickname"></div>
@@ -70,7 +70,7 @@
                 <div th:if="${#lists.isEmpty(myReservations)}">
                     <p>예약이 없습니다.</p>
                 </div>
-                <div class="reservation-card" th:each="reservation : ${myReservations}">
+                <div class="reservation-card" th:each="reservation : ${myReservations}" th:data-reservation-id="${reservation.reservationId}">
                     <div class="res-img">
                         <a th:href="@{|/post/details/${reservation.rentalCategoryId == 1 ? 'bag' : 'car'}?id=${reservation.productId}|}">
                             <img th:src="@{|/images/rentals/${reservation.imagePath != null ? reservation.imagePath : 'default.jpg'}|}" alt="상품 이미지" />
@@ -99,6 +99,14 @@
 
                         <input type="hidden" class="reservation-status" th:value="${reservation.status} ?: 0" />
 
+                        <!-- status가 5일 때 삭제 버튼 추가 -->
+                        <div th:if="${reservation.status == 5}">
+                            <!-- data-reservation-id만 설정하고 이벤트는 JavaScript에서 처리 -->
+                            <button class="delete-btn" th:data-reservation-id="${reservation.reservationId}">
+                                삭제
+                            </button>
+                        </div>
+
                         <div class="res-buttons deal-buttons" th:style="${reservation.status == 2} ? 'display: flex' : 'display: none'">
                             <button class="btn-chat" th:data-id="${reservation.reservationId}" th:data-room-id="${reservation.chatRoomId != null ? reservation.chatRoomId : ''}">채팅</button>
                             <button class="btn-complete" onclick="openCompletePopup(this)">거래완료</button>
@@ -117,30 +125,26 @@
             <div class="moreview-btn-div" id="divMoreViewLike"></div>
         </div>
 
-     <div class="tab-content">
-        <!-- 매너 점수바 -->
-    <h3>나의 매너점수</h3>
-    <div id="mannerScoreContainer">
-        <div id="mannerScoreBar" class="manner-score-bar">
-            <div class="manner-score-fill"></div>
-            <div class="manner-score-text"></div>
+        <div class="tab-content">
+            <h3>나의 매너점수</h3>
+            <div id="mannerScoreContainer">
+                <div id="mannerScoreBar" class="manner-score-bar">
+                    <div class="manner-score-fill"></div>
+                    <div class="manner-score-text"></div>
+                </div>
+            </div>
+
+            <h3 id="review">후기 목록</h3>
+            <div id="reviewList">
+                <!-- 후기 내용이 동적으로 삽입됩니다. -->
+            </div>
         </div>
-    </div>
-
-    <!-- 후기 목록 -->
-    <h3 id="review">후기 목록</h3>
-    <div id="reviewList">
-    
-        <!-- 후기 내용이 동적으로 삽입됩니다. -->
-    </div>
-</div>
-
-
     </main>
-    <th:block th:replace="~{/layout/fragments :: bootstrapJS}"></th:block>
+    <th:block th:replace="~{layout/fragments :: bootstrapJS}"></th:block>
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <script th:src="@{/js/mypage.js}"></script>
     <script th:src="@{/js/my-product.js}"></script>
     <script th:src="@{/js/mypage-reservationReqList.js}"></script>
+    <script th:src="@{/js/mypage-myReservationsList.js}"></script>
 </body>
 </html>

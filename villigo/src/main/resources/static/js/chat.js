@@ -231,7 +231,7 @@ document.addEventListener("DOMContentLoaded", function () {
 	        .then(res => {
 	            if (!res.ok) {
 	                if (res.status === 413) {
-	                    throw new Error("파일 크기가 너무 큽니다. 최대 10MB까지 업로드 가능합니다.");
+	                    throw new Error("파일 크기가 너무 큽니다. 최대 50MB까지 업로드 가능합니다.");
 	                }
 	                throw new Error(`이미지 업로드 실패: ${res.statusText}`);
 	            }
@@ -446,56 +446,92 @@ document.addEventListener("DOMContentLoaded", function () {
 	        return;
 	    }
 
-	    stompClient.subscribe(`/topic/chatrooms.${senderId}`, function (message) {
-	        const payload = JSON.parse(message.body);
-	        console.log("채팅방 업데이트 메시지 수신:", payload);
+		stompClient.subscribe(`/topic/chatrooms.${senderId}`, function (message) {
+		    const payload = JSON.parse(message.body);
+		    console.log("채팅방 업데이트 메시지 수신 - senderId:", senderId, "payload:", payload);
 
-	        if (payload.action === "create" && payload.chatRoomId) {
-	            fetch(`/api/chat/rooms/${payload.chatRoomId}?currentUserId=${senderId}`)
-	                .then(response => response.json())
-	                .then(chatRoom => {
-	                    if (!chatRoomsCache.find(room => room.id === chatRoom.id)) {
-							if (!chatRoomsCache.find(room => room.id === chatRoom.id)) {
-							    addChatRoomIfNotExists(chatRoom);
-							}
-	                        if (urlChatRoomId === chatRoom.id) {
-	                            const chatItem = document.querySelector(`.chat-item[data-id='${chatRoom.id}']`);
-	                            if (chatItem) openChatRoom(chatItem);
-	                        }
-							filterAndUpdateChatList();
-	                    }
-	                })
-	                .catch(error => console.error("채팅방 정보 가져오기 실패:", error));
-	        } else if (payload.action === "leave" && payload.chatRoomId) {
-	            chatRoomsCache = chatRoomsCache.filter(room => room.id !== payload.chatRoomId);
-	            updateChatList(chatRoomsCache);
-				filterAndUpdateChatList();
-	            if (activeChatRoomId === payload.chatRoomId) {
-	                activeChatRoomId = null;
-	                chatRoomId = null;
-	                chatMain.setAttribute("data-chatroom-id", "");
-	                document.getElementById("chatUserName").innerText = "";
-	                messagesCache = [];
-	                previewMessages.clear();
-	                renderMessages();
-	                window.history.pushState({}, '', '/chat');
-	            }
-	        }else if (payload.action === "update" && payload.chatRoomId) {
-			            // 채팅방 정보 업데이트 (예: unreadCount 갱신)
-			            fetch(`/api/chat/rooms/${payload.chatRoomId}?currentUserId=${senderId}`)
-			                .then(response => response.json())
-			                .then(updatedChatRoom => {
-			                    const index = chatRoomsCache.findIndex(room => room.id === updatedChatRoom.id);
-			                    if (index !== -1) {
-			                        chatRoomsCache[index] = updatedChatRoom; // 캐시 업데이트
-			                    } else {
-			                        chatRoomsCache.push(updatedChatRoom);
-			                    }
-			                    filterAndUpdateChatList(); // UI 갱신
-			                })
-			                .catch(error => console.error("채팅방 업데이트 실패:", error));
-			        }
-	    });
+		    if (payload.action === "create" && payload.chatRoomId) {
+		        fetch(`/api/chat/rooms/${payload.chatRoomId}?currentUserId=${senderId}`)
+		            .then(response => response.json())
+		            .then(chatRoom => {
+		                if (!chatRoomsCache.find(room => room.id === chatRoom.id)) {
+		                    addChatRoomIfNotExists(chatRoom);
+		                }
+		                if (urlChatRoomId === chatRoom.id) {
+		                    const chatItem = document.querySelector(`.chat-item[data-id='${chatRoom.id}']`);
+		                    if (chatItem) openChatRoom(chatItem);
+		                }
+		                filterAndUpdateChatList();
+		            })
+		            .catch(error => console.error("채팅방 정보 가져오기 실패:", error));
+		    } 				else if (payload.action === "leave" && payload.chatRoomId) {
+				    console.log("🔔 leave 이벤트 처리 - chatRoomId:", payload.chatRoomId, "userId:", payload.userId, "isDeleted:", payload.isDeleted);
+				    if (payload.isDeleted) {
+				        console.log("🗑️ 채팅방이 삭제된 경우, 캐시에서 즉시 제거");
+				        chatRoomsCache = chatRoomsCache.filter(room => room.id !== payload.chatRoomId);
+				        filterAndUpdateChatList();
+				        if (activeChatRoomId === payload.chatRoomId) {
+				            activeChatRoomId = null;
+				            chatRoomId = null;
+				            chatMain.setAttribute("data-chatroom-id", "");
+				            document.getElementById("chatUserName").innerText = "";
+				            messagesCache = [];
+				            previewMessages.clear();
+				            renderMessages();
+				            window.history.pushState({}, '', '/chat');
+				        }
+				    } else if (payload.userId === senderId) {
+				        console.log("🗑️ 본인(A)이 나간 경우, 캐시에서 즉시 제거");
+				        chatRoomsCache = chatRoomsCache.filter(room => room.id !== payload.chatRoomId);
+				        filterAndUpdateChatList();
+				        if (activeChatRoomId === payload.chatRoomId) {
+				            activeChatRoomId = null;
+				            chatRoomId = null;
+				            chatMain.setAttribute("data-chatroom-id", "");
+				            document.getElementById("chatUserName").innerText = "";
+				            messagesCache = [];
+				            previewMessages.clear();
+				            renderMessages();
+				            window.history.pushState({}, '', '/chat');
+				        }
+				    } else {
+				        console.log("상대방(B)이 나간 경우, 서버에서 최신 정보 가져오기");
+				        fetch(`/api/chat/rooms/${payload.chatRoomId}?currentUserId=${senderId}`)
+				            .then(response => {
+				                if (!response.ok) {
+				                    console.warn(`채팅방 ${payload.chatRoomId} 조회 실패: ${response.status}`);
+				                    return null;
+				                }
+				                return response.json();
+				            })
+				            .then(updatedChatRoom => {
+				                if (updatedChatRoom) {
+				                    const index = chatRoomsCache.findIndex(room => room.id === updatedChatRoom.id);
+				                    if (index !== -1) {
+				                        chatRoomsCache[index] = updatedChatRoom;
+				                    } else {
+				                        chatRoomsCache.push(updatedChatRoom);
+				                    }
+				                    filterAndUpdateChatList();
+				                }
+				            })
+				            .catch(error => console.error("채팅방 업데이트 실패:", error));
+				    }	
+		    } else if (payload.action === "update" && payload.chatRoomId) {
+		        fetch(`/api/chat/rooms/${payload.chatRoomId}?currentUserId=${senderId}`)
+		            .then(response => response.json())
+		            .then(updatedChatRoom => {
+		                const index = chatRoomsCache.findIndex(room => room.id === updatedChatRoom.id);
+		                if (index !== -1) {
+		                    chatRoomsCache[index] = updatedChatRoom;
+		                } else {
+		                    chatRoomsCache.push(updatedChatRoom);
+		                }
+		                filterAndUpdateChatList();
+		            })
+		            .catch(error => console.error("채팅방 업데이트 실패:", error));
+		    }
+		});
 	}
 
     function unsubscribeAll() {
@@ -969,15 +1005,17 @@ document.addEventListener("DOMContentLoaded", function () {
 	                displayName = otherUserName.replace(regex, '<span class="highlight">$1</span>');
 	            }
 
-                let avatarContent;
-                if (!chat.otherUserAvatar || chat.otherUserAvatar.trim() === "") {
-                    console.log(`채팅방 ID: ${chat.id}의 otherUserAvatar가 비어 있습니다. 기본 이모지 표시.`);
-                    avatarContent = `<div class="chat-avatar emoji">🐸</div>`;
-                } else {
-                    const avatarPath = `/images/avatar/${chat.otherUserAvatar}`;
-                    console.log(`이미지 경로: ${avatarPath}`); // 디버깅 로그 추가
-                    avatarContent = `<img src="${avatarPath}" class="chat-avatar" alt="상대방 이미지" onerror="console.error('이미지 로드 실패: ${avatarPath}'); this.outerHTML='<div class=\\'chat-avatar emoji\\'>🐸</div>'">`;
-                }
+				let avatarContent;
+				if (!chat.otherUserAvatar || chat.otherUserAvatar.trim() === "") {
+				    avatarContent = `<div class="chat-avatar emoji profile-link" data-user-id="${chat.otherUserId}">🐸</div>`;
+				} else {
+				    const avatarPath = `/images/avatar/${chat.otherUserAvatar}`;
+				    avatarContent = `
+				        <img src="${avatarPath}" class="chat-avatar profile-link" data-user-id="${chat.otherUserId}" alt="상대방 이미지"
+				             onerror="this.outerHTML='<div class=\\'chat-avatar emoji profile-link\\' data-user-id=\\'${chat.otherUserId}\\'>🐸</div>'">
+				    `;
+				}
+
 
 	            chatItem.innerHTML = `
 	                <input type="checkbox" class="chat-select-checkbox">
@@ -1203,10 +1241,10 @@ document.addEventListener("DOMContentLoaded", function () {
         let files = Array.from(event.target.files);
         if (files.length === 0) return;
 
-        const MAX_FILE_SIZE = 100 * 1024 * 1024;
+        const MAX_FILE_SIZE = 20 * 1024 * 1024;
         let oversizedFiles = files.filter(file => file.size > MAX_FILE_SIZE);
         if (oversizedFiles.length > 0) {
-            alert(`다음 파일이 100MB를 초과하여 업로드할 수 없습니다: ${oversizedFiles.map(file => file.name).join(", ")}`);
+            alert(`다음 파일이 50MB를 초과하여 업로드할 수 없습니다: ${oversizedFiles.map(file => file.name).join(", ")}`);
             files = files.filter(file => file.size <= MAX_FILE_SIZE);
         }
 
@@ -1223,7 +1261,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
             quality -= 0.2;
             if (quality <= 0) {
-                alert(`다음 파일은 리사이징 후에도 10MB를 초과하여 업로드할 수 없습니다: ${oversizedFiles.map(file => file.name).join(", ")}`);
+                alert(`다음 파일은 리사이징 후에도 50MB를 초과하여 업로드할 수 없습니다: ${oversizedFiles.map(file => file.name).join(", ")}`);
                 resizedFiles = resizedFiles.filter(file => file.size <= MAX_FILE_SIZE);
                 break;
             }
@@ -1334,7 +1372,7 @@ document.addEventListener("DOMContentLoaded", function () {
 	        .then(response => {
 	            if (!response.ok) {
 	                if (response.status === 413) {
-	                    throw new Error("파일 크기가 너무 큽니다. 최대 10MB까지 업로드 가능합니다.");
+	                    throw new Error("파일 크기가 너무 큽니다. 최대 50MB까지 업로드 가능합니다.");
 	                }
 	                throw new Error(`파일 업로드 실패: ${response.statusText}`);
 	            }
@@ -1528,23 +1566,21 @@ document.addEventListener("DOMContentLoaded", function () {
 
 	            const data = await response.json();
 	            console.log(`채팅방 ${chatRoomIdToLeave} 나가기 완료, 삭제 여부: ${data.isDeleted}`);
+				
+				// A가 나간 경우, A의 캐시에서 즉시 제거
+				chatRoomsCache = chatRoomsCache.filter(room => room.id !== chatRoomIdToLeave);
 
 	            // 현재 열린 채팅방이면 UI 초기화
-	            if (chatRoomId === chatRoomIdToLeave) {
-	                chatRoomId = null;
-	                activeChatRoomId = null;
-	                chatMain.setAttribute("data-chatroom-id", "");
-	                document.getElementById("chatUserName").innerText = "";
-	                chatMessages.innerHTML = "";
-	                messagesCache = [];
-	                typingIndicator.style.display = "none";
-	                unsubscribeAll();
-	            }
-
-	            // 캐시와 UI 업데이트는 마지막에 한 번만 수행할 수 있도록
-	            if (data.isDeleted) {
-	                chatRoomsCache = chatRoomsCache.filter(room => room.id !== chatRoomIdToLeave);
-	            }
+				if (chatRoomId === chatRoomIdToLeave) {
+				    chatRoomId = null;
+				    activeChatRoomId = null;
+				    chatMain.setAttribute("data-chatroom-id", "");
+				    document.getElementById("chatUserName").innerText = "";
+				    chatMessages.innerHTML = "";
+				    messagesCache = [];
+				    typingIndicator.style.display = "none";
+				    unsubscribeAll();
+				}
 
 	        } catch (err) {
 	            console.error(`채팅방 ${chatRoomIdToLeave} 나가기 중 오류:`, err);
@@ -1554,6 +1590,22 @@ document.addEventListener("DOMContentLoaded", function () {
 
 	    // 모든 삭제 완료 후 UI 갱신
 	    filterAndUpdateChatList();
+	});
+	
+	document.addEventListener("click", function (e) {
+	    const target = e.target;
+	    if (target.classList.contains("profile-link")) {
+	        const userId = target.dataset.userId;
+	        if (userId) {
+	            const popupWidth = 600;
+	            const popupHeight = 700;
+	            const left = (screen.width / 2) - (popupWidth / 2);
+	            const top = (screen.height / 2) - (popupHeight / 2);
+
+	            window.open(`/member/details?userId=${userId}`, '상세프로필',
+	                `width=${popupWidth},height=${popupHeight},left=${left},top=${top},resizable=yes`);
+	        }
+	    }
 	});
 
 });

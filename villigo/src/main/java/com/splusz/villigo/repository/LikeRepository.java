@@ -13,4 +13,7 @@ public interface LikeRepository extends JpaRepository<Like, Long> {
     Integer deleteByUser_IdAndProduct_Id(Long userId, Long productId);
 
     List<Like> findByUser_IdOrderByCreatedTime(Long userId);
+    
+    boolean existsByUser_IdAndProduct_Id(Long userId, Long productId);
+
 }

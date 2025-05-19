@@ -2,6 +2,7 @@ package com.splusz.villigo.web;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -131,17 +132,17 @@ public class CarController {
 
     @DeleteMapping("/delete/car")
     public ResponseEntity<String> delete(@RequestParam(name="id") Long productId) {
-    	
-    	List<Reservation> reservations = reservServ.readAll(productId);
-    	log.info("reservations={}", reservations);
-    	if(!reservations.isEmpty()) {
+        List<Integer> excludedStatuses = Arrays.asList(4, 5, 7);
+        List<Reservation> activeReservations = reservServ.readAllExceptStatuses(productId, excludedStatuses);
+        log.info("activeReservations={}", activeReservations);
+        if (!activeReservations.isEmpty()) {
             return ResponseEntity.status(HttpStatus.CONFLICT).body("해당 제품에 있는 예약을 처리 후 삭제가 가능합니다.");
-    	} else {
-            log.info("bag delete(productId={})", productId);
+        } else {
+            log.info("car delete(productId={})", productId);
             rentalImgServ.deleteByProductId(productId);
-            prodServ.deleteById(productId);
-        	return ResponseEntity.ok("삭제 완료");
-    	}
+            prodServ.deleteProduct(productId);
+            return ResponseEntity.ok("삭제 완료");
+        }
     }
     
     @GetMapping("/modify/car")
@@ -159,37 +160,41 @@ public class CarController {
     }
 
     @PostMapping(path = "/update/car", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public String update(@RequestParam(name="id") Long productId, @RequestParam(name="existingImageIds", required = false) List<Long> existingImageIds, 
-        @ModelAttribute CarUpdateDto carDto, @ModelAttribute RentalImageCreateDto imgDto, @ModelAttribute AddressUpdateDto addDto) throws IOException {
+    public String update(@RequestParam(name="id") Long productId, 
+                         @RequestParam(name="existingImageIds", required = false) List<Long> existingImageIds, 
+                         @ModelAttribute CarUpdateDto carDto, 
+                         @ModelAttribute RentalImageCreateDto imgDto, 
+                         @ModelAttribute AddressUpdateDto addDto) throws IOException {
         log.info("car update(productId={})", productId);
         log.info("car update(existingImageIds={})", existingImageIds);
         log.info("car update(carUpdateDto={})", carDto);
         log.info("car update(RentalImageCreateDto={})", imgDto);
         log.info("car update(AddressUpdateDto={})", addDto);
-        
+
         List<Long> safeExistingImageIds = existingImageIds != null ? existingImageIds : new ArrayList<>();
-        
+
+        // 기존 이미지 유지
         List<RentalImage> imagesBeforeUpdate = rentalImgServ.readByProductId(productId);
         List<Long> imageIdsBeforeUpdate = imagesBeforeUpdate.stream()
-        	    .map(RentalImage :: getId)
-        	    .collect(Collectors.toList());
-        
+            .map(RentalImage::getId)
+            .collect(Collectors.toList());
+
+        // 삭제할 이미지 계산
         List<Long> imageIdsForDelete = imageIdsBeforeUpdate.stream()
-                .filter(imageId -> !safeExistingImageIds.contains(imageId))
-                .collect(Collectors.toList());
-        
-        Set<Long> imageIdsBeforeUpdateSet = new HashSet<>(imageIdsBeforeUpdate);
-        Set<Long> imageIdsForDeleteSet = new HashSet<>(imageIdsForDelete);
+            .filter(imageId -> !safeExistingImageIds.contains(imageId))
+            .collect(Collectors.toList());
 
         Product updatedProduct = carServ.update(productId, carDto);
         Address updatedAddress = addServ.update(productId, addDto);
 
-        if(!imageIdsBeforeUpdateSet.equals(imageIdsForDeleteSet) || 
-        		(imageIdsBeforeUpdateSet.equals(imageIdsForDeleteSet) && !imageIdsForDeleteSet.isEmpty())) {
-        	rentalImgServ.deleteBeforeUpdate(imageIdsForDelete);
+        // 삭제할 이미지가 있을 경우에만 삭제
+        if (!imageIdsForDelete.isEmpty()) {
+            rentalImgServ.deleteBeforeUpdate(imageIdsForDelete);
         }
-        if(!imgDto.getImages().isEmpty()) {
-        	rentalImgServ.create(productId, imgDto);
+
+        // 새 이미지가 있으면 추가
+        if (imgDto.getImages() != null && !imgDto.getImages().isEmpty()) {
+            rentalImgServ.create(productId, imgDto);
         }
 
         return "redirect:/post/details/car?id=" + productId;

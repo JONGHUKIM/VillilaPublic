@@ -331,63 +331,63 @@ const itemsPerSlide = 4;
 const sliderStates = {}; // 각 슬라이더 상태 저장
 
 function loadProducts(sectionId, products) {
-  const container = document.getElementById(sectionId);
-  container.innerHTML = '';
-  console.log(container.getAttribute(sectionId));
-  
-  // 전체 상품 그리드인 경우 모든 상품 로드
-  if (sectionId === 'AllProducts') {
-    products.forEach(p => {
-      const card = document.createElement('div');
-      card.className = 'product-card grid-card';
-      card.innerHTML = `<img src="${p.img}" alt="${p.name}"><div class="mt-1"><div class="product-name">${p.name}</div><div class="product-price">${p.price} JJAM</div></div>`;
-      container.appendChild(card);
-    });
-  } 
-  // 슬라이더인 경우 슬라이더 형식으로 로드
-  else {
-    // 슬라이드 페이지 생성
-    const totalSlides = Math.ceil(products.length / itemsPerSlide);
-    
-    for (let i = 0; i < totalSlides; i++) {
-      const slideWrapper = document.createElement('div');
-      slideWrapper.className = 'slide-wrapper';
-      
-      // 각 슬라이드 페이지에 4개의 상품 추가
-      const startIdx = i * itemsPerSlide;
-      const endIdx = Math.min(startIdx + itemsPerSlide, products.length);
-      
-      for (let j = startIdx; j < endIdx; j++) {
-        const p = products[j];
-        console.log(p.filePath, p.postName, p.fee, p.rentalCategoryId);
-        let html = ''
-        const card = document.createElement('div');
-        card.className = 'product-card';
-        switch(p.rentalCategoryId) {
-            case 1:
-                html += `<a href="/post/details/bag?id=${p.id}">`
-                break;
-            case 2:
-                html += `<a href="/post/details/car?id=${p.id}">`
-                break;
-        }
-        html += `
-                <img src="/images/rentals/${p.filePath}" alt="${p.postName}"></a>
-                    <div class="mt-1">
-                    <div class="product-name">${p.postName}</div>
-                    <div class="product-price">${p.fee} JJAM</div>
-            </div>
+    const container = document.getElementById(sectionId);
+    container.innerHTML = '';
+
+    if (sectionId === 'AllProducts') {
+        products.forEach(p => {
+            const card = document.createElement('div');
+            card.className = 'product-card grid-card';
+            const displayFee = Math.round(p.fee * 1.05); // 5% 수수료 추가
+            card.innerHTML = `
+                <img src="${p.img}" alt="${p.name}">
+                <div class="mt-1">
+                    <div class="product-name">${p.name}</div>
+                    <div class="product-price">${displayFee.toLocaleString()} JJAM</div>
+                </div>
             `;
-        card.innerHTML = html;
-        slideWrapper.appendChild(card);
-      }
-      
-      container.appendChild(slideWrapper);
+            container.appendChild(card);
+        });
+    } else {
+        const totalSlides = Math.ceil(products.length / itemsPerSlide);
+
+        for (let i = 0; i < totalSlides; i++) {
+            const slideWrapper = document.createElement('div');
+            slideWrapper.className = 'slide-wrapper';
+
+            const startIdx = i * itemsPerSlide;
+            const endIdx = Math.min(startIdx + itemsPerSlide, products.length);
+
+            for (let j = startIdx; j < endIdx; j++) {
+                const p = products[j];
+                const card = document.createElement('div');
+                card.className = 'product-card';
+                const displayFee = Math.round(p.fee * 1.05); // 5% 수수료 추가
+                let html = '';
+                switch (p.rentalCategoryId) {
+                    case 1:
+                        html += `<a href="/post/details/bag?id=${p.id}">`;
+                        break;
+                    case 2:
+                        html += `<a href="/post/details/car?id=${p.id}">`;
+                        break;
+                }
+                html += `
+                    <img src="/images/rentals/${p.filePath}" alt="${p.postName}"></a>
+                    <div class="mt-1">
+                        <div class="product-name">${p.postName}</div>
+                        <div class="product-price">${displayFee.toLocaleString()} JJAM</div>
+                    </div>
+                `;
+                card.innerHTML = html;
+                slideWrapper.appendChild(card);
+            }
+
+            container.appendChild(slideWrapper);
+        }
+
+        initializeSlider(sectionId);
     }
-    
-    // 슬라이더 상태 초기화
-    initializeSlider(sectionId);
-  }
 }
 
 function initializeSlider(sectionId) {
@@ -474,4 +474,4 @@ window.scrollBrand = scrollBrand;
 window.selectCategory = selectCategory;
 startNoticeSlider();
 window.scrollProducts = scrollProducts;
-window.loadMoreAllProducts = loadMoreAllProducts;
+// window.loadMoreAllProducts = loadMoreAllProducts;

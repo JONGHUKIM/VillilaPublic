@@ -5,22 +5,29 @@ import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
+import com.splusz.villigo.domain.ChatRoom;
 import com.splusz.villigo.domain.Product;
 import com.splusz.villigo.domain.RentalImage;
 import com.splusz.villigo.domain.Reservation;
+import com.splusz.villigo.domain.User;
 import com.splusz.villigo.dto.ReservationCardDto;
+import com.splusz.villigo.repository.ChatRoomReservationRepository;
 import com.splusz.villigo.repository.ProductRepository;
 import com.splusz.villigo.repository.RentalImageRepository;
 import com.splusz.villigo.repository.ReservationRepository;
 
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -31,6 +38,8 @@ public class ReservationService {
 
 	private final ReservationRepository reserveRepo;
 	private final RentalImageRepository rentalimgRepo;
+	private final ChatRoomReservationRepository chatRoomReservationRepo;
+	private final SimpMessagingTemplate messagingTemplate; // 알림용
 	
 	public Reservation read(Long id) {
 		log.info("read(id={})", id);
@@ -74,11 +83,41 @@ public class ReservationService {
 		return entity;
 	}
 	
-	public void delete(Long id) {
-		log.info("delete(id={})");
-		
-		reserveRepo.deleteById(id);
-	}
+	@Transactional
+    public void delete(Long id) {
+        log.info("delete(id={})", id);
+
+        // 1. 예약 존재 여부 확인
+        Optional<Reservation> reservationOpt = reserveRepo.findById(id);
+        if (!reservationOpt.isPresent()) {
+            log.warn("이미 삭제된 예약: id={}", id);
+            return;
+        }
+        Reservation reservation = reservationOpt.get();
+
+        // 2. CHAT_ROOM_RESERVATIONS에서 관련 레코드 삭제
+        chatRoomReservationRepo.deleteByReservationId(id);
+        log.info("예약 ID {}와 연결된 CHAT_ROOM_RESERVATIONS 레코드 삭제 완료", id);
+
+        // 3. 예약 삭제
+        reserveRepo.deleteById(id);
+        log.info("예약 삭제 완료: id={}", id);
+
+        // 4. 관련 사용자들에게 알림 전송
+        List<ChatRoom> chatRooms = chatRoomReservationRepo.findChatRoomsByReservationId(id);
+        for (ChatRoom chatRoom : chatRooms) {
+            List<Long> participantIds = chatRoom.getParticipantsAsUsers()
+                .stream()
+                .map(User::getId)
+                .collect(Collectors.toList());
+            for (Long userId : participantIds) {
+                messagingTemplate.convertAndSend(
+                    "/topic/notifications." + userId,
+                    Map.of("message", "예약이 삭제되었습니다. 채팅방은 유지됩니다.")
+                );
+            }
+        }
+    }
 	
 	public Reservation changeStatusTodelete(Long id) {
 		log.info("changeStatusTodelete(id={})");
@@ -153,6 +192,13 @@ public class ReservationService {
                 .sorted((r1, r2) -> r2.getCreatedTime().compareTo(r1.getCreatedTime())) // 최신순 정렬
                 .findFirst()
                 .orElse(null);
+    }
+    
+    public List<Reservation> readAllExceptStatuses(Long productId, List<Integer> statuses) {
+        log.info("readAllExceptStatuses(productId={}, statuses={})", productId, statuses);
+        List<Reservation> result = reserveRepo.findByProductIdAndStatusNotIn(productId, statuses);
+        result.forEach(System.out::println);
+        return result;
     }
 
 }

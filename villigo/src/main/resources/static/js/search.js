@@ -2,17 +2,19 @@ document.addEventListener('DOMContentLoaded', () => {
     const searchInput = document.getElementById('searchInput');
     const searchBtn = document.getElementById('searchBtn');
     const selectedFiltersContainer = document.getElementById('selectedFilters');
-    const filterButtons = document.querySelectorAll('.category-btn .brand-btn, .color-circle, .location-btn, .price-btn');
+    const filterButtons = document.querySelectorAll('.category-btn, .brand-btn, .color-circle, .location-btn, .price-btn');
     const categoryButtons = document.querySelectorAll('.category-btn');
     const mapButtonSection = document.getElementById('mapButtonSection');
     const priceSearchBtn = document.getElementById('priceSearchBtn');
     const searchResultDiv = document.getElementById('searchResultDiv');
-    const paginationDiv = document.getElementById('paginationDiv');
     const urlParams = new URLSearchParams(window.location.search);
     const brand = urlParams.get('brand');
 
     let selectedFilters = {};
     let latestSearchResults = [];
+    let currentPage = 0; // 현재 페이지 번호
+    let isLoading = false; // 데이터 로드 중 여부 플래그
+    let hasMoreData = true; // 추가 데이터가 있는지 여부
 
     // 유저 닉네임인지 판별하는 함수
     function isUserNickname(query) {
@@ -21,7 +23,7 @@ document.addEventListener('DOMContentLoaded', () => {
         return nicknamePattern.test(query) && !hasFilter;
     }
 
-    //  선택된 필터 표시 업데이트 함수
+    // 선택된 필터 표시 업데이트 함수
     function updateSelectedFilters() {
         selectedFiltersContainer.innerHTML = '';
 
@@ -51,22 +53,32 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                     document.querySelector(`[data-filter="${type}"][data-value="${value}"]`)?.classList.remove('selected');
                     updateSelectedFilters();
-                    performSearch();
+                    resetAndSearch();
                 }
                 
                 checkCategoryButtonsCleared();
             });
         });
-
     }
 
-    // 검색 실행 함수
-    const performSearch = (page) => {
+    // 검색 초기화 및 새로 검색
+    function resetAndSearch() {
+        currentPage = 0;
+        hasMoreData = true;
+        searchResultDiv.innerHTML = ''; // 결과 초기화
+        latestSearchResults = []; // 결과 데이터 초기화
+        performSearch();
+    }
+
+    // 검색 실행 함수 (무한 스크롤용)
+    const performSearch = () => {
+        if (isLoading || !hasMoreData) return; // 로드 중이거나 더 이상 데이터가 없으면 중단
+
+        isLoading = true; // 로드 시작
         const query = searchInput.value.trim();
         const isUserSearch = isUserNickname(query);
         const hasFilter = Object.keys(selectedFilters).length > 0;
 
-        // 검색 실행 구현!
         let selectFilters = document.querySelectorAll('.selected-filter');
 
         const filterMap = Array.from(selectFilters).reduce((result, filter) => {
@@ -76,82 +88,100 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (!result[type]) {
                 result[type] = [];
-              }
-              result[type].push(source);
-              return result;
-            }, {});
+            }
+            result[type].push(source);
+            return result;
+        }, {});
+
         const priceMin = document.getElementById("priceMin").value.trim();
         const priceMax = document.getElementById("priceMax").value.trim();
 
         filterMap.keyword = [searchInput.value.trim()];
-        filterMap.page = [page];
-        console.log(filterMap);
+        filterMap.page = [currentPage];
+        filterMap.size = [6]; // 한 페이지당 6개씩
+        console.log("필터 맵:", filterMap);
 
-        axios.post(`/api/search`, filterMap )
+        axios.post('/api/search', filterMap)
             .then((response) => {
                 console.log("✅ 응답:", response.data);
                 console.log("📦 content:", response.data.content);
                 let html = '';
-                searchResultDiv.innerHTML = html;
-                paginationDiv.innerHTML = html;
-                if(response.data.totalElements === 0) {
-                    html = `<span>검색된 결과가 없습니다!</span>`;
-                    mapButtonSection.classList.add('hidden');
+                if (response.data.totalElements === 0 && currentPage === 0) {
+                    html = '<span>검색된 결과가 없습니다!</span>';
+					if (mapButtonSection) {
+					    mapButtonSection.classList.add('hidden');
+					}
+                    hasMoreData = false;
                 } else {
-                    mapButtonSection.classList.remove('hidden');
+					if (mapButtonSection) {
+					    mapButtonSection.classList.remove('hidden');
+					}
+                    if (response.data.content.length === 0) {
+                        hasMoreData = false; // 더 이상 데이터가 없음
+                        return;
+                    }
                     response.data.content.forEach(product => {
+                        const displayFee = Math.round(product.fee * 1.05); // 5% 수수료 추가
                         html += `
-                            <div class="result-item">`
-                        switch(product.rentalCategoryId) {
+                            <div class="result-item">
+                        `;
+                        switch (product.rentalCategoryId) {
                             case 1:
                                 html += `
-                                <a href="/post/details/bag?id=${product.id}">`
+                                <a href="/post/details/bag?id=${product.id}">
+                                `;
                                 break;
                             case 2:
                                 html += `
-                                <a href="/post/details/car?id=${product.id}">`
+                                <a href="/post/details/car?id=${product.id}">
+                                `;
                                 break;
                         }
                         html += `
                                     <img src="/images/rentals/${product.filePath}" alt="상품 이미지">
-                                </a>`
-                        switch(product.rentalCategoryId) {
+                                </a>
+                        `;
+                        switch (product.rentalCategoryId) {
                             case 1:
                                 html += `
-                                <a class="product-content" href="/post/details/bag?id=${product.id}">`
+                                <a class="product-content" href="/post/details/bag?id=${product.id}">
+                                `;
                                 break;
                             case 2:
                                 html += `
-                                <a class="product-content" href="/post/details/car?id=${product.id}">`
+                                <a class="product-content" href="/post/details/car?id=${product.id}">
+                                `;
                                 break;
                         }
                         html += `
-                                    <p><Strong>${product.postName}</Strong></p>
-                                    <p><Strong>${product.fee} JJAM</Strong></p>
+                                    <p><strong>${product.postName}</strong></p>
+                                    <p><strong>${product.fee} JJAM</strong></p>
                                 </a>
                             </div>
                         `;
                     });
+                    latestSearchResults = latestSearchResults.concat(response.data.content);
                 }
-                searchResultDiv.innerHTML = html;
-                makePagination(response.data);
-                latestSearchResults = response.data.content;
+                searchResultDiv.insertAdjacentHTML('beforeend', html); // 기존 결과에 추가
+                isLoading = false; // 로드 완료
+                currentPage++; // 다음 페이지로 이동
             })
             .catch((error) => {
                 console.error("❌ 요청 실패:", error);
                 if (error.response) {
                     console.log("💥 서버 응답:", error.response.data);
                 }
+                isLoading = false;
             });
     };
 
     // 검색 버튼 / 엔터 키 이벤트
     searchBtn.addEventListener('click', (e) => {
-        performSearch();
+        resetAndSearch();
     });
     searchInput.addEventListener('keypress', (e) => {
         if (e.key === 'Enter') {
-            performSearch();
+            resetAndSearch();
         }
     });
 
@@ -187,7 +217,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         document.querySelectorAll('.price-btn').forEach(b => b.classList.remove('selected'));
         updateSelectedFilters();
-        performSearch();
+        resetAndSearch();
     });
 
     // 필터 버튼 클릭 이벤트
@@ -195,7 +225,7 @@ document.addEventListener('DOMContentLoaded', () => {
         button.addEventListener('click', () => handleFilterButtonClick(button));
     });
     
-    function handleFilterButtonClick (button) {
+    function handleFilterButtonClick(button) {
         const filterType = button.dataset.filter;
         const filterValue = button.dataset.value;
         const filterSource = button.dataset.source;
@@ -216,7 +246,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (isSelected) {
                 // 이미 선택된 버튼을 다시 누르면 해제만 하고 끝
                 updateSelectedFilters();
-                performSearch();
+                resetAndSearch();
                 return;
             }
     
@@ -224,7 +254,7 @@ document.addEventListener('DOMContentLoaded', () => {
             button.classList.add('selected');
             selectedFilters['price'] = [{ value: filterValue, source: filterSource }];
             updateSelectedFilters();
-            performSearch();
+            resetAndSearch();
             return;
         }
 
@@ -241,21 +271,21 @@ document.addEventListener('DOMContentLoaded', () => {
                 selectedFilters[filterType] = [];
                 document.querySelectorAll(`[data-filter="${filterType}"]`).forEach(b => b.classList.remove('selected'));
             }
-            selectedFilters[filterType].push({ value : filterValue, source : filterSource });
+            selectedFilters[filterType].push({ value: filterValue, source: filterSource });
             button.classList.add('selected');
         }
         updateSelectedFilters();
-        performSearch();
+        resetAndSearch();
     }
     
     // 카테고리 버튼 누를시 전체 해제 기능 (라디오 버튼 비슷하게)
-    categoryButtons.forEach( btn => {
+    categoryButtons.forEach(btn => {
         btn.addEventListener('click', function () {
             const isSelected = btn.classList.contains("selected");
             const filterType = this.dataset.filter;  // 필터 타입 가져오기
             const filterValue = this.dataset.value;  // 필터 값 가져오기
             const filterSource = this.dataset.source;  // 소스 값 가져오기
-            console.log(isSelected , filterType , filterValue);
+            console.log(isSelected, filterType, filterValue);
             
             const currentSelected = document.querySelector('.category-btn.selected');
             const isSwitchingCategory = currentSelected && currentSelected !== btn;
@@ -265,7 +295,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 btn.classList.remove("selected");
                 checkCategoryButtonsCleared();
                 updateSelectedFilters();
-                performSearch();
+                resetAndSearch();
                 return;
             }
             
@@ -285,7 +315,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             });
 
-            nonRefresgCatrgoryFilters();
+            nonRefreshCategoryFilters();
 
             console.log("categoryID", filterSource);
             makeBrandColumn(filterSource);
@@ -293,37 +323,32 @@ document.addEventListener('DOMContentLoaded', () => {
             btn.classList.add("selected");
             selectedFilters[filterType] = [{ value: filterValue, source: filterSource }];
             updateSelectedFilters();
-            performSearch();
-            
-
+            resetAndSearch();
         });
     });
     
     // 모든 필터 초기화
     function refreshFilters() {
-
-        document.querySelectorAll(".category-btn").forEach( b => {
+        document.querySelectorAll(".category-btn").forEach(b => {
             b.classList.remove("selected");
         });
-        document.querySelectorAll(".filter-btn").forEach( b => {
+        document.querySelectorAll(".filter-btn").forEach(b => {
             b.classList.remove("selected");
         });
-        document.querySelectorAll("#selectedFilters button").forEach( b => {
-            if(b.dataset.type !== "category") b.click();
+        document.querySelectorAll("#selectedFilters button").forEach(b => {
+            if (b.dataset.type !== "category") b.click();
         });
-
     }
     
-    function nonRefresgCatrgoryFilters() {
-
-        document.querySelectorAll(".filter-btn").forEach( b => {
+    function nonRefreshCategoryFilters() {
+        document.querySelectorAll(".filter-btn").forEach(b => {
             // 카테고리 버튼은 제외
             if (!b.classList.contains("category-btn")) {
                 b.classList.remove("selected");
             }
         });
         document.querySelectorAll("#selectedFilters button").forEach(b => {
-            if(b.dataset.type !== "category") b.click();
+            if (b.dataset.type !== "category") b.click();
         });
     }
 
@@ -333,7 +358,6 @@ document.addEventListener('DOMContentLoaded', () => {
     
         if (!anySelected) {
             console.log("모든 카테고리 버튼이 해제");
-            
             if (!selectedFilters['category']) {
                 makeBrandColumn(99);
             }
@@ -341,47 +365,46 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function makeBrandColumn(categoryId) {
-        axios.post(`/api/brand`, { rentalCategoryId : categoryId }, {
+        axios.post('/api/brand', { rentalCategoryId: categoryId }, {
             headers: { 
-                'Content-Type' : 'application/json' 
+                'Content-Type': 'application/json' 
             }
         })
         .then((response) => {
             const brands = response.data;
             console.log(brands);
             const brandDiv = document.getElementById("brandDiv");
-            let html = ''
+            let html = '';
             brandDiv.innerHTML = html;
             
-            for(let brand of brands) {
+            for (let brand of brands) {
                 html += `
-                    <button class="filter-btn category-btn" data-filter="brand" data-value="${brand.name}" 
+                    <button class="filter-btn brand-btn" data-filter="brand" data-value="${brand.name}" 
                     data-source="${brand.id}">${brand.name}</button>
-                `
+                `;
             }
             brandDiv.innerHTML = html;
             
             document.querySelectorAll('#brandDiv .filter-btn').forEach(btn => {
-                btn.removeEventListener('click', handleFilterButtonClick)
+                btn.removeEventListener('click', handleFilterButtonClick);
                 btn.addEventListener('click', () => handleFilterButtonClick(btn));
             });
         })
-            .catch((error) => console.log(error));
-            
-            const params = new URLSearchParams(window.location.search);
-            const brandId = String(params.get("brandId"));
-            if (brandId) {
-              // data-source 속성이 전달된 brandId와 일치하는 버튼 찾기
-              const targetBtn = document.querySelector(`.category-btn[data-source="${brandId}"]`);
-              console.log(targetBtn)
-              if (targetBtn) {
-                // 버튼 클릭 이벤트 발생
+        .catch((error) => console.log(error));
+        
+        const params = new URLSearchParams(window.location.search);
+        const brandId = String(params.get("brandId"));
+        if (brandId) {
+            const targetBtn = document.querySelector(`.brand-btn[data-source="${brandId}"]`);
+            console.log(targetBtn);
+            if (targetBtn) {
                 targetBtn.click();
-              }
             }
         }
+    }
 
-
+	// 지도 보기 추후 업데이트 예정
+	/*
     let map = null;
     let mapInitialized = false;
     // 초기 지도 생성
@@ -390,30 +413,22 @@ document.addEventListener('DOMContentLoaded', () => {
         mapElement.classList.toggle("open");
         
         if (mapElement.classList.contains("open")) {
-            paginationDiv.style.display = "none";
-        
-
             // 지도가 열린 상태에서만 초기화 및 마커 설정
-            if (mapElement.classList.contains("open")) {
-                if (!mapInitialized) {
-                    const mapContainer = document.getElementById('map-box');
-                    const mapOption = {
-                        center: new kakao.maps.LatLng(37.5, 126.9), // 기본 중심
-                        level: 3
-                    };
-                    map = new kakao.maps.Map(mapContainer, mapOption);
-                    mapInitialized = true;
-                }
+            if (!mapInitialized) {
+                const mapContainer = document.getElementById('map-box');
+                const mapOption = {
+                    center: new kakao.maps.LatLng(37.5, 126.9), // 기본 중심
+                    level: 3
+                };
+                map = new kakao.maps.Map(mapContainer, mapOption);
+                mapInitialized = true;
+            }
     
-                // 지도 크기 갱신 후 마커 표시
-                setTimeout(() => {
-                    map.relayout(); // 지도 크기 재계산
-                    makeMarkerMap(latestSearchResults);
-                }, 500); // DOM 업데이트 후 실행 보장
-            } 
-        }
-        else {
-            paginationDiv.style.display = "block";
+            // 지도 크기 갱신 후 마커 표시
+            setTimeout(() => {
+                map.relayout(); // 지도 크기 재계산
+                makeMarkerMap(latestSearchResults);
+            }, 500); // DOM 업데이트 후 실행 보장
         }
     });
 
@@ -422,11 +437,11 @@ document.addEventListener('DOMContentLoaded', () => {
     function makeMarkerMap(contents) {
         if (!map || !contents || contents.length === 0) return;
 
-        // 기존 마커 제거 (수정 추가)
+        // 기존 마커 제거
         markers.forEach(marker => {
             marker.setMap(null);
         });
-        markers = []; // 마커 배열 초기화 (수정 추가)
+        markers = []; // 마커 배열 초기화
 
         const bounds = new kakao.maps.LatLngBounds();
 
@@ -444,7 +459,7 @@ document.addEventListener('DOMContentLoaded', () => {
             });
             kakao.maps.event.addListener(marker, 'click', function() {
                 let url;
-                switch(item.rentalCategoryId) {
+                switch (item.rentalCategoryId) {
                     case 1:
                         url = baseUrl + `bag?id=${item.id}`;
                         break;
@@ -456,15 +471,14 @@ document.addEventListener('DOMContentLoaded', () => {
             });
             marker.setMap(map);
 
-            markers.push(marker); // 새 마커를 배열에 저장 (수정 추가)
+            markers.push(marker); // 새 마커를 배열에 저장
             bounds.extend(latlng);
         });
 
         map.setBounds(bounds);
     }
-
-
-
+	*/
+	
     if (brand) {
         const tryClickBrand = () => {
             const brandBtn = document.querySelector(`[data-filter="brand"][data-value="${brand}"]`);
@@ -472,7 +486,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 brandBtn.classList.add("selected");
                 selectedFilters["brand"] = [{ value: brand, source: brandBtn.dataset.source }];
                 updateSelectedFilters();
-                performSearch();
+                resetAndSearch();
             } else {
                 setTimeout(tryClickBrand, 200);
             }
@@ -480,57 +494,12 @@ document.addEventListener('DOMContentLoaded', () => {
         tryClickBrand();
     }
 
-
-    function makePagination(data) {
-        console.log("makePagination", data);
-        const basUrl = `/api/search`;
-        const startPage = Math.max(0, data.number - 2);
-        const endPage = Math.min(data.totalPages - 1, data.number + 2);
-        console.log("startPage:", startPage, "endPage:", endPage, "current:", data.number, "totalPages:", data.totalPages);
-        let html = '';
-        paginationDiv.innerHTML = html;
-        html += `
-            <nav aria-label="Page navigation">
-                <ul class="pagination justify-content-center">
-                    <li class="page-item " id="prevBtn" data-page="${data.number - 1}">
-                        <a class="page-link">&lt;</a>
-                    </li>
-        `;
-        for (let i = startPage; i <= endPage; i++) {
-            if (i === data.number) {
-                html += `<li class="page-item active" data-page="${i}"><a class="page-link">${i + 1}</a></li>`;
-            } else {
-                html += `<li class="page-item" data-page="${i}"><a class="page-link">${i + 1}</a></li>`;
-            }
+    // 스크롤 이벤트 감지
+    window.addEventListener('scroll', () => {
+        if ((window.innerHeight + window.scrollY) >= document.body.offsetHeight - 100 && !isLoading) {
+            performSearch();
         }
-        html += `
-                    <li class="page-item" id="nextBtn" data-page="${data.number + 1}">
-                        <a class="page-link">&gt;</a>
-                    </li>
-                </ul>
-            </nav>
-        `;
-
-        paginationDiv.innerHTML = html;
-
-        const prevBtn = document.getElementById("prevBtn");
-        const nextBtn = document.getElementById("nextBtn");
-        if(data.first) {
-            prevBtn.classList.add("disabled");
-        } 
-        if(data.last) {
-            nextBtn.classList.add("disabled");
-        }
-
-        document.querySelectorAll('.page-item').forEach(item => {
-            item.addEventListener('click', () => {
-                if (item.classList.contains('disabled') || item.classList.contains('active')) return;
-                const page = item.dataset.page;
-                console.log("page:", page);
-                performSearch(page); // 👈 이 함수가 페이지 요청 수행
-            });
-        });
-    }
+    });
 
     // 초기화 버튼
     document.getElementById("refresh-btn").addEventListener("click", function () {
@@ -538,10 +507,10 @@ document.addEventListener('DOMContentLoaded', () => {
         refreshFilters();
         selectedFilters = {};
         updateSelectedFilters();
-        performSearch();
+        resetAndSearch();
     });
 
-    
-    performSearch(); // 처음 들어오자마자 한번실행 (초기 리스트 보기)
+    // 초기 검색 실행
+    performSearch();
     makeBrandColumn(99); // 초기 브랜드 그려주기
 });
