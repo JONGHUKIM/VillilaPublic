@@ -184,7 +184,7 @@ const slides = [
   {
     img: "/images/car3.jpg",
     title: "👋🏻 처음 인사 드려요!",
-    subtitle: "빌리고라고 합니다",
+    subtitle: "빌리라입니다",
     link: "/search",
     position: "bottom center"
   }
