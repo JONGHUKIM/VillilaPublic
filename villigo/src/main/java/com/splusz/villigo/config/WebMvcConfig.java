@@ -41,10 +41,6 @@ public class WebMvcConfig implements WebMvcConfigurer {
         // 프로필 이미지
         registry.addResourceHandler("/images/avatar/**")
                 .addResourceLocations("file:/home/ubuntu/images/avatar/");
-
-        // 채팅 이미지
-        registry.addResourceHandler("/images/chat/**")
-                .addResourceLocations("file:/home/ubuntu/images/chat/");
     }
 
 }
