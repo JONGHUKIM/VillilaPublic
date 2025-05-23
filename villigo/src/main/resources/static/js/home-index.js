@@ -273,7 +273,7 @@ toggleBtn.onclick = toggleSlider;
 // 상단 공지
 function startNoticeSlider() {
   const messages = [
-    "빌리고에 오신 걸 환영합니다.",
+    "빌리라에 오신 걸 환영합니다.",
     "봄맞이 JJAM 최대 20% 충전 혜택을 받아보세요!",
 	"슈퍼카와 명품백을 합리적인 가격에 이용해 보세요.",
     "궁금하신 점은 오른쪽 하단 빌리 챗을 이용해 보세요.",
