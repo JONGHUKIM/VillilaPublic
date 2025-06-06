@@ -377,10 +377,10 @@ main {
 }
 
 .category-btn.selected {
-    background-color: #6b59e8;
-    color: white;
-    font-weight: bold;
-    border-radius: 20px;
-    padding: 3px 9px;
+    background-color: #6b59e8 !important;
+    color: white !important;
+    font-weight: bold !important;
+    border-radius: 20px !important;
+    padding: 3px 9px !important;
 }
 
