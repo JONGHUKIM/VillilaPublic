@@ -364,44 +364,33 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    function makeBrandColumn(categoryId) {
-        axios.post('/api/brand', { rentalCategoryId: categoryId }, {
-            headers: { 
-                'Content-Type': 'application/json' 
-            }
-        })
-        .then((response) => {
-            const brands = response.data;
-            console.log(brands);
-            const brandDiv = document.getElementById("brandDiv");
-            let html = '';
-            brandDiv.innerHTML = html;
-            
-            for (let brand of brands) {
-                html += `
-                    <button class="filter-btn brand-btn" data-filter="brand" data-value="${brand.name}" 
-                    data-source="${brand.id}">${brand.name}</button>
-                `;
-            }
-            brandDiv.innerHTML = html;
-            
-            document.querySelectorAll('#brandDiv .filter-btn').forEach(btn => {
-                btn.removeEventListener('click', handleFilterButtonClick);
-                btn.addEventListener('click', () => handleFilterButtonClick(btn));
-            });
-        })
-        .catch((error) => console.log(error));
-        
-        const params = new URLSearchParams(window.location.search);
-        const brandId = String(params.get("brandId"));
-        if (brandId) {
-            const targetBtn = document.querySelector(`.brand-btn[data-source="${brandId}"]`);
-            console.log(targetBtn);
-            if (targetBtn) {
-                targetBtn.click();
-            }
-        }
-    }
+	function makeBrandColumn(categoryId) {
+	    if (categoryId == 99) return; // 초기 진입 시 서버에서 그려준 브랜드 그대로 사용
+
+	    axios.post('/api/brand', { rentalCategoryId: categoryId }, {
+	        headers: { 'Content-Type': 'application/json' }
+	    })
+	    .then((response) => {
+	        const brands = response.data;
+	        const brandDiv = document.getElementById("brandDiv");
+	        let html = '';
+
+	        for (let brand of brands) {
+	            html += `
+	                <button class="filter-btn brand-btn" data-filter="brand" data-value="${brand.name}" 
+	                    data-source="${brand.id}">${brand.name}</button>
+	            `;
+	        }
+	        brandDiv.innerHTML = html;
+
+	        document.querySelectorAll('#brandDiv .filter-btn').forEach(btn => {
+	            btn.removeEventListener('click', handleFilterButtonClick);
+	            btn.addEventListener('click', () => handleFilterButtonClick(btn));
+	        });
+	    })
+	    .catch((error) => console.log(error));
+	}
+
 
 	// 지도 보기 추후 업데이트 예정
 	/*
