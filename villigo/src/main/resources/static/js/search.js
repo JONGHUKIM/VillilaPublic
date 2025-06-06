@@ -155,7 +155,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         }
                         html += `
                                     <p><strong>${product.postName}</strong></p>
-                                    <p><strong>${product.fee} JJAM</strong></p>
+                                    <p><strong>${product.fee} 원</strong></p>
                                 </a>
                             </div>
                         `;
