@@ -11,10 +11,12 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import com.splusz.villigo.domain.Address;
+import com.splusz.villigo.domain.Brand;
 import com.splusz.villigo.domain.Product;
 import com.splusz.villigo.dto.ProductImageMergeDto;
 import com.splusz.villigo.dto.SearchedProductDto;
 import com.splusz.villigo.repository.AddressRepository;
+import com.splusz.villigo.repository.BrandRepository;
 import com.splusz.villigo.repository.ProductRepository;
 import com.splusz.villigo.repository.RentalImageRepository;
 
@@ -30,6 +32,7 @@ public class SearchService {
     private final AddressRepository addrRepo;
     private final RentalImageRepository rentalImgRepo;
     private final ProductService prodServ;
+    private final BrandRepository brandRepo;
 
     public Page<SearchedProductDto> searchProduct(Map<String, List<String>> filters) {
         log.info("searchProduct(filters={})", filters);
@@ -71,6 +74,13 @@ public class SearchService {
 
         Pageable pageable = PageRequest.of(pageNum, 6);
         return prodServ.listToPage(searchedProducts, pageable);
+    }
+    
+    public List<Brand> readBrandsByCategory(Long rentalCategoryId) {
+        if (rentalCategoryId == null || rentalCategoryId == 99) {
+            return brandRepo.findAll(); // 모든 브랜드 반환
+        }
+        return brandRepo.findByRentalCategoryId(rentalCategoryId);
     }
 
 

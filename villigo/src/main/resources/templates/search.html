@@ -43,7 +43,7 @@
                             <td class="filter-label">브랜드</td>
                             <td class="filter-buttons">
 								<div id="brandDiv" th:if="${brands != null}">
-								    <th:block th:each="brand : ${brands}" th:if="${brand.rentalCategory.id} == 99">
+								    <th:block th:each="brand : ${brands}">
 								        <button class="filter-btn brand-btn"
 								                data-filter="brand"
 								                th:data-value="${brand.name}"
