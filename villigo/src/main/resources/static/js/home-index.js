@@ -343,7 +343,7 @@ function loadProducts(sectionId, products) {
                 <img src="${p.img}" alt="${p.name}">
                 <div class="mt-1">
                     <div class="product-name">${p.name}</div>
-                    <div class="product-price">${displayFee.toLocaleString()} JJAM</div>
+                    <div class="product-price">${displayFee.toLocaleString()} 원</div>
                 </div>
             `;
             container.appendChild(card);
@@ -376,7 +376,7 @@ function loadProducts(sectionId, products) {
                     <img src="/images/rentals/${p.filePath}" alt="${p.postName}"></a>
                     <div class="mt-1">
                         <div class="product-name">${p.postName}</div>
-                        <div class="product-price">${displayFee.toLocaleString()} JJAM</div>
+                        <div class="product-price">${displayFee.toLocaleString()} 원</div>
                     </div>
                 `;
                 card.innerHTML = html;
