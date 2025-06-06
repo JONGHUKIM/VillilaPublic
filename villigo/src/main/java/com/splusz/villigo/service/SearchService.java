@@ -52,8 +52,8 @@ public class SearchService {
         List<Address> addresses = addrRepo.findAllByProduct_IdIn(productIds);
 
         if (locations != null) {
-            List<Long> filteredProductIdByLocation = addresses.stream()
-                .filter(address -> locations.contains(address.getSido()))
+        	List<Long> filteredProductIdByLocation = addresses.stream()
+        		.filter(address -> locations.stream().anyMatch(loc -> address.getSido().startsWith(loc)))
                 .map(address -> address.getProduct().getId()) // 여기 중요! getId() → getProduct().getId()
                 .collect(Collectors.toList());
 
