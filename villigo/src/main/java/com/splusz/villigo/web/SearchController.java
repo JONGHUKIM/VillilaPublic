@@ -34,9 +34,11 @@ public class SearchController {
         log.info("search()");
         List<RentalCategory> rentalCategories = prodServ.readRentalCategories();
         List<Color> colors = prodServ.readAllColors();
+        List<Brand> brands = prodServ.readAllBrands();
 
         model.addAttribute("rentalCategories", rentalCategories);
         model.addAttribute("colors", colors);
+        model.addAttribute("brands", brands);
         return "search"; // 뷰 이름
     }
 
@@ -44,5 +46,13 @@ public class SearchController {
     public ResponseEntity<?> searchApi(@RequestBody Map<String, List<String>> filters) {
         log.info("searchApi(filters={})", filters);
         return ResponseEntity.ok(searchServ.searchProduct(filters));
+    }
+    
+    @PostMapping("/api/brand")
+    public ResponseEntity<List<Brand>> getBrandsByCategory(@RequestBody Map<String, Long> request) {
+        Long rentalCategoryId = request.get("rentalCategoryId");
+        log.info("getBrandsByCategory(rentalCategoryId={})", rentalCategoryId);
+        List<Brand> brands = prodServ.readBrandsByCategory(rentalCategoryId);
+        return ResponseEntity.ok(brands);
     }
 }

@@ -184,7 +184,7 @@ const slides = [
   {
     img: "/images/car3.jpg",
     title: "👋🏻 처음 인사 드려요!",
-    subtitle: "빌리고라고 합니다",
+    subtitle: "빌리라입니다",
     link: "/search",
     position: "bottom center"
   }
@@ -273,7 +273,7 @@ toggleBtn.onclick = toggleSlider;
 // 상단 공지
 function startNoticeSlider() {
   const messages = [
-    "빌리고에 오신 걸 환영합니다.",
+    "빌리라에 오신 걸 환영합니다.",
     "봄맞이 JJAM 최대 20% 충전 혜택을 받아보세요!",
 	"슈퍼카와 명품백을 합리적인 가격에 이용해 보세요.",
     "궁금하신 점은 오른쪽 하단 빌리 챗을 이용해 보세요.",
@@ -343,7 +343,7 @@ function loadProducts(sectionId, products) {
                 <img src="${p.img}" alt="${p.name}">
                 <div class="mt-1">
                     <div class="product-name">${p.name}</div>
-                    <div class="product-price">${displayFee.toLocaleString()} JJAM</div>
+                    <div class="product-price">${displayFee.toLocaleString()} 원</div>
                 </div>
             `;
             container.appendChild(card);
@@ -376,7 +376,7 @@ function loadProducts(sectionId, products) {
                     <img src="/images/rentals/${p.filePath}" alt="${p.postName}"></a>
                     <div class="mt-1">
                         <div class="product-name">${p.postName}</div>
-                        <div class="product-price">${displayFee.toLocaleString()} JJAM</div>
+                        <div class="product-price">${displayFee.toLocaleString()} 원</div>
                     </div>
                 `;
                 card.innerHTML = html;

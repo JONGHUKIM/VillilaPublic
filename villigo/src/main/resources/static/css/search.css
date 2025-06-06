@@ -376,3 +376,11 @@ main {
     cursor: not-allowed;
 }
 
+.category-btn.selected {
+    background-color: #6b59e8 !important;
+    color: white !important;
+    font-weight: bold !important;
+    border-radius: 20px !important;
+    padding: 3px 9px !important;
+}
+

@@ -155,7 +155,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         }
                         html += `
                                     <p><strong>${product.postName}</strong></p>
-                                    <p><strong>${product.fee} JJAM</strong></p>
+                                    <p><strong>${product.fee} 원</strong></p>
                                 </a>
                             </div>
                         `;
@@ -279,78 +279,69 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     
     // 카테고리 버튼 누를시 전체 해제 기능 (라디오 버튼 비슷하게)
-    categoryButtons.forEach(btn => {
-        btn.addEventListener('click', function () {
-            const isSelected = btn.classList.contains("selected");
-            const filterType = this.dataset.filter;  // 필터 타입 가져오기
-            const filterValue = this.dataset.value;  // 필터 값 가져오기
-            const filterSource = this.dataset.source;  // 소스 값 가져오기
-            console.log(isSelected, filterType, filterValue);
-            
-            const currentSelected = document.querySelector('.category-btn.selected');
-            const isSwitchingCategory = currentSelected && currentSelected !== btn;
-            
-            if (isSelected) {
-                delete selectedFilters[filterType];
-                btn.classList.remove("selected");
-                checkCategoryButtonsCleared();
-                updateSelectedFilters();
-                resetAndSearch();
-                return;
-            }
-            
-            if (isSwitchingCategory) {
-                // 다른 카테고리 버튼이 선택된 상태에서 새로운 버튼 클릭
-                const oldCategoryValue = currentSelected.dataset.value;
-                const oldCategorySource = currentSelected.dataset.source;
-                console.log(`카테고리 전환: ${oldCategoryValue} -> ${filterValue}`);
-                currentSelected.classList.remove("selected"); // 기존 선택 해제
-                delete selectedFilters[filterType]; // 기존 필터 제거
-            }
-            
-            ['brand', 'color', 'price', 'location'].forEach(filter => {
-                if (selectedFilters[filter]) {
-                    delete selectedFilters[filter];
-                    document.querySelectorAll(`[data-filter="${filter}"]`).forEach(b => b.classList.remove('selected'));
-                }
-            });
+	categoryButtons.forEach(btn => {
+	    btn.addEventListener('click', function () {
+	        const filterType = this.dataset.filter;
+	        const filterValue = this.dataset.value;
+	        const filterSource = this.dataset.source;
+	        const isSelected = this.classList.contains('selected');
 
-            nonRefreshCategoryFilters();
+	        console.log('카테고리 버튼 클릭, filterValue:', filterValue, 'filterSource:', filterSource, 'isSelected:', isSelected);
 
-            console.log("categoryID", filterSource);
-            makeBrandColumn(filterSource);
-            
-            btn.classList.add("selected");
-            selectedFilters[filterType] = [{ value: filterValue, source: filterSource }];
-            updateSelectedFilters();
-            resetAndSearch();
-        });
-    });
+	        // 이미 선택된 버튼을 클릭한 경우 해제
+	        if (isSelected) {
+	            this.classList.remove('selected');
+	            delete selectedFilters[filterType];
+	            updateSelectedFilters();
+	            makeBrandColumn(99); // 모든 브랜드 표시 (CUSTOM 포함)
+	            resetAndSearch();
+	            return;
+	        }
+
+	        // 다른 카테고리 버튼 선택 해제
+	        document.querySelectorAll('.category-btn').forEach(b => {
+	            if (b !== this) b.classList.remove('selected');
+	        });
+	        this.classList.add('selected');
+
+	        // 다른 필터(브랜드, 컬러, 가격, 지역) 초기화
+	        ['brand', 'color', 'price', 'location'].forEach(filter => {
+	            if (selectedFilters[filter]) {
+	                delete selectedFilters[filter];
+	                document.querySelectorAll(`[data-filter="${filter}"]`).forEach(b => b.classList.remove('selected'));
+	            }
+	        });
+
+	        // 선택된 카테고리 필터 업데이트
+	        selectedFilters[filterType] = [{ value: filterValue, source: filterSource }];
+	        updateSelectedFilters();
+	        makeBrandColumn(filterSource);
+	        resetAndSearch();
+	    }, { once: false }); // 이벤트 중복 방지
+	});
     
     // 모든 필터 초기화
-    function refreshFilters() {
-        document.querySelectorAll(".category-btn").forEach(b => {
-            b.classList.remove("selected");
-        });
-        document.querySelectorAll(".filter-btn").forEach(b => {
-            b.classList.remove("selected");
-        });
-        document.querySelectorAll("#selectedFilters button").forEach(b => {
-            if (b.dataset.type !== "category") b.click();
-        });
-    }
+	function refreshFilters() {
+	    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('selected'));
+	    selectedFilters = {};
+	    updateSelectedFilters();
+	    makeBrandColumn(99); // 모든 브랜드 표시
+	    resetAndSearch();
+	}
     
-    function nonRefreshCategoryFilters() {
-        document.querySelectorAll(".filter-btn").forEach(b => {
-            // 카테고리 버튼은 제외
-            if (!b.classList.contains("category-btn")) {
-                b.classList.remove("selected");
-            }
-        });
-        document.querySelectorAll("#selectedFilters button").forEach(b => {
-            if (b.dataset.type !== "category") b.click();
-        });
-    }
+	function nonRefreshCategoryFilters() {
+	    document.querySelectorAll('.filter-btn').forEach(b => {
+	        if (!b.classList.contains('category-btn')) {
+	            b.classList.remove('selected');
+	        }
+	    });
+	    ['brand', 'color', 'price', 'location'].forEach(filter => {
+	        if (selectedFilters[filter]) {
+	            delete selectedFilters[filter];
+	        }
+	    });
+	    updateSelectedFilters();
+	}
 
     function checkCategoryButtonsCleared() {
         const anySelected = Array.from(document.querySelectorAll('.category-btn'))
@@ -364,44 +355,49 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    function makeBrandColumn(categoryId) {
-        axios.post('/api/brand', { rentalCategoryId: categoryId }, {
-            headers: { 
-                'Content-Type': 'application/json' 
-            }
-        })
-        .then((response) => {
-            const brands = response.data;
-            console.log(brands);
-            const brandDiv = document.getElementById("brandDiv");
-            let html = '';
-            brandDiv.innerHTML = html;
-            
-            for (let brand of brands) {
-                html += `
-                    <button class="filter-btn brand-btn" data-filter="brand" data-value="${brand.name}" 
-                    data-source="${brand.id}">${brand.name}</button>
-                `;
-            }
-            brandDiv.innerHTML = html;
-            
-            document.querySelectorAll('#brandDiv .filter-btn').forEach(btn => {
-                btn.removeEventListener('click', handleFilterButtonClick);
-                btn.addEventListener('click', () => handleFilterButtonClick(btn));
-            });
-        })
-        .catch((error) => console.log(error));
-        
-        const params = new URLSearchParams(window.location.search);
-        const brandId = String(params.get("brandId"));
-        if (brandId) {
-            const targetBtn = document.querySelector(`.brand-btn[data-source="${brandId}"]`);
-            console.log(targetBtn);
-            if (targetBtn) {
-                targetBtn.click();
-            }
-        }
-    }
+	function makeBrandColumn(categoryId) {
+	    console.log('makeBrandColumn 호출, categoryId:', categoryId);
+	    axios.post('/api/brand', { rentalCategoryId: categoryId }, {
+	        headers: { 'Content-Type': 'application/json' }
+	    })
+	    .then((response) => {
+	        console.log('브랜드 응답:', response.data);
+	        const brands = response.data;
+	        const brandDiv = document.getElementById('brandDiv');
+	        let html = '';
+
+	        if (brands.length === 0) {
+	            html = '<span>해당 카테고리에 브랜드가 없습니다.</span>';
+	        } else {
+	            for (let brand of brands) {
+	                html += `
+	                    <button class="filter-btn brand-btn" 
+	                            data-filter="brand" 
+	                            data-value="${brand.name}" 
+	                            data-source="${brand.id}">${brand.name}</button>
+	                `;
+	            }
+	        }
+
+	        brandDiv.innerHTML = html;
+
+	        // 새로운 브랜드 버튼에 이벤트 리스너 추가
+	        document.querySelectorAll('#brandDiv .filter-btn').forEach(btn => {
+	            btn.addEventListener('click', () => handleFilterButtonClick(btn));
+	        });
+
+	        // 기존 브랜드 필터 초기화
+	        if (selectedFilters['brand']) {
+	            delete selectedFilters['brand'];
+	            updateSelectedFilters();
+	        }
+	    })
+	    .catch((error) => {
+	        console.error('브랜드 로드 실패:', error);
+	        document.getElementById('brandDiv').innerHTML = '<span>브랜드를 불러오는데 실패했습니다.</span>';
+	    });
+	}
+
 
 	// 지도 보기 추후 업데이트 예정
 	/*
