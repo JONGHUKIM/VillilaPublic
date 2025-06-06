@@ -351,5 +351,20 @@ public class ProductService {
         // 제품 삭제
         prodRepo.deleteById(productId);
     }
+    
+    public List<Brand> readBrandsByCategory(Long rentalCategoryId) {
+        log.info("readBrandsByCategory(rentalCategoryId={})", rentalCategoryId);
+        List<Brand> brands;
+        if (rentalCategoryId == null || rentalCategoryId == 99L) {
+            brands = brandRepo.findAll();
+            log.info("모든 브랜드 반환 (CUSTOM 포함): {}", brands);
+        } else {
+            brands = brandRepo.findByRentalCategoryId(rentalCategoryId).stream()
+                .filter(brand -> !brand.getName().equalsIgnoreCase("CUSTOM"))
+                .collect(Collectors.toList());
+            log.info("카테고리 {} 브랜드 반환 (CUSTOM 제외): {}", rentalCategoryId, brands);
+        }
+        return brands;
+    }
 
 }

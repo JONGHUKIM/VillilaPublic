@@ -1113,7 +1113,7 @@ document.addEventListener("DOMContentLoaded", function () {
 	}
 
     let lastSentTime = 0;
-    const MIN_SEND_INTERVAL = 1000;
+    const MIN_SEND_INTERVAL = 2000;
 
 	function sendMessage() {
 	    const now = Date.now();

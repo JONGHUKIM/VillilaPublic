@@ -42,12 +42,16 @@
                         <tr>
                             <td class="filter-label">브랜드</td>
                             <td class="filter-buttons">
-                                <div id="brandDiv">
-                                    <th:block th:each="brand : ${brands}" th:if="${brand.rentalCategory.id} != 99">
-                                        <button class="filter-btn brand-btn" data-filter="brand" th:data-value="${brand.name}" 
-                                            th:text="${brand.name}" th:data-source="${brand.id}">브랜드 버튼</button>
-                                    </th:block>
-                                </div>
+								<div id="brandDiv" th:if="${brands != null}">
+								    <th:block th:each="brand : ${brands}">
+								        <button class="filter-btn brand-btn"
+								                data-filter="brand"
+								                th:data-value="${brand.name}"
+								                th:data-source="${brand.id}"
+								                th:text="${brand.name}">
+								        </button>
+								    </th:block>
+								</div>
                             </td>
                         </tr>
 
@@ -78,18 +82,18 @@
                         <tr>
                             <td class="filter-label">가격</td>
                             <td class="filter-buttons">
-                                <button class="filter-btn price-btn" data-filter="price" data-value="~20000쨈" data-source="0,20000">2만쨈 이하</button>
-                                <button class="filter-btn price-btn" data-filter="price" data-value="20000쨈~40000쨈" data-source="20000,40000">2만쨈 ~ 4만쨈</button>
-                                <button class="filter-btn price-btn" data-filter="price" data-value="40000쨈~80000쨈" data-source="40000,80000">4만쨈 ~ 8만쨈</button>
-                                <button class="filter-btn price-btn" data-filter="price" data-value="80000쨈~" data-source="80000,10000000">8만쨈 이상</button>
+                                <button class="filter-btn price-btn" data-filter="price" data-value="~20000원" data-source="0,20000">2만원 이하</button>
+                                <button class="filter-btn price-btn" data-filter="price" data-value="20000원~40000원" data-source="20000,40000">2만원 ~ 4만원</button>
+                                <button class="filter-btn price-btn" data-filter="price" data-value="40000원~80000원" data-source="40000,80000">4만원 ~ 8만원</button>
+                                <button class="filter-btn price-btn" data-filter="price" data-value="80000원~" data-source="80000,10000000">8만원 이상</button>
                         
                                 <!-- 직접입력 -->
                                 <span class="unit-label">직접입력</span>
                                 <input type="text" class="price-input" id="priceMin" placeholder="0">
-                                <span class="unit-label">쨈</span>
+                                <span class="unit-label">원</span>
                                 <span class="unit-label">~</span>
                                 <input type="text" class="price-input" id="priceMax" placeholder="100000">
-                                <span class="unit-label">쨈</span>
+                                <span class="unit-label">원</span>
                                 <button id="priceSearchBtn" class="price-search-icon">
                                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"
                                          stroke-linecap="round" stroke-linejoin="round">
@@ -146,6 +150,6 @@
     <th:block th:replace="~{layout/fragments :: bootstrapJS}"></th:block>
     <script th:src="@{/js/search.js}"></script>
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-    <script type="text/javascript" src="//dapi.kakao.com/v2/maps/sdk.js?appkey=cf94a4eafbce0c713bd14afa38fa62da"></script>
+   <!-- <script type="text/javascript" src="//dapi.kakao.com/v2/maps/sdk.js?appkey=cf94a4eafbce0c713bd14afa38fa62da"></script> 추후 지도보기 업데이트 예정 -->
 </body>
 </html>
