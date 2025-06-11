@@ -2,7 +2,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const searchInput = document.getElementById('searchInput');
     const searchBtn = document.getElementById('searchBtn');
     const selectedFiltersContainer = document.getElementById('selectedFilters');
-    const filterButtons = document.querySelectorAll('.category-btn, .brand-btn, .color-circle, .location-btn, .price-btn');
+    const filterButtons = document.querySelectorAll('.brand-btn, .color-circle, .location-btn, .price-btn');
     const categoryButtons = document.querySelectorAll('.category-btn');
     const mapButtonSection = document.getElementById('mapButtonSection');
     const priceSearchBtn = document.getElementById('priceSearchBtn');
@@ -59,11 +59,16 @@ document.addEventListener('DOMContentLoaded', () => {
                 checkCategoryButtonsCleared();
             });
         });
+		
+		updateCategorySelectionUI(); // 카테고리 강조 상태 복구
     }
 
     // 검색 초기화 및 새로 검색
     function resetAndSearch() {
+		console.log('📍 resetAndSearch 실행됨');
+		window.scrollTo(0, 0);
         currentPage = 0;
+		isLoading = false;
         hasMoreData = true;
         searchResultDiv.innerHTML = ''; // 결과 초기화
         latestSearchResults = []; // 결과 데이터 초기화
@@ -76,25 +81,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
         isLoading = true; // 로드 시작
         const query = searchInput.value.trim();
-        const isUserSearch = isUserNickname(query);
-        const hasFilter = Object.keys(selectedFilters).length > 0;
 
-        let selectFilters = document.querySelectorAll('.selected-filter');
-
-        const filterMap = Array.from(selectFilters).reduce((result, filter) => {
-            const button = filter.querySelector('button');
-            const type = button.dataset.type;
-            const source = button.dataset.source;
-
-            if (!result[type]) {
-                result[type] = [];
-            }
-            result[type].push(source);
-            return result;
-        }, {});
-
-        const priceMin = document.getElementById("priceMin").value.trim();
-        const priceMax = document.getElementById("priceMax").value.trim();
+        const filterMap = {}; // 빈 객체로 시작하여 filterMap을 새로 구성합니다.
+		
+		// selectedFilters 객체를 직접 사용하여 filterMap 구성
+		// selectedFilters는 모든 선택된 필터 정보를 담고 있는 JavaScript 객체입니다.
+		for (const type in selectedFilters) {
+		    // selectedFilters의 속성(키)이 자신(own property)의 것인지 확인합니다.
+		    if (selectedFilters.hasOwnProperty(type)) {
+		        // 각 필터 타입(예: 'rentalCategory', 'brand', 'price')에 해당하는 배열의 'source' 값들을 모아 새로운 배열로 만듭니다.
+		        filterMap[type] = selectedFilters[type].map(item => item.source);
+		    }
+		}
 
         filterMap.keyword = [searchInput.value.trim()];
         filterMap.page = [currentPage];
@@ -167,9 +165,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 currentPage++; // 다음 페이지로 이동
             })
             .catch((error) => {
-                console.error("❌ 요청 실패:", error);
+                console.error("요청 실패:", error);
                 if (error.response) {
-                    console.log("💥 서버 응답:", error.response.data);
+                    console.log("서버 응답:", error.response.data);
                 }
                 isLoading = false;
             });
@@ -212,7 +210,7 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('priceMin').value = '';
         document.getElementById('priceMax').value = '';
 
-        const value = `${min}쨈 ~ ${max}쩸`;
+        const value = `${min}원 ~ ${max}원`;
         selectedFilters['price'] = [{ value: value, source: `${min},${max}`}];
 
         document.querySelectorAll('.price-btn').forEach(b => b.classList.remove('selected'));
@@ -354,6 +352,22 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
     }
+	
+	// 현재 선택된 카테고리를 버튼에 다시 반영
+	function updateCategorySelectionUI() {
+	    const categoryFilter = selectedFilters['rentalCategory'];
+	    if (!categoryFilter || categoryFilter.length === 0) return;
+
+	    const selectedValue = categoryFilter[0].value;
+
+	    document.querySelectorAll('.category-btn').forEach(btn => {
+	        if (btn.dataset.value === selectedValue) {
+	            btn.classList.add('selected');
+	        } else {
+	            btn.classList.remove('selected');
+	        }
+	    });
+	}
 
 	function makeBrandColumn(categoryId) {
 	    console.log('makeBrandColumn 호출, categoryId:', categoryId);
@@ -387,10 +401,16 @@ document.addEventListener('DOMContentLoaded', () => {
 	        });
 
 	        // 기존 브랜드 필터 초기화
-	        if (selectedFilters['brand']) {
-	            delete selectedFilters['brand'];
-	            updateSelectedFilters();
-	        }
+			if (selectedFilters['brand']) {
+			    const currentSelectedBrands = selectedFilters['brand'].map(b => b.value);
+			    updateSelectedFilters();
+
+			    document.querySelectorAll('#brandDiv .filter-btn').forEach(btn => {
+			        if (currentSelectedBrands.includes(btn.dataset.value)) {
+			            btn.classList.add('selected');
+			        }
+			    });
+			}
 	    })
 	    .catch((error) => {
 	        console.error('브랜드 로드 실패:', error);
@@ -475,6 +495,19 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 	*/
 	
+	const category = urlParams.get('category');
+
+	if (category) {
+	    // 해당 버튼 찾아서 source값 가져오기
+	    const btn = document.querySelector(`.category-btn[data-value="${category}"]`);
+	    const source = btn ? btn.dataset.source : category;
+
+	    selectedFilters['rentalCategory'] = [{ value: category, source }];
+	    updateSelectedFilters();
+	    makeBrandColumn(source);  // 이 부분이 중요
+	    resetAndSearch();
+	}
+	
     if (brand) {
         const tryClickBrand = () => {
             const brandBtn = document.querySelector(`[data-filter="brand"][data-value="${brand}"]`);
@@ -498,13 +531,10 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // 초기화 버튼
-    document.getElementById("refresh-btn").addEventListener("click", function () {
-        searchInput.value = '';
-        refreshFilters();
-        selectedFilters = {};
-        updateSelectedFilters();
-        resetAndSearch();
-    });
+	document.getElementById("refresh-btn").addEventListener("click", function () {
+	    searchInput.value = '';
+	    refreshFilters(); // 내부에서 resetAndSearch까지 다 처리하므로 여기서 끝내야 함
+	});
 
     // 초기 검색 실행
     performSearch();
