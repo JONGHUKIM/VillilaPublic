@@ -531,13 +531,10 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // 초기화 버튼
-    document.getElementById("refresh-btn").addEventListener("click", function () {
-        searchInput.value = '';
-        refreshFilters();
-        selectedFilters = {};
-        updateSelectedFilters();
-        resetAndSearch();
-    });
+	document.getElementById("refresh-btn").addEventListener("click", function () {
+	    searchInput.value = '';
+	    refreshFilters(); // 내부에서 resetAndSearch까지 다 처리하므로 여기서 끝내야 함
+	});
 
     // 초기 검색 실행
     performSearch();
