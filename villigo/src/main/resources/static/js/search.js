@@ -65,7 +65,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // 검색 초기화 및 새로 검색
     function resetAndSearch() {
+		console.log('📍 resetAndSearch 실행됨');
+		window.scrollTo(0, 0);
         currentPage = 0;
+		isLoading = false;
         hasMoreData = true;
         searchResultDiv.innerHTML = ''; // 결과 초기화
         latestSearchResults = []; // 결과 데이터 초기화
