@@ -1,0 +1,114 @@
+/* resources/static/css/agreement-dropdown.css */
+
+/* --- 기존 agreement.css에서 사용되었던 스타일 (약관 동의 컨테이너 및 기본 요소) --- */
+.agreement-container {
+    margin: 100px auto 0;
+    background-color: #2a2a2a;
+    padding: 25px;
+    border-radius: 10px;
+    width: 450px; /* 아코디언에 맞게 너비 조정 */
+    text-align: center;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
+    color: #ffffff;
+}
+
+.agreement-container h2 {
+    color: #ffffff;
+    margin-bottom: 25px;
+}
+
+/* --- 기존 버튼 스타일 (아코디언 버튼과는 별개) --- */
+.agreement-container button { /* 모든 버튼에 적용될 수 있으니 주의 */
+    width: 100%;
+    padding: 12px;
+    background-color: #ffffff;
+    color: black;
+    font-weight: bold;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-top: 15px; /* 아코디언 아이템 간격에 맞춰 조정 */
+    transition: background-color 0.3s ease;
+}
+
+.agreement-container button:hover:not(:disabled) {
+    background-color: #f1f1f1;
+}
+
+.agreement-container button:disabled {
+    background-color: #555;
+    color: #bbb;
+    cursor: not-allowed;
+}
+
+
+/* --- 아코디언 관련 스타일 (이전에 제가 드렸던 내용) --- */
+/* 아코디언 헤더 및 버튼 스타일 조정 */
+.accordion-header .accordion-button {
+    background-color: #3a3a3a; /* 헤더 배경색 */
+    color: #ffffff; /* 텍스트 색상 */
+    font-weight: bold;
+    border-radius: 8px; /* 모서리 둥글게 */
+    margin-bottom: 0px; /* 아이템 간격 */
+    padding: 15px 20px;
+    box-shadow: none; /* 기본 그림자 제거 */
+}
+
+.accordion-header .accordion-button:not(.collapsed) {
+    background-color: #4a4a4a; /* 펼쳐졌을 때 배경색 */
+    color: #ffffff;
+    box-shadow: none;
+}
+
+.accordion-header .accordion-button::after {
+    filter: invert(1); /* 아이콘 색상 반전 (흰색으로) */
+}
+
+/* 아코디언 바디 스타일 */
+.accordion-body {
+    background-color: #333333; /* 바디 배경색 */
+    color: #eeeeee; /* 텍스트 색상 */
+    padding: 20px;
+    border-bottom-left-radius: 8px;
+    border-bottom-right-radius: 8px;
+}
+
+/* 아코디언 아이템 간 간격 */
+.accordion-item {
+    margin-bottom: 15px; /* 각 아코디언 아이템 사이 간격 */
+    border: 1px solid #555; /* 테두리 */
+    border-radius: 8px;
+    overflow: hidden; /* 자식 요소의 둥근 모서리 유지 */
+}
+
+/* 아코디언 바디 안의 텍스트 에어리어 스타일 */
+.accordion-body .terms-content-textarea { /* .terms-content-textarea 앞에 .accordion-body 추가 */
+    width: 100%;
+    height: 200px; /* 기본 높이 */
+    background-color: #444; /* 텍스트 에어리어 배경색 */
+    color: #fff; /* 텍스트 색상 */
+    border: 1px solid #555;
+    border-radius: 5px;
+    padding: 10px;
+    resize: vertical; /* 세로 크기 조절 가능 */
+    font-size: 13px;
+    line-height: 1.5;
+    margin-bottom: 15px;
+    box-sizing: border-box; /* 패딩, 보더가 너비에 포함되도록 */
+}
+
+/* 아코디언 바디 안의 체크박스 레이블 스타일 */
+.accordion-body label {
+    display: flex;
+    align-items: center;
+    font-size: 14px;
+    cursor: pointer;
+    margin-top: 10px;
+}
+
+.accordion-body input[type="checkbox"] {
+    margin-right: 8px;
+    min-width: 16px;
+    min-height: 16px;
+    cursor: pointer;
+}
