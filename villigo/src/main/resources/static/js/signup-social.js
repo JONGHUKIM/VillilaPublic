@@ -149,7 +149,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     function checkPhone() {
         const phone = phoneInput.value;
-        const phoneRegex = /^\d{3}-\d{3,4}-\d{4}$/;
+        const phoneRegex = /^010-\d{4}-\d{4}$/;
         if (phone === '') {
             checkPhoneResult.innerHTML = '전화번호는 필수 입력 항목입니다.';
             isPhoneChecked = false;

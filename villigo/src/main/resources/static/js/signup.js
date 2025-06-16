@@ -288,7 +288,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
 	function checkPhone() { // event 매개변수 제거 (input 이벤트에서 바로 호출하므로 제거)
 	        const phone = phoneInput.value.trim(); // <-- trim() 추가
-	        const phoneRegex = /^\d{3}-\d{3,4}-\d{4}$/;
+	        const phoneRegex = /^010-\d{4}-\d{4}$/;
 
 	        // 디버깅을 위한 로그 추가
 	        console.log("Debug checkPhone - Raw:", phoneInput.value, "Trimmed:", phone, "Length:", phone.length, "Regex test:", phoneRegex.test(phone));
