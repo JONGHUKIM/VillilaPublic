@@ -96,6 +96,7 @@ public class SecurityConfig {
 							"/member/signin", "/member/signup", "/member/signup-social", 
 							"/member/agreement", // /member/agreement 허용
 							"/member/checkusername", "/member/checkemail", "/member/checknickname",
+							"/member/checkphone",
 							"/api/faqs", "/css/**", "/js/**", "/images/**", "/ws/**", "/sockjs/**","/fonts/**",
 							"/queue/**","/bot/**").permitAll()
 					.anyRequest().authenticated()
