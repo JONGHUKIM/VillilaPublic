@@ -32,6 +32,13 @@ document.addEventListener("DOMContentLoaded", function () {
 	    marketingConsentHiddenInput.value = 'false';
 	}
 	
+	// 폼 제출 시 디버깅
+	document.querySelector('form').addEventListener('submit', function (e) {
+	    // marketingConsent 값 확인
+	    console.log('Form Data - Marketing Consent:', new FormData(this).get('marketingConsent'));
+	});
+
+	
 	// 아이디 입력 시 영문 소문자와 숫자만 허용
 	usernameInput.addEventListener('input', function (e) {
 	    e.target.value = e.target.value.replace(/[^a-z0-9]/g, '');

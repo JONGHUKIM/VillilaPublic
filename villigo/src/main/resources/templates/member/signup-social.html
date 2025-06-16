@@ -9,16 +9,23 @@
     </header>
     <div class="container-global">
         <div class="signup-form-container">
-            <form th:action="@{/member/signup-social}" method="post">
+            <!-- 추가: Thymeleaf object 바인딩 -->
+            <form id="signupSocialForm" th:action="@{/member/signup-social}" method="post" th:object="${socialUserSignUpDto}">
+                <!-- 추가: 에러 메시지 출력 -->
+                <div th:if="${error}" class="text-danger" th:text="${error}"></div>
                 <div class="input-group">
                     <label for="nickname">닉네임</label>
-                    <input type="text" id="nickname" name="nickname" placeholder="닉네임 입력" required>
+                    <!-- 추가: Thymeleaf field 바인딩 및 에러 출력 -->
+                    <input type="text" id="nickname" name="nickname" placeholder="닉네임 입력" th:field="*{nickname}" required>
                     <span id="checkNicknameResult" class="text-danger"></span>
+                    <div th:errors="*{nickname}" class="text-danger"></div>
                 </div>
                 <div class="input-group">
                     <label for="phone">휴대전화번호</label>
-                    <input type="tel" id="phone" name="phone" placeholder="휴대전화번호 입력" required>
+                    <!-- 추가: Thymeleaf field 바인딩 및 에러 출력 -->
+                    <input type="tel" id="phone" name="phone" placeholder="휴대전화번호 입력" th:field="*{phone}" required>
                     <span id="checkPhoneResult" class="text-danger"></span>
+                    <div th:errors="*{phone}" class="text-danger"></div>
                 </div>
                 <div class="input-group">
                     <label for="region">거래 희망 지역</label>
@@ -40,15 +47,18 @@
                         </th:block>
                     </div>
                 </div>
-                <input type="hidden" id="region-hidden" name="region" />
-                <input type="hidden" id="theme-id-hidden" name="themeId" />
-                <input type="hidden" id="marketing-consent-hidden" name="marketingConsent" />
+                <!-- 추가: Thymeleaf field 바인딩 -->
+                <input type="hidden" id="region-hidden" name="region" th:field="*{region}" />
+                <!-- 추가: Thymeleaf field 바인딩 -->
+                <input type="hidden" id="theme-id-hidden" name="themeId" th:field="*{themeId}" />
+                <!-- 추가: Thymeleaf field 바인딩 -->
+                <input type="hidden" id="marketing-consent-hidden" name="marketingConsent" th:field="*{marketingConsent}" />
                 <button type="submit" id="btnSubmit" disabled>가입하기</button>
             </form>
         </div>
     </div>
     <th:block th:replace="~{layout/fragments :: bootstrapJS}"></th:block>
     <script th:src="@{/js/signup-social.js}"></script>
-    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script> <!-- axios 추가 -->
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 </body>
 </html>

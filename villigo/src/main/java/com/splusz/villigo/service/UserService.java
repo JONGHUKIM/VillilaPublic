@@ -83,21 +83,36 @@ public class UserService implements UserDetailsService {
         if (checkEmail(dto.getEmail())) {
             throw new IllegalArgumentException("이미 사용 중인 이메일입니다.");
         }
+        if (checkPhone(dto.getPhone())) {
+            throw new IllegalArgumentException("이미 사용 중인 전화번호입니다.");
+        }
 
         Theme theme = themeRepo.findById(dto.getThemeId())
             .orElseThrow(() -> new IllegalArgumentException("테마를 찾을 수 없습니다."));
         User entity = dto.toEntity(passwordEncoder, theme).addRole(UserRole.USER);
+        entity.setPhone(entity.getPhone().replaceAll("-", "")); // 하이픈 제거 후 저장
+        entity.setMarketingConsent(dto.isMarketingConsent()); // 마케팅 동의 설정
         entity = userRepo.save(entity);
 
         return entity;
     }
 
     // 소셜 계정 연결 회원가입 서비스
+    @Transactional
     public User create(SocialUserSignUpDto dto, String nickname, String realname, String email) {
         log.info("create(dto={}, nickname={}, realname={}, email={})", 
                 dto, nickname, realname, email);
-        
-        Theme theme = themeRepo.findById(dto.getThemeId()).orElseThrow();
+
+        // 중복 체크
+        if (checkNickname(nickname)) {
+            throw new IllegalArgumentException("이미 사용 중인 닉네임입니다.");
+        }
+        if (checkPhone(dto.getPhone())) {
+            throw new IllegalArgumentException("이미 사용 중인 번호입니다.");
+        }
+
+        Theme theme = themeRepo.findById(dto.getThemeId())
+            .orElseThrow(() -> new IllegalArgumentException("테마를 찾을 수 없습니다."));
         User entity = dto.toEntity(theme).addRole(UserRole.USER);
         // 사용자 아이디, 닉네임, 이름, 이메일, 소셜 회원가입 여부(snsLogin)를 엔터티에 추가
         entity.setUsername(email.split("@")[0]); // 이메일에서 아이디 부분만 추출
@@ -105,6 +120,8 @@ public class UserService implements UserDetailsService {
         entity.setRealname(realname); 
         entity.setEmail(email);
         entity.setSnsLogin(true);
+        entity.setPhone(dto.getPhone().replaceAll("-", "")); // 하이픈 제거 후 저장
+        entity.setMarketingConsent(dto.isMarketingConsent()); // 마케팅 동의 설정
         entity = userRepo.save(entity);
 
         return entity;
@@ -197,6 +214,7 @@ public class UserService implements UserDetailsService {
         
         userRepo.save(user);  // 업데이트된 매너 점수 저장
     }
+    
 	// 유저 프로필 업데이트
 	@Transactional
     public User updateUserProfile(String nickname, String password, String phone, String region, Long themeId, MultipartFile avatarFile) throws IOException {

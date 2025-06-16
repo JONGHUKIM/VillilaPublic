@@ -31,7 +31,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // 마케팅 동의 값 설정
     const marketingConsent = sessionStorage.getItem('marketingConsent');
-    marketingConsentHiddenInput.value = marketingConsent === 'true' ? 'true' : 'false';
+    marketingConsentHiddenInput.value = marketingConsent === 'true';
     console.log("마케팅 동의 여부:", marketingConsent);
 
     // 전화번호 포맷팅
@@ -115,7 +115,7 @@ document.addEventListener('DOMContentLoaded', function () {
         if (isNicknameChecked && isPhoneChecked && isRegionAndInterestChecked) {
             btnSubmit.disabled = false;
         } else {
-            btnSubmitdisabled = true;
+            btnSubmit.disabled = true;
             testCheckVariables();
         }
     }
