@@ -14,7 +14,7 @@ document.addEventListener("DOMContentLoaded", function () {
     const phoneInput = document.querySelector('#phone');
     const regionHiddenInput = document.querySelector('#region-hidden');
     const themeIdHiddenInput = document.querySelector('#theme-id-hidden');
-	const marketingConsentHiddenInput = document.querySelector('#marketing-consent-hidden'); // 마케팅 동의 input 추가
+	const marketingConsentHiddenInput = document.querySelector('#marketing-consent-hidden');
     const checkUsernameResult = document.querySelector('#checkUsernameResult');
     const checkPasswordResult = document.querySelector('#checkPasswordResult');
     const checkNicknameResult = document.querySelector('#checkNicknameResult');
@@ -32,7 +32,7 @@ document.addEventListener("DOMContentLoaded", function () {
 	    marketingConsentHiddenInput.value = 'false';
 	}
 	
-	// 폼 제출 시 디버깅
+	// 폼 제출 시 디버깅 (marketingConsent 값 확인용)
 	document.querySelector('form').addEventListener('submit', function (e) {
 	    // marketingConsent 값 확인
 	    console.log('Form Data - Marketing Consent:', new FormData(this).get('marketingConsent'));
@@ -57,7 +57,7 @@ document.addEventListener("DOMContentLoaded", function () {
 	    });
 	});
 	
-	// 전화번호 입력 시 하이픈 자동 추가
+	// 전화번호 입력 시 하이픈 자동 추가 및 유효성 검사
 	phoneInput.addEventListener('input', function (e) {
 	    let value = e.target.value.replace(/\D/g, ''); // 숫자만 추출
 	    let formatted = '';
@@ -71,7 +71,11 @@ document.addEventListener("DOMContentLoaded", function () {
 	        }
 	    }
 	    e.target.value = formatted;
-	    checkPhone(); // 입력 후 즉시 유효성 검사
+
+        // input 이벤트가 끝나고 값이 완전히 업데이트된 후 checkPhone을 호출하도록 setTimeout 사용
+        // 또는 change 이벤트를 활용하여 최종 검사를 담당하게 할 수 있음.
+        // 현재는 실시간 피드백을 위해 input에서 setTimeout을 사용.
+	    setTimeout(checkPhone, 0); // 0ms 지연으로 현재 실행 스택 비운 후 checkPhone 실행
 	});
 
     // 거래 희망 지역 선택
@@ -100,6 +104,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
     regionSelect.addEventListener("click", function () {
         regionDropdown.style.display = regionDropdown.style.display === "block" ? "none" : "block";
+        // 다른 드롭다운이 열려있을 경우 닫기 (선택 사항)
+        interestDropdown.style.display = "none";
     });
 
     // 관심 상품 선택
@@ -118,6 +124,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
     interestSelect.addEventListener("click", function () {
         interestDropdown.style.display = interestDropdown.style.display === "block" ? "none" : "block";
+        // 다른 드롭다운이 열려있을 경우 닫기 (선택 사항)
+        regionDropdown.style.display = "none";
     });
 
     // 드롭다운이 열려있을 때 다른 곳 클릭하면 닫히도록 설정
@@ -137,8 +145,9 @@ document.addEventListener("DOMContentLoaded", function () {
     passwordConfirmInput.addEventListener('change', checkPassword);
     nicknameInput.addEventListener('change', checkNickname);
     emailInput.addEventListener('change', checkEmail);
-    phoneInput.addEventListener('change', checkPhone);
-
+    // phoneInput.addEventListener('change', checkPhone); // input 이벤트에서 이미 checkPhone 호출하므로 제거
+                                                      // 또는 이곳에 final check 로직 추가
+    
     function changeBtnStatus() {
         if (isUsernameChecked && isPasswordChecked && isNicknameChecked && 
             isEmailChecked && isPhoneChecked && isRegionAndInterestChecked) {
@@ -150,7 +159,7 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
 	function checkUsername(event) {
-	        const username = usernameInput.value;
+	        const username = usernameInput.value.trim(); // trim() 추가
 	        const usernameRegex = /^[a-z0-9]{3,}$/;
 	        if (username === '') {
 	            checkUsernameResult.innerHTML = '아이디는 필수 입력 항목입니다.';
@@ -184,8 +193,8 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     function checkPassword(event) {
-        const password = passwordInput.value;
-        const passwordConfirm = passwordConfirmInput.value;
+        const password = passwordInput.value.trim(); // trim() 추가
+        const passwordConfirm = passwordConfirmInput.value.trim(); // trim() 추가
         const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{4,}$/;
         if (password === '') {
             checkPasswordResult.innerHTML = '비밀번호는 필수 입력 항목입니다.';
@@ -198,20 +207,26 @@ document.addEventListener("DOMContentLoaded", function () {
             isPasswordChecked = false;
             changeBtnStatus();
             return;
+            // 비밀번호 확인이 비어있지 않다면, 비밀번호 변경 후 비밀번호 확인도 다시 검사하도록 유도
+            // if (passwordConfirmInput.value.trim() !== '') {
+            //     checkPasswordConfirm();
+            // }
         }
+        // 비밀번호가 올바른 형식이어도 일치 여부는 별도로 판단
         if (password !== passwordConfirm) {
             checkPasswordResult.innerHTML = '비밀번호가 일치하지 않습니다.';
             isPasswordChecked = false;
             changeBtnStatus();
             return;
         }
+        
         checkPasswordResult.innerHTML = '';
         isPasswordChecked = true;
         changeBtnStatus();
     }
 
     function checkNickname(event) {
-        const nickname = nicknameInput.value;
+        const nickname = nicknameInput.value.trim(); // trim() 추가
         if (nickname === '') {
             checkNicknameResult.innerHTML = '닉네임은 필수 입력 항목입니다.';
             isNicknameChecked = false;
@@ -219,7 +234,7 @@ document.addEventListener("DOMContentLoaded", function () {
             return;
         }
 
-        const uri = `./checknickname?nickname=${nickname}`;
+        const uri = `./checknickname?nickname=${encodeURIComponent(nickname)}`;
         axios
             .get(uri)
             .then(handleCheckNicknameResult)
@@ -238,7 +253,7 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
 	function checkEmail(event) {
-	        const email = emailInput.value;
+	        const email = emailInput.value.trim(); // trim() 추가
 	        const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
 	        if (email === '') {
 	            checkEmailResult.innerHTML = '이메일은 필수 입력 항목입니다.';
@@ -271,9 +286,13 @@ document.addEventListener("DOMContentLoaded", function () {
 		        changeBtnStatus();
 		    }
 
-	function checkPhone(event) {
-	        const phone = phoneInput.value;
+	function checkPhone() { // event 매개변수 제거 (input 이벤트에서 바로 호출하므로 제거)
+	        const phone = phoneInput.value.trim(); // <-- trim() 추가
 	        const phoneRegex = /^\d{3}-\d{3,4}-\d{4}$/;
+
+	        // 디버깅을 위한 로그 추가
+	        console.log("Debug checkPhone - Raw:", phoneInput.value, "Trimmed:", phone, "Length:", phone.length, "Regex test:", phoneRegex.test(phone));
+
 	        if (phone === '') {
 	            checkPhoneResult.innerHTML = '전화번호는 필수 입력 항목입니다.';
 	            isPhoneChecked = false;
@@ -323,4 +342,12 @@ document.addEventListener("DOMContentLoaded", function () {
             changeBtnStatus();
         }
     }
+
+    // 페이지 로드 시 초기 유효성 검사 (입력 필드에 값이 있을 경우)
+    if (usernameInput.value.trim() !== '') checkUsername();
+    if (passwordInput.value.trim() !== '') checkPassword();
+    if (nicknameInput.value.trim() !== '') checkNickname();
+    if (emailInput.value.trim() !== '') checkEmail();
+    if (phoneInput.value.trim() !== '') checkPhone();
+    checkRegionAndInterest(); // 지역/관심은 항상 초기 검사
 });
