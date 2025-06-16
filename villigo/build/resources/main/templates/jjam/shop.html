@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout/fragments :: htmlHead('Villila｜JJAM 충전', '/css/jjam.css')}">
+    <link rel="stylesheet" th:href="@{/css/global.css}">
+</head>
+<body>
+    <th:block th:replace="~{layout/fragments :: commonLayout}"></th:block>
+
+    <!-- ✅ 헤더 아래, 충전 카드 위에 보유 젤리 개수 추가 -->
+    
+
+    <!-- 젤리 충전 옵션 -->
+    <main class="container mt-3 container-global">
+    <div class="container text-center my-4">
+        <div class="jelly-info">
+            <span id="user-jjams" th:text="'현재 보유 JJAM: ' + ${totalJjams} + '개'"></span>
+        </div>
+    </div>
+        <div class="row">
+            <!-- 11,000원 옵션 -->
+            <div class="col-md-4 mb-4">
+                <div class="card shadow-sm">
+                    <div class="card-body text-center">
+                        <h4 class="fw-bold">₩11,000</h4>
+                        <h3>💎11,000 </h3>
+                        <p class="text-muted fw-bold">11,000</p>
+                        <p class="text-danger fw-bold">혜택 0%</p>
+                        <button class="btn btn-charge w-100" data-amount="11000" data-price="11000">충전하기</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 22,000원 옵션 -->
+            <div class="col-md-4 mb-4">
+                <div class="card shadow-sm">
+                    <div class="ribbon">
+                        <span>+ 10%</span>
+                    </div>
+                    <div class="card-body text-center">
+                        <h4 class="fw-bold">₩22,000</h4>
+                        <h3>💎24,200</h3>
+                        <p class="text-muted fw-bold">22,000 + 2,200</p>
+                        <p class="text-danger fw-bold">혜택 10%</p>
+                        <button class="btn btn-charge w-100" data-amount="24200" data-price="22000">충전하기</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 33,000원 옵션 -->
+            <div class="col-md-4 mb-4">
+                <div class="card shadow-sm">
+                    <div class="ribbon">
+                        <span>+ 15%</span>
+                    </div>
+                    <div class="card-body text-center">
+                        <h4 class="fw-bold">₩33,000</h4>
+                        <h3>💎37,950</h3>
+                        <p class="text-muted fw-bold">33,000 + 4,950</p>
+                        <p class="text-danger fw-bold">혜택 15%</p>
+                        <button class="btn btn-charge w-100" data-amount="37950" data-price="33000">충전하기</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 55,000원 옵션 -->
+            <div class="col-md-4 mb-4">
+                <div class="card shadow-sm">
+                    <div class="ribbon">
+                        <span>+ 20%</span>
+                    </div>
+                    <div class="card-body text-center">
+                        <h4 class="fw-bold">₩55,000</h4>
+                        <h3>💎66,000</h3>
+                        <p class="text-muted fw-bold">55,000 + 11,000</p>
+                        <p class="text-danger fw-bold">혜택 20%</p>
+                        <button class="btn btn-charge w-100" data-amount="66000" data-price="55000">충전하기</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 99,000원 옵션 -->
+            <div class="col-md-4 mb-4">
+                <div class="card shadow-sm">
+                    <div class="ribbon">
+                        <span>+ 20%</span>
+                    </div>
+                    <div class="card-body text-center">
+                        <h4 class="fw-bold">₩99,000</h4>
+                        <h3>💎118,800</h3>
+                        <p class="text-muted fw-bold">99,000 + 19,800</p>
+                        <p class="text-danger fw-bold">혜택 20%</p>
+                        <button class="btn btn-charge w-100" data-amount="118800" data-price="99000">충전하기</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 198,000원 옵션 -->
+            <div class="col-md-4 mb-4">
+                <div class="card shadow-sm">
+                    <div class="ribbon">
+                        <span>+ 20%</span>
+                    </div>
+                    <div class="card-body text-center">
+                        <h4 class="fw-bold">₩198,000</h4>
+                        <h3>💎237,600</h3>
+                        <p class="text-muted fw-bold">198,000 + 39,600</p>
+                        <p class="text-danger fw-bold">혜택 20%</p>
+                        <button class="btn btn-charge w-100" data-amount="237600" data-price="198000">충전하기</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <th:block th:replace="~{layout/fragments :: bootstrapJS}"></th:block>
+    <script th:src="@{/js/jjam.js}"></script>
+</body>
+</html>

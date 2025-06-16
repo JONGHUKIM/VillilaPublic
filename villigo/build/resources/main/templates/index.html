@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+    <head th:replace="~{layout/fragments :: htmlHead('Villila','/css/homeindex.css')}">
+</head>
+<body>
+    <th:block th:replace="~{layout/fragments :: commonLayout}"></th:block>
+        <main class="container-global">    
+            <div class="container ">
+           		<!-- 공지 배너 -->
+           		<div class="top-notice">
+				  <span class="notice-badge">공지</span>
+				  <div class="notice-slide-wrapper">
+				    <div id="noticeSlide" class="notice-slide">
+				      <!-- 자바스크립트로 notice-text가 여기에 들어감 -->
+				    </div>
+				  </div>
+				</div>
+			
+    			  <!--  프로모션 배너 영역 -->
+              <div class="promotion-section">
+				  <div class="promotion-carousel" id="carousel">
+				    <!-- JS가 여기 안에 카드 1장씩만 넣어줌 -->
+				  </div>
+				</div>
+				<div class="slider-control">
+				  <button id="sliderToggleBtn" class="control-icon" aria-label="정지버튼">
+				  <!-- 기본은 일시정지 아이콘 -->
+				  <svg id="pauseIcon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="#000" viewBox="0 0 24 24">
+				    <path d="M6 4h4v16H6V4zm8 0h4v16h-4V4z"/>
+				  </svg>
+				  <svg id="playIcon" xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="#000" viewBox="0 0 24 24" style="display: none;">
+				    <path d="M8 5v14l11-7z"/>
+				  </svg>
+				</button>
+				  <div class="control-divider"></div>
+				  <div class="progress-bar">
+				    <div class="progress-indicator" id="progressIndicator"></div>
+				  </div>
+				</div>
+				
+				<!-- 미니 링크 배너 -->
+				<div class="action-quick-links">
+				  <a th:href="@{/jjam/shop}" class="quick-link-card">💎쨈충전하기</a>
+				  <a th:href="@{/post/category}" class="quick-link-card">🚀상품올리기</a>
+				  <a th:href="@{/search}" class="quick-link-card">🔍검색하기</a>
+				</div>
+				
+               <!--  카테고리 선택 -->
+               <div id="brandData" 
+                    th:data-bagbrands = "${bagBrandsJson}"
+                    th:data-carbrands = "${carBrandsJson}" 
+                    style="display:none;">
+                </div>
+              <div class="category-toggle">
+				  <div class="product-title">브랜드</div>
+				  <div class="category-btn-group">
+				    <button class="category-btn active" data-value="2" onclick="selectCategory('car', this)">자동차</button>
+				    <button class="category-btn" data-value="1" onclick="selectCategory('bag', this)">가방/백</button>
+				  </div>
+				</div>
+              <!--  브랜드 앰블럼 영역 -->
+          <div class="brand-wrapper">
+			  <div class="scroll-arrow left" onclick="scrollBrand(-1, event)">
+			    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+			      <path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/>
+			    </svg>
+			  </div>
+			
+			  <div class="brand-emblems-container">
+			    <div id="brandEmblems" class="brand-emblems"></div>
+			  </div>
+			
+			  <div class="scroll-arrow right" onclick="scrollBrand(1, event)">
+			    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+			      <path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6z"/>
+			    </svg>
+			  </div>
+			</div>
+              <!--  상품 영역 -->
+              
+              <div id="homeProductsData" th:data-homeproducts='${homeProductsJson}' style="display:none;"></div>
+				      
+				<div class="product-section" data-source="recent">
+				  <div class="product-title">최근 등록 상품</div>
+				  <div class="product-slider-wrapper">
+				    <!-- 왼쪽 화살표 -->
+				    <button class="scroll-btn left" onclick="scrollProducts('newProducts', -1)">
+				      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+				        <path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z" />
+				      </svg>
+				    </button>
+				
+				    <!-- 슬라이더 컨테이너 -->
+				    <div class="product-slider-container">
+				      <div id="newProducts" class="product-slider"></div>
+				    </div>
+				
+				    <!-- 오른쪽 화살표 -->
+				    <button class="scroll-btn right" onclick="scrollProducts('newProducts', 1)">
+				      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+				        <path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6z" />
+				      </svg>
+				    </button>
+				  </div>
+				</div>
+				
+				<!-- 이런 상품은 어떠세요 (슬라이드) -->
+				<div class="product-section" data-source="theme">
+				  <div class="product-title">이런 상품은 어떠세요?</div>
+				  <div class="product-slider-wrapper">
+				    <button class="scroll-btn left" onclick="scrollProducts('recommendProducts', -1)">
+				      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+				        <path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/>
+				      </svg>
+				    </button>
+				    <div class="product-slider-container">
+				      <div id="recommendProducts" class="product-slider"></div>
+				    </div>
+				    <button class="scroll-btn right" onclick="scrollProducts('recommendProducts', 1)">
+				      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+				        <path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6z"/>
+				      </svg>
+				    </button>
+				  </div>
+				</div>
+
+				<!-- 관심 지역 인기 상품 (슬라이드) -->
+				<div class="product-section" data-source="region">
+				  <div class="product-title">관심 지역의 많이 찾는 상품</div>
+				  <div class="product-slider-wrapper">
+				    <button class="scroll-btn left" onclick="scrollProducts('topLocalProducts', -1)">
+				      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+				        <path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/>
+				      </svg>
+				    </button>
+				    <div class="product-slider-container">
+				      <div id="topLocalProducts" class="product-slider"></div>
+				    </div>
+				    <button class="scroll-btn right" onclick="scrollProducts('topLocalProducts', 1)">
+				      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+				        <path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6z"/>
+				      </svg>
+				    </button>
+				  </div>
+				</div>
+				
+				<!-- 전체 상품 (2줄 + 더보기) 
+				<div class="product-section">
+				  <div class="product-title">전체 상품</div>
+				  <div id="AllProducts" class="product-grid limited"></div>
+				  <div class="more-btn-wrap">
+				    <button class="more-btn" onclick="loadMoreAllProducts()">더보기</button>
+				  </div>
+				</div>-->
+            </div>
+        </main>
+        <th:block th:replace="~{layout/fragments :: bootstrapJS}"></th:block>
+        <script th:inline="javascript">
+            /*<![CDATA[*/
+            var bagbrands = JSON.parse(document.getElementById("brandData").dataset.bagbrands);
+            var carbrands = JSON.parse(document.getElementById("brandData").dataset.carbrands);
+            /*]]>*/
+        </script>
+        
+        <script th:src="@{/js/home-index.js}"></script>
+        <script th:src="@{/js/homeHS.js}"></script>
+    </body>
+</html>

@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebSocket 채팅</title>
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <script src="https://cdn.jsdelivr.net/npm/sockjs-client/dist/sockjs.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/stompjs/lib/stomp.min.js"></script>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        #chat-window {
+            border: 1px solid #ccc;
+            height: 500px;
+            margin-bottom: 10px;
+            overflow-y: auto;
+            padding: 10px;
+            background: #f9f9f9;
+        }
+        #message-list {
+            list-style-type: none;
+            padding: 0;
+        }
+        .file-drop-area {
+            border: 2px dashed #4CAF50;
+            padding: 15px;
+            text-align: center;
+            cursor: pointer;
+            margin-bottom: 10px;
+            color: #333;
+            transition: border 0.3s;
+        }
+        .message-image {
+            max-width: 250px;
+            max-height: 250px;
+            border-radius: 5px;
+            display: block;
+            margin-top: 5px;
+        }
+        .image-preview img {
+            max-width: 100px;
+            max-height: 100px;
+            border-radius: 5px;
+            margin: 5px;
+        }
+        #selectedImages {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+    </style>
+</head>
+<body>
+
+<h2>WebSocket 채팅 (로그인 없이 테스트)</h2>
+
+<div class="mb-3">
+    <label>내 사용자 ID:</label>
+    <input type="number" id="userId" class="form-control" placeholder="내 사용자 ID 입력">
+</div>
+<div class="mb-3">
+    <label>상대방 사용자 ID:</label>
+    <input type="number" id="otherUserId" class="form-control" placeholder="상대 사용자 ID 입력">
+    <button class="btn btn-primary mt-2" onclick="createChatRoom()">채팅방 생성 및 연결</button>
+</div>
+
+<div id="room-info" class="alert alert-info d-none">
+    현재 채팅방 ID: <span id="currentRoomIdDisplay"></span>
+</div>
+
+<div id="chat-window">
+    <ul id="message-list"></ul>
+</div>
+
+<!-- 파일 드래그앤드롭 + 클릭 가능 -->
+<div id="fileDropArea" class="file-drop-area" onclick="openFilePicker()" ondrop="handleDrop(event)" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)">
+    파일을 클릭하거나 드래그하세요
+</div>
+<input type="file" id="fileInput" style="display: none;" accept="image/*" multiple onchange="handleFileSelect(event)">
+
+<!-- 이미지 미리보기 -->
+<div id="imagePreview" class="image-preview">
+    <p>첨부된 이미지 미리보기:</p>
+    <div id="selectedImages"></div>
+</div>
+
+<!-- 입력 & 전송 -->
+<div class="input-container d-flex align-items-center mt-2">
+    <div id="message" class="form-control me-2" contenteditable="true" onclick="clearPlaceholder()" style="flex-grow: 1;">
+        메시지를 입력하세요
+    </div>
+    <button id="sendButton" class="btn btn-success" onclick="sendMessage()">전송</button>
+</div>
+
+<script>
+    let stompClient = null;
+    let currentRoomId = null;
+    let userId = null;
+    let selectedFiles = [];
+
+    function connect(chatRoomId) {
+        const socket = new SockJS("/ws");
+        stompClient = Stomp.over(socket);
+
+        stompClient.connect({}, function () {
+            stompClient.subscribe("/topic/chat." + chatRoomId, function (message) {
+                showMessage(JSON.parse(message.body));
+            });
+
+            document.getElementById("room-info").classList.remove("d-none");
+            document.getElementById("currentRoomIdDisplay").textContent = chatRoomId;
+        });
+    }
+
+    function createChatRoom() {
+        userId = document.getElementById("userId").value;
+        const otherUserId = document.getElementById("otherUserId").value;
+
+        fetch(`/api/chat/rooms?userId1=${userId}&userId2=${otherUserId}`, { method: 'POST' })
+            .then(res => res.json())
+            .then(chatRoom => {
+                currentRoomId = chatRoom.id;
+                connect(currentRoomId);
+            });
+    }
+    
+    function sendChatMessage(type, content) {
+        if (Array.isArray(content)) {
+            content = content.join(",");  // 배열을 쉼표로 구분된 문자열로 변환
+            console.log("📩 WebSocket 전송 (쉼표 구분된 이미지 리스트):", { type, content });
+        } else if (typeof content === "string" && content.trim() !== "") {
+            content = content.trim();
+            console.log("📩 WebSocket 전송 (텍스트 메시지):", { type, content });
+        } else {
+            console.error("❌ 메시지 내용이 유효하지 않습니다.");
+            return;
+        }
+
+        stompClient.send("/app/chat.sendMessage", {}, JSON.stringify({
+            senderId: userId,
+            chatRoomId: currentRoomId,
+            messageType: type,
+            content: content  // 문자열로 변환된 데이터 전송
+        }));
+    }
+
+    function sendMessage() {
+        if (!stompClient || !currentRoomId || !userId) {
+            alert("채팅방을 먼저 생성하세요.");
+            return;
+        }
+
+        const messageContent = document.getElementById("message").innerText.trim();
+        const files = [...selectedFiles];  // 기존 배열을 복사 (forEach 중 배열 변경 방지)
+
+        if (files.length > 0) {
+            let uploadedImageUrls = [];
+            let uploadCount = 0;
+
+            files.forEach(file => {
+                uploadImage(file, (imageUrl) => {
+                    uploadedImageUrls.push(imageUrl);
+                    uploadCount++;
+
+                    // 모든 이미지 업로드가 완료되었을 때 메시지 전송
+                    if (uploadCount === files.length) {
+                        sendChatMessage("IMAGE", uploadedImageUrls);
+                        if (messageContent) {
+                            sendChatMessage("TEXT", messageContent);
+                        }
+                    }
+                });
+            });
+        } else if (messageContent) {
+            sendChatMessage("TEXT", messageContent);
+        }
+
+        document.getElementById("message").innerText = "";
+        selectedFiles = [];
+        document.getElementById("selectedImages").innerHTML = "";
+    }
+
+
+    function uploadImage(file, callback) {
+        const formData = new FormData();
+        formData.append("file", file);
+        formData.append("roomId", currentRoomId);
+        formData.append("senderId", userId);
+
+        fetch("/api/chat/upload", { method: "POST", body: formData })
+            .then(response => response.text())
+            .then(imageUrl => {
+                console.log("✅ 업로드된 이미지 URL:", imageUrl);
+                callback(imageUrl);
+            })
+            .catch(err => console.error("❌ 업로드 실패:", err));
+    }
+
+    function handleFileSelect(event) {
+        selectedFiles = Array.from(event.target.files);
+        updateImagePreview();
+    }
+
+    function handleDrop(event) {
+        event.preventDefault();
+        selectedFiles = Array.from(event.dataTransfer.files);
+        updateImagePreview();
+    }
+
+    function handleDragOver(event) {
+        event.preventDefault();
+    }
+    
+    function clearPlaceholder() {
+        const messageDiv = document.getElementById("message");
+
+        if (messageDiv.innerText === "메시지를 입력하세요") {
+            messageDiv.innerText = "";
+        }
+    }
+
+    function updateImagePreview() {
+        const previewContainer = document.getElementById("selectedImages");
+        previewContainer.innerHTML = "";
+
+        selectedFiles.forEach(file => {
+            const img = document.createElement("img");
+            img.classList.add("image-preview");
+            img.src = URL.createObjectURL(file);
+            previewContainer.appendChild(img);
+        });
+    }
+
+    function showMessage(message) {
+        const messageList = document.getElementById("message-list");
+        const li = document.createElement("li");
+        li.dataset.messageId = message.id; // 메시지 ID 저장 (읽음 처리에 필요)
+
+        // 보낸 사람 정보 추가
+        const senderInfo = document.createElement("div");
+        senderInfo.innerText = `${message.senderName || "사용자 #" + message.senderId}: `;
+        senderInfo.style.fontWeight = "bold";
+        senderInfo.style.marginBottom = "5px";
+        li.appendChild(senderInfo);
+
+        // 읽음 시간 표시할 요소 생성
+        const readTimeSpan = document.createElement("span");
+        readTimeSpan.style.fontSize = "12px";
+        readTimeSpan.style.color = "gray";
+        readTimeSpan.style.marginLeft = "10px";
+
+        if (message.readTime) {
+            const formattedDate = new Date(message.readTime).toISOString().split("T")[0].replace(/-/g, ".");
+            readTimeSpan.innerText = formattedDate;
+        }
+
+        if (message.messageType === "IMAGE") {
+            const images = message.content.split(",").map(img => img.trim());
+
+            const imageContainer = document.createElement("div");
+            imageContainer.style.display = "flex";
+            imageContainer.style.flexDirection = "column";
+            imageContainer.style.alignItems = "center";
+            imageContainer.style.marginBottom = "10px";
+
+            // 메인 이미지 (큰 이미지)
+            const mainImage = document.createElement("img");
+            mainImage.src = images[0];
+            mainImage.classList.add("message-image");
+            mainImage.style.cursor = "pointer";
+            mainImage.style.marginBottom = "8px";
+            mainImage.onclick = () => showImageModal(images);
+
+            imageContainer.appendChild(mainImage);
+
+            // 썸네일 컨테이너 (작은 이미지들)
+            if (images.length > 1) {
+                const thumbnailContainer = document.createElement("div");
+                thumbnailContainer.style.display = "flex";
+                thumbnailContainer.style.gap = "5px";
+                thumbnailContainer.style.justifyContent = "center";
+                thumbnailContainer.style.marginTop = "8px"; // ⭐ 썸네일을 아래로 배치 ⭐
+
+                images.slice(1).forEach((src, index) => {
+                    const thumb = document.createElement("img");
+                    thumb.src = src;
+                    thumb.style.width = "50px";
+                    thumb.style.height = "50px";
+                    thumb.style.borderRadius = "5px";
+                    thumb.style.cursor = "pointer";
+                    thumb.style.objectFit = "cover";
+                    thumb.onclick = () => showImageModal(images, index + 1);
+                    thumbnailContainer.appendChild(thumb);
+                });
+
+                // **썸네일을 큰 이미지 아래로 배치**
+                imageContainer.appendChild(thumbnailContainer);
+            }
+
+            li.appendChild(imageContainer);
+        } else {
+            li.innerText = `${message.senderName || "사용자 #" + message.senderId}: ${message.content}`;
+        }
+
+        // 읽음 시간 추가
+        li.appendChild(readTimeSpan);
+        messageList.appendChild(li);
+        document.getElementById("chat-window").scrollTop = document.getElementById("chat-window").scrollHeight;
+    }
+
+    function showImageModal(images, startIndex = 0) {
+        const modal = document.createElement("div");
+        modal.classList.add("image-modal");
+        modal.style.position = "fixed";
+        modal.style.top = "0";
+        modal.style.left = "0";
+        modal.style.width = "100vw";
+        modal.style.height = "100vh";
+        modal.style.background = "rgba(0,0,0,0.8)";
+        modal.style.display = "flex";
+        modal.style.alignItems = "center";
+        modal.style.justifyContent = "center";
+        modal.style.flexDirection = "column";
+        modal.style.zIndex = "1000";
+
+        let currentIndex = startIndex;
+
+        // 메인 이미지
+        const img = document.createElement("img");
+        img.src = images[currentIndex];
+        img.style.maxWidth = "80%";
+        img.style.maxHeight = "80%";
+        img.style.borderRadius = "5px";
+
+        // 좌우 이동 버튼
+        const prevBtn = document.createElement("button");
+        prevBtn.innerText = "←";
+        prevBtn.style.position = "absolute";
+        prevBtn.style.left = "20px";
+        prevBtn.style.fontSize = "24px";
+        prevBtn.style.background = "transparent";
+        prevBtn.style.color = "white";
+        prevBtn.style.border = "none";
+        prevBtn.style.cursor = "pointer";
+        prevBtn.style.padding = "10px";
+        prevBtn.onclick = () => {
+            if (currentIndex > 0) {
+                currentIndex--;
+                img.src = images[currentIndex];
+            }
+        };
+
+        const nextBtn = document.createElement("button");
+        nextBtn.innerText = "→";
+        nextBtn.style.position = "absolute";
+        nextBtn.style.right = "20px";
+        nextBtn.style.fontSize = "24px";
+        nextBtn.style.background = "transparent";
+        nextBtn.style.color = "white";
+        nextBtn.style.border = "none";
+        nextBtn.style.cursor = "pointer";
+        nextBtn.style.padding = "10px";
+        nextBtn.onclick = () => {
+            if (currentIndex < images.length - 1) {
+                currentIndex++;
+                img.src = images[currentIndex];
+            }
+        };
+
+        // 닫기 버튼
+        const closeButton = document.createElement("button");
+        closeButton.innerText = "닫기";
+        closeButton.style.position = "absolute";
+        closeButton.style.top = "20px";
+        closeButton.style.right = "20px";
+        closeButton.style.padding = "10px";
+        closeButton.style.background = "white";
+        closeButton.style.border = "none";
+        closeButton.style.cursor = "pointer";
+        closeButton.onclick = () => modal.remove();
+
+        modal.appendChild(closeButton);
+        modal.appendChild(prevBtn);
+        modal.appendChild(img);
+        modal.appendChild(nextBtn);
+        document.body.appendChild(modal);
+    }
+
+    function openFilePicker() {
+        document.getElementById("fileInput").click();
+    }
+    
+    document.addEventListener("keydown", function(event) {
+        const messageDiv = document.getElementById("message");
+
+        if (event.key === "Enter" && !event.shiftKey) { 
+            event.preventDefault();  // 기본 동작(줄바꿈) 방지
+            sendMessage();  // 메시지 전송
+        }
+    });
+    
+    function markMessageAsRead(messageId) {
+        fetch(`/api/chat/read/${messageId}?userId=${userId}`, { method: "POST" })
+            .then(response => {
+                if (response.ok) {
+                    console.log(`✅ 메시지 ${messageId} 읽음 처리 완료`);
+                }
+            })
+            .catch(err => console.error("❌ 읽음 처리 실패:", err));
+    }
+
+    // 읽음 감지 로직
+    function checkMessagesRead() {
+        const messages = document.querySelectorAll("#message-list li");
+
+        messages.forEach(li => {
+            if (isElementInViewport(li)) {
+                const messageId = li.dataset.messageId;
+                if (messageId) {
+                    markMessageAsRead(messageId);
+                }
+            }
+        });
+    }
+
+    // 메시지가 화면에 보이는지 확인
+    function isElementInViewport(el) {
+        const rect = el.getBoundingClientRect();
+        return rect.top >= 0 && rect.bottom <= window.innerHeight;
+    }
+
+    // 스크롤할 때 읽음 처리 실행
+    document.getElementById("chat-window").addEventListener("scroll", checkMessagesRead);
+
+    
+    document.addEventListener("keydown", function (event) {
+        if (event.ctrlKey && event.key.toLowerCase() === "q") {  
+            event.preventDefault(); 
+            document.getElementById("fileInput").click();  
+        } else if (event.key === "Enter" && !event.shiftKey) {  
+            event.preventDefault();  
+            sendMessage();  
+        }
+    });
+
+    document.addEventListener("paste", function (event) {
+        let items = (event.clipboardData || event.originalEvent.clipboardData).items;
+        for (let item of items) {
+            if (item.kind === "file") {
+                let file = item.getAsFile();
+                if (file.type.startsWith("image/")) {
+                    selectedFiles.push(file);
+                    updateImagePreview();
+                }
+            }
+        }
+    });
+
+
+    
+</script>
+
+</body>
+</html>

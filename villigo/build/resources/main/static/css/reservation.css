@@ -1,0 +1,220 @@
+html, body {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: #f4f4f9;
+    overflow: hidden;
+}
+
+.container {
+    max-width: 340px;
+    padding: 30px;
+    border-radius: 12px;
+    background: white;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.15);
+    text-align: center;
+}
+
+h2 {
+    color: #6B46C1;
+    font-weight: bold;
+    font-size: 1.3rem;
+    margin-bottom: 17px;
+}
+
+label {
+    display: block;
+    font-size: 0.9rem;
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 8px;
+}
+
+input {
+    width: 100%;
+    padding: 8px;
+    margin-bottom: 15px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 0.8rem;
+    outline: none;
+    text-align: center;
+    box-sizing: border-box;
+    transition: border-color 0.2s;
+}
+
+input:focus {
+    border-color: #6B46C1;
+    box-shadow: 0 0 5px rgba(107, 70, 193, 0.3);
+}
+
+.time-selection {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 10px;
+}
+
+.time-selection div {
+    width: 48%;
+}
+
+.show-price {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 10px;
+}
+
+.show-price div {
+    width: 48%;
+}
+
+.note {
+    font-size: 0.85rem;
+    color: #888;
+    margin-top: 10px;
+    margin-bottom: 10px;
+}
+
+.jjam-status {
+    font-size: 1rem;
+    font-weight: bold;
+    margin-top: 20px;
+    margin-bottom: 20px;
+}
+
+.btn-ok {
+    width: 100%;
+    padding: 10px;
+    font-size: 1rem;
+    font-weight: 600;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+    background: #6B46C1;
+    color: white;
+    margin-bottom: 15px;
+    margin-top: 5px;
+}
+
+.btn-ok:hover {
+    background: #805AD5;
+}
+
+/* Flatpickr 시간 선택 UI 스타일 */
+.flatpickr-time {
+    
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+}
+
+.flatpickr-time .numInputWrapper {
+    width: 45%;
+    margin: 0 5px;
+    position: relative;
+}
+
+.flatpickr-time .numInput {
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 5px;
+    font-size: 0.9rem;
+    text-align: center;
+    outline: none;
+    width: 100%;
+    box-sizing: border-box;
+    transition: border-color 0.2s;
+}
+
+.flatpickr-time .numInput:focus {
+    border-color: #6B46C1;
+    box-shadow: 0 0 5px rgba(107, 70, 193, 0.3);
+}
+.flatpickr-time input.flatpickr-minute{
+    font-weight: bold !important;
+}
+.flatpickr-time .arrowUp,
+.flatpickr-time .arrowDown {
+    border: none;
+    background: #6B46C1;
+    color: white;
+    
+    cursor: pointer;
+    transition: background 0.2s;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.flatpickr-time .arrowUp::before,
+.flatpickr-time .arrowDown::before {
+    font-size: 14px;
+}
+
+.flatpickr-time .arrowUp:hover,
+.flatpickr-time .arrowDown:hover {
+    background: #805AD5;
+}
+
+.flatpickr-time .flatpickr-am-pm {
+    font-size: 1rem;
+    color: #6B46C1;
+    cursor: pointer;
+}
+
+.flatpickr-time .flatpickr-am-pm:hover {
+    color: #805AD5;
+}
+.flatpickr-time .numInputWrapper span.arrowDown:after {
+    border-top-color: #ffffff;
+}
+.flatpickr-time .numInputWrapper span.arrowUp:after {
+    border-bottom-color: #ffffff;
+}
+
+/* 캘린더 스타일 (날짜 선택 UI) */
+.flatpickr-calendar {
+    position: absolute !important;
+    background: white !important;
+    border: 1px solid #ddd !important;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.15) !important;
+    z-index: 9999 !important;
+    max-width: 320px !important;
+    
+}
+.flatpickr-current-month input.cur-year {
+    font-weight:bold !important;
+}
+.flatpickr-current-month .flatpickr-monthDropdown-months {
+    font-weight:bold !important;
+}
+.flatpickr-day {
+    border-radius: 5px !important;
+}
+
+.flatpickr-day.today {
+    background: #6B46C1 !important;
+    color: white !important;
+}
+
+.flatpickr-day.selected {
+    background: #805AD5 !important;
+    color: white !important;
+}
+
+@media (max-width: 480px) {
+    .flatpickr-calendar {
+        max-width: 100% !important;
+    }
+}

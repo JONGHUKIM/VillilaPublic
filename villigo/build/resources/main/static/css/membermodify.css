@@ -1,0 +1,221 @@
+/* 컨테이너 */
+.signup-form-container {
+  max-width: 960px;
+  margin: 40px auto;
+  background-color: #ffffff;
+  padding: 40px;
+  border-radius: 12px;
+  border: 1px solid #000000;
+}
+
+/* 프로필 이미지 */
+.profile-image-wrapper {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100px; /* 명확한 크기 정의 */
+  height: 100px; /* 명확한 크기 정의 */
+  position: relative; /* edit-icon 위치를 위해 */
+  margin: 0 auto; /* 중앙 정렬 */
+  margin-bottom: 35px;
+}
+
+.profile-image-wrapper img {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover; /* 이미지가 원형 프레임에 맞게 채워짐 */
+  object-position: center; /* 이미지 중앙 정렬 */
+  border: 1px solid #ccc;
+  background-color: #fff; /* 이미지 배경 흰색으로 깔끔하게 */
+}
+
+.profile-image-wrapper input[type="file"] {
+  display: none;
+}
+
+/* 기본 이모지 스타일 */
+.emoji-frog {
+  font-size: 60px; /* 이모지 크기 */
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  border: 1px solid #ddd;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #fff; /* 배경 흰색으로 설정 */
+  line-height: normal; /* line-height 제거하여 중앙 정렬 개선 */
+}
+
+/* edit-icon 스타일 */
+.edit-icon {
+  display: block;
+  color: #000000;
+  font-size: 14px;
+  cursor: pointer;
+  font-weight: 500;
+  font-weight: bold;
+  bottom: 0;
+  right: 0;
+  background: #fff;
+  padding: 5px;
+  border-radius: 50%;
+}
+
+/* 2단 컬럼 */
+.two-column-form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 40px;
+}
+
+.column {
+  flex: 1;
+  min-width: 300px;
+}
+
+.input-group {
+    display: flex;
+    flex-direction: column;
+    margin-bottom:10px;
+}
+
+.input-group label {
+  display: block;
+  margin-bottom: 5px;
+  font-weight: 600;
+  color: #000000;
+}
+
+.input-group input[type="text"],
+.input-group input[type="tel"],
+.input-group input[type="password"] {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #ccc;
+  border-radius: 6px !important;
+  font-size: 14px;
+  box-sizing: border-box;
+}
+
+.input-group input:focus {
+  outline: none;
+  border-color: #543fe4;
+  box-shadow: 0 0 4px rgba(84, 63, 228, 0.3);
+}
+
+.password-wrapper {
+    position: relative;
+    margin-top: 8px !important;
+}
+
+.password-wrapper input {
+  width: 100% !important;
+  padding-right: 40px !important;
+}
+
+.toggle-password {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  cursor: pointer;
+  font-size: 16px;
+}
+
+#region-select{
+  position: relative;
+  border: 1px solid #ccc;
+  padding: 8px 12px;
+  border-radius: 6px !important;
+  background-color: #fff;
+  cursor: pointer;
+  user-select: none;
+    width: 100%;
+    margin-top: 7px; 
+}
+#interest-select{
+    position: relative;
+  border: 1px solid #ccc;
+  padding: 8px 12px;
+  border-radius: 6px !important;
+  background-color: #fff;
+  cursor: pointer;
+  user-select: none;
+    width: 100%;
+    margin-top: 2.5px; 
+}
+
+.select-box .arrow {
+  float: right;
+  color: #543fe4;
+}
+
+.dropdown {
+  display: none;
+  position: absolute;
+  background-color: #fff;
+  border: 1px solid #ccc;
+  border-radius: 6px !important;
+  margin-top: 5px;
+  max-height: 160px;
+  overflow-y: auto;
+  z-index: 9999;
+  left: 0; /* 기본값이 왼쪽부터 열림 */
+  width: 100%;
+}
+
+.dropdown-item {
+  padding: 10px 12px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.dropdown-item:hover {
+  background-color: #f3f3f3;
+}
+
+.option {
+  padding: 8px 12px;
+  cursor: pointer;
+}
+
+.option:hover {
+  background-color: #f3f3f3;
+}
+
+.btn-save {
+  margin-top: 40px;
+  width: 100%;
+  padding: 14px;
+  background-color: #6b59e8;
+  color: white;
+  font-size: 16px;
+  font-weight: bold;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.btn-save:hover {
+  background-color: #543fe4;
+}
+
+/* 반응형 */
+@media (max-width: 768px) {
+  .two-column-form {
+    flex-direction: column;
+    gap: 20px;
+  }
+  
+  .column {
+    min-width: 100%;
+  }
+  
+  .signup-form-container {
+    padding: 20px;
+  }
+}
