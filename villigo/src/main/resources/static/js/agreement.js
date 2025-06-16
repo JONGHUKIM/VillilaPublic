@@ -8,10 +8,34 @@ document.addEventListener('DOMContentLoaded', function() {
         const allRequiredAgreed = termsAgree.checked && privacyAgree.checked; 
         btnProceedSignUp.disabled = !allRequiredAgreed;
     }
+	
+	// 다음 아코디언 자동 열기 함수
+	function openAccordion(targetId) {
+	    const collapseElement = document.getElementById(targetId);
+	    if (!collapseElement.classList.contains('show')) {
+	        const bsCollapse = new bootstrap.Collapse(collapseElement, {
+	            toggle: false
+	        });
+	        bsCollapse.show();
+	    }
+	}
 
-    termsAgree.addEventListener('change', checkAgreements); //
-    privacyAgree.addEventListener('change', checkAgreements); //
-    marketingAgree.addEventListener('change', checkAgreements); //
+	// 체크박스 변화에 따른 아코디언 오픈 처리
+	termsAgree.addEventListener('change', function () {
+	    checkAgreements();
+	    if (termsAgree.checked) {
+	        openAccordion('collapseTwo'); // 개인정보 항목 열기
+	    }
+	});
+	
+	privacyAgree.addEventListener('change', function () {
+	    checkAgreements();
+	    if (privacyAgree.checked) {
+	        openAccordion('collapseThree'); // 마케팅 항목 열기
+	    }
+	});
+	
+    marketingAgree.addEventListener('change', checkAgreements);
 
     // "가입하기" 버튼 클릭 시
     btnProceedSignUp.addEventListener('click', function() {
