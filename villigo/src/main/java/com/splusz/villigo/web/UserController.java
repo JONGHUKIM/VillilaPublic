@@ -102,6 +102,12 @@ public class UserController {
         }
     }
     
+    @GetMapping("/agreement") // 약관 동의 페이지 매핑 추가
+    public String agreement() {
+        log.info("GET agreement()"); //
+        return "agreement"; // agreement.html 템플릿 반환
+    }
+    
     @GetMapping("/checkphone")
     public ResponseEntity<Boolean> checkPhone(@RequestParam(name = "phone") String phone) {
         log.info("checkPhone(phone={})", phone);
