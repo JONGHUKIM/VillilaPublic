@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Villila｜예약</title>
+    <link rel="stylesheet" th:href="@{/css/reservation.css}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/flatpickr/4.6.13/flatpickr.min.css"/>
+</head>
+<body>
+    <div class="container">
+        <h2>📅 예약 신청</h2>
+
+        <label for="rental-date">대여 날짜</label>
+        <input type="text" id="rental-date" placeholder="날짜를 선택하세요" readonly>
+
+        <div class="time-selection">
+            <div>
+                <label for="start-time">시작 시간</label>
+                <input type="text" id="start-time" placeholder="시작 시간을 선택하세요">
+            </div>
+            <div>
+                <label for="end-time">종료 시간</label>
+                <input type="text" id="end-time" placeholder="종료 시간을 선택하세요">
+            </div>
+        </div>
+        
+        <div class="show-price">
+            <div>
+                <label for="total-price" id="label-total-price">총 요금</label>
+                <input type="text" id="total-price" value="0 JJAM" readonly>
+            </div>
+            <div>
+                <label for="price-per-min">이용 요금</label>
+                <input type="text" id="price-per-min" value="0 JJAM" readonly>
+            </div>
+        </div>
+        
+        <p class="note" id="note-price">
+            * (총 요금) = (이용 요금) &times; (대여 시간)
+        </p>
+
+        <p class="note">
+            💡 예약 신청 시 계약금(총 요금의 10%)이 결제됩니다.
+            거래자 수락 후 계약금을 제외한 나머지가 지출됩니다.
+        </p>
+		
+		 <!-- ✅ 현재 보유 젤리 표시 -->
+        <p class="jjam-status">
+             <span id="user-jjams">조회 중...</span>
+        </p>
+        <button class="btn-ok" id="submit-btn">예약 신청</button>
+        
+        <!-- 로그인한 사용자의 Id값을 저장 -->
+        <input type="hidden" id="userId" th:value="${userId}" />
+    </div>
+
+    <!-- 공통 JS -->
+    <th:block th:replace="~{layout/fragments :: bootstrapJS}"></th:block>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/flatpickr/4.6.13/flatpickr.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/flatpickr/4.6.13/l10n/ko.min.js"></script>
+    <script th:src="@{/js/JjamReservation.js}" defer></script>
+    <script th:src="@{/js/reservation.js}" defer></script>
+</body>
+</html>

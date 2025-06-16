@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout/fragments :: htmlHead('Villila｜정보 수정','/css/membermodify.css')}"></head>
+<body>
+<th:block th:replace="~{layout/fragments :: commonLayout}"></th:block>
+
+<div class="container-global">
+  <div class="signup-form-container">
+    <form th:action="@{/member/modify}" method="post" enctype="multipart/form-data">
+        <!-- 프로필 이미지 영역 -->
+        <div class="profile-image-wrapper">
+			<!-- 이미지 있으면 -->
+			<th:block th:if="${user != null and user.avatar != null}">
+			    <img id="avatarPreview" th:src="@{|/images/avatar/${user.avatar}|}" alt="프로필 이미지">
+			</th:block>
+			
+			<!-- 이미지 없으면 -->
+			<th:block th:unless="${user != null and user.avatar != null}">
+			    <span id="avatarPreview" class="emoji-frog">🐸</span>
+			</th:block>
+            <label for="profileImage" class="edit-icon">이미지 수정 ✏️</label>
+            <input type="file" id="profileImage" name="profileImage" accept="image/*" onchange="previewAvatar(this)" hidden="hidden">
+        </div>
+
+        <div class="two-column-form">
+            <!-- 왼쪽 영역 -->
+            <div class="column">
+                <div class="input-group">
+                    <label for="username">아이디</label>
+                    <input type="text" id="username" name="username" th:value="${user != null ? user.username : ''}" readonly>
+                </div>
+
+                <div class="input-group">
+                    <label for="password">비밀번호</label>
+                    <div class="password-wrapper">
+                        <input type="password" id="password" name="password" placeholder="비밀번호 입력">
+                        <span class="toggle-password">👁️</span>
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <label for="phone">휴대전화번호</label>
+                    <input type="tel" id="phone" name="phone" th:value="${user != null ? user.phone : ''}" placeholder="휴대전화번호 입력">
+                </div>
+            </div>
+
+            <!-- 오른쪽 영역 -->
+            <div class="column">
+                <div class="input-group">
+                    <label for="nickname">닉네임</label>
+                    <input type="text" id="nickname" name="nickname" th:value="${user != null ? user.nickname : ''}" placeholder="닉네임 입력" required>
+                </div>
+
+                <div class="input-group">
+                    <label for="region">거래 희망 지역</label>
+                    <div class="select-box" id="region-select">
+                        <span id="region-text" th:text="${user != null and user.region != null ? user.region : '선택하세요'}"></span>
+                        <span class="arrow">▼</span>
+                    </div>
+                    <div class="dropdown" id="region-dropdown"></div>
+                </div>
+                
+                <div class="input-group">
+                    <label for="interest">관심 상품</label>
+                    <div class="select-box" id="interest-select">
+                        <span id="interest-text" th:text="${user != null and user.theme != null ? user.theme : '선택하세요'}"></span>
+                        <span class="arrow">▼</span>
+                    </div>
+                    <div class="dropdown" id="interest-dropdown"></div>
+                </div>
+            </div>
+        </div>
+
+      <!-- 히든 필드 -->
+		<input type="hidden" id="region-hidden" name="region" th:value="${user != null ? user.region : ''}">
+        <input type="hidden" id="theme-id-hidden" name="themeId" th:value="${user != null and user.themeId != null ? user.themeId : ''}">
+
+        <button type="submit" class="btn-save">수정하기</button>
+    </form>
+  </div>
+</div>
+
+<!-- 공통 JS -->
+<th:block th:replace="~{layout/fragments :: bootstrapJS}"></th:block>
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<script th:src="@{/js/member-modify.js}"></script>
+
+</body>
+</html>

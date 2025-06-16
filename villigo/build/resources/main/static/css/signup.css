@@ -1,0 +1,122 @@
+/* 회원가입 폼이 화면 중앙에 오도록 조정 */
+.signup-form-container {
+    margin: 50px auto 0;
+    background-color: #2a2a2a;
+    padding: 25px;
+    border-radius: 10px;
+    width: 320px;
+    text-align: center;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
+}
+
+.signup-form-container .input-group {
+    margin-bottom: 15px;
+    text-align: left;
+}
+
+.signup-form-container label {
+    font-size: 14px;
+    display: block;
+    margin-bottom: 6px;
+    color: #ffffff;
+}
+
+.signup-form-container input {
+    width: 100%;
+    padding: 10px;
+    border-radius: 5px;
+    border: 1px solid #444;
+    background-color: #333;
+    color: white;
+}
+
+.signup-form-container .password-wrapper {
+    display: flex;
+    align-items: center;
+    position: relative;
+    width: 100%;
+}
+
+.signup-form-container .password-wrapper input {
+    width: 100%;
+    padding-right: 40px;
+}
+
+.signup-form-container .toggle-password {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    cursor: pointer;
+}
+
+.signup-form-container .select-box {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #333;
+    border: 1px solid #444;
+    padding: 10px;
+    border-radius: 5px !important;
+    cursor: pointer;
+    width: 60%;
+    margin-left: auto !important;
+    text-align: left;
+}
+
+.signup-form-container .arrow {
+    font-size: 12px;
+}
+
+.signup-form-container .dropdown {
+    display: none;
+    position: absolute;
+    background-color: #444;
+    border: 1px solid #666;
+    width: 100%;
+    margin-top: 5px;
+    border-radius: 5px;
+    z-index: 10;
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+.signup-form-container .dropdown .option {
+    padding: 10px;
+    cursor: pointer;
+    color: white !important;
+    background-color: #444;
+}
+
+.signup-form-container .dropdown .option:hover {
+    background-color: #555;
+}
+
+.signup-form-container button {
+    width: 100%;
+    padding: 12px;
+    background-color: #ffffff;
+    color: black;
+    font-weight: bold;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    margin: 10px auto 10px;
+}
+
+.signup-form-container button:hover {
+    background-color: #f1f1f1;
+}
+
+.signup-form-container .select-box span,
+.signup-form-container .select-box .arrow {
+    color: white !important;
+}
+
+/* 오류 메시지 스타일링 */
+.text-danger {
+    color: #ff4d4d;
+    font-size: 0.9em;
+    margin-top: 5px;
+    display: block;
+}

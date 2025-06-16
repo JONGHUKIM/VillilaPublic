@@ -94,6 +94,7 @@ public class SecurityConfig {
 			.authorizeHttpRequests(authorize -> authorize
 					.requestMatchers("/", "/login", "/error", "/search", "/api/search", "/api/brand",
 							"/member/signin", "/member/signup", "/member/signup-social", 
+							"/member/agreement", // /member/agreement 허용
 							"/member/checkusername", "/member/checkemail", "/member/checknickname",
 							"/api/faqs", "/css/**", "/js/**", "/images/**", "/ws/**", "/sockjs/**","/fonts/**",
 							"/queue/**","/bot/**").permitAll()

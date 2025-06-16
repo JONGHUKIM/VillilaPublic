@@ -37,6 +37,7 @@ public class UserSignUpDto {
     
 	private String region;
 	private Long themeId;
+	private boolean marketingConsent; // 마케팅 동의 필드 추가
 	
 	public void validatePasswordMatch() {
 	    if (!password.equals(passwordConfirm)) {
@@ -54,6 +55,7 @@ public class UserSignUpDto {
                 .phone(phone) // 하이픈 포함된 전화번호 저장
                 .region(region)
                 .theme(theme)
+                .marketingConsent(marketingConsent) // 마케팅 동의 설정
                 .build();
     }
 }

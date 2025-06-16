@@ -17,13 +17,13 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.splusz.villigo.config.CustomOAuth2User;
 import com.splusz.villigo.domain.Product;
 import com.splusz.villigo.domain.Theme;
 import com.splusz.villigo.domain.User;
@@ -102,40 +102,61 @@ public class UserController {
         }
     }
     
+    @GetMapping("/agreement") // 약관 동의 페이지 매핑 추가
+    public String agreement() {
+        log.info("GET agreement()"); //
+        return "member/agreement"; // agreement.html 템플릿 반환
+    }
+    
     @GetMapping("/checkphone")
     public ResponseEntity<Boolean> checkPhone(@RequestParam(name = "phone") String phone) {
         log.info("checkPhone(phone={})", phone);
         return ResponseEntity.ok(userService.checkPhone(phone));
     }
     
+    // 소셜 회원가입 폼 렌더링
     @GetMapping("/signup-social")
-    public String signUpSocial(Model model) {
-        log.info("GET signUpSocial()");
-        List<Theme> themes = themeService.read(); 
+    public String showSocialSignUpForm(Model model) {
+        model.addAttribute("socialUserSignUpDto", new SocialUserSignUpDto());
+        List<Theme> themes = themeService.read();
         model.addAttribute("themes", themes);
-        return "member/signup-social"; // 명시적으로 반환
+        return "member/signup-social";
     }
     
     
     @PostMapping("/signup-social")
-    public String signUpSocial(Authentication authentication, SocialUserSignUpDto dto) {
-    	log.info("POST signUpSocial(dto={})", dto); 
-    	String realname = null;
-    	String email = null;
-    	log.info("authentication: {}", authentication);
-    	if (authentication.getPrincipal() instanceof CustomOAuth2User) {
-    		CustomOAuth2User oauth2user = (CustomOAuth2User) authentication.getPrincipal();
-    		// 구글에서 받은 인증정보에서 이름과 이메일 데이터를 가져옴.
-    		realname = oauth2user.getAttribute("name");
-    		email = oauth2user.getAttribute("email");
-    		log.info("realname: {}, email: {}", realname, email);
-    	}
-    	
-    	User user = userService.create(dto, dto.getNickname(), realname, email);
-    	log.info("SNS 회원가입 완료: {}", user);
-    	String uri = userService.checkSnsLogin(authentication);
-    	log.info("uri: {}", uri);
-    	return "redirect:/";
+    public String processSocialSignUp(
+            @Valid @ModelAttribute SocialUserSignUpDto dto,
+            BindingResult result,
+            Authentication authentication,
+            Model model) {
+        log.info("POST signup-social(dto={})", dto);
+        log.info("Marketing consent: {}", dto.isMarketingConsent());
+
+        if (result.hasErrors()) {
+            log.warn("유효성 검사 오류: {}", result.getAllErrors());
+            List<Theme> themes = themeService.read();
+            model.addAttribute("themes", themes);
+            model.addAttribute("errors", result.getAllErrors());
+            model.addAttribute("socialUserSignUpDto", dto);
+            return "member/signup-social";
+        }
+
+        try {
+            String nickname = dto.getNickname();
+            String realname = authentication.getName();
+            String email = authentication.getPrincipal().toString();
+            User user = userService.create(dto, nickname, realname, email);
+            log.info("소셜 회원가입 성공: userId={}, marketingConsent={}", user.getId(), user.isMarketingConsent());
+            return "redirect:/";
+        } catch (IllegalArgumentException e) {
+            log.warn("소셜 회원가입 실패: {}", e.getMessage());
+            model.addAttribute("error", e.getMessage());
+            List<Theme> themes = themeService.read();
+            model.addAttribute("themes", themes);
+            model.addAttribute("socialUserSignUpDto", dto);
+            return "member/signup-social";
+        }
     }
     
     @GetMapping("/checkusername")

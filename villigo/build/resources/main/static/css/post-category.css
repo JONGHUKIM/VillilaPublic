@@ -1,0 +1,65 @@
+/*  전체 화면 설정 */
+html, body {
+    height: 80vh;
+    margin: 0;
+    background: #f9f9f9;
+}
+
+
+/* 중앙 정렬된 컨테이너 */
+.container {
+    position: absolute;
+    top: 40%; /* 기존보다 위쪽으로 */
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+}
+
+
+/*  버튼 컨테이너 */
+.category-buttons {
+    display: flex;
+    gap: 60px; /* 버튼 간 간격 */
+    justify-content: center;
+}
+
+/*  동그란 버튼 스타일 */
+.category-btn {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    width: 200px; /* 크기 증가 */
+    height: 200px; /* 크기 증가 */
+    border-radius: 50%; /* 완전한 원형 */
+    font-size: 1.4rem; /* 텍스트 크기 증가 */
+    font-weight: bold;
+    text-decoration: none;
+    color: white;
+    transition: 0.3s;
+    box-shadow: 0px 6px 12px rgba(0, 0, 0, 0.15);
+}
+
+/*  자동차 버튼 스타일 */
+.car-btn {
+    background: #007bff;
+}
+.car-btn:hover {
+    background: #0056b3;
+    transform: scale(1.1);
+}
+
+/*  가방 버튼 스타일 */
+.bag-btn {
+    background: #ff4081;
+}
+.bag-btn:hover {
+    background: #d81b60;
+    transform: scale(1.1);
+}
+
+/*  아이콘 스타일 */
+.emoji {
+    font-size: 3rem; /* 아이콘 크기 증가 */
+    margin-bottom: 10px;
+}

@@ -151,4 +151,29 @@ public class User extends BaseTimeEntity implements UserDetails {
 		
 		return authorities;
 	}
+	
+    // Marketing Consent 필드 추가
+    @Column(name = "marketing_consent", nullable = false, columnDefinition = "BOOLEAN DEFAULT FALSE")
+    private boolean marketingConsent;
+	
+	// UserDetails 인터페이스 메서드 구현
+    @Override
+    public boolean isAccountNonExpired() {
+        return true;
+    }
+
+    @Override
+    public boolean isAccountNonLocked() {
+        return true;
+    }
+
+    @Override
+    public boolean isCredentialsNonExpired() {
+        return true;
+    }
+
+    @Override
+    public boolean isEnabled() {
+        return true;
+    }
 }
