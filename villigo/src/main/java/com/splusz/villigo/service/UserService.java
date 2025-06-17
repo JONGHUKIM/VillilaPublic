@@ -376,8 +376,13 @@ public class UserService implements UserDetailsService {
             throw new IllegalArgumentException("User not found with username: " + username);
         }
         User user = userOptional.get();
+<<<<<<< HEAD
 
         // 고유한 UUID 생성
+=======
+        
+        // 유저네임과 닉네임을 "탈퇴회원_UUID" 형식으로 변경
+>>>>>>> 7e55b2a (탈퇴회원_UUID로 변경)
         String uuid = UUID.randomUUID().toString();
 
         // 유저네임, 닉네임, 이메일을 "탈퇴회원_UUID" 형식으로 변경 (이메일은 중복 방지)
