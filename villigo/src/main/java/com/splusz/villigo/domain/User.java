@@ -60,7 +60,6 @@ public class User extends BaseTimeEntity implements UserDetails {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @NaturalId
     @EqualsAndHashCode.Include
     private String username;
     

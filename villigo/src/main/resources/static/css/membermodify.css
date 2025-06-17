@@ -203,6 +203,25 @@
 .btn-save:hover {
   background-color: #543fe4;
 }
+  
+/* 탈퇴하기 버튼 스타일 */
+.btn-withdraw {
+  margin-top: 10px;
+  width: 100%;
+  padding: 14px;
+  background-color: #ff0000;
+  color: white;
+  font-size: 16px;
+  font-weight: bold;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.btn-withdraw:hover {
+  background-color: #cc0000;
+}
 
 /* 반응형 */
 @media (max-width: 768px) {
@@ -210,12 +229,16 @@
     flex-direction: column;
     gap: 20px;
   }
-  
+
   .column {
     min-width: 100%;
   }
-  
+
   .signup-form-container {
     padding: 20px;
   }
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> dd0300b (CSS 중복된 문법 제거, User에서 @NaturalId 제거)
