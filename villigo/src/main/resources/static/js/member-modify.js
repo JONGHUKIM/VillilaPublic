@@ -31,7 +31,24 @@ window.previewAvatar = function (input) {
   reader.readAsDataURL(input.files[0]);
 };
 
+<<<<<<< HEAD
 
+=======
+// 탈퇴 확인 함수
+function confirmWithdraw() {
+  if (confirm("탈퇴하시겠습니까? 게시물, 리뷰, 채팅은 유지되며, 개인 정보는 삭제됩니다.")) {
+	axios.post("/member/withdraw")
+	  .then(response => {
+	    alert("회원 탈퇴가 완료되었습니다.");
+	    window.location.href = "/"; // JS에서 직접 이동
+	  })
+	  .catch(error => {
+	    console.error("회원 탈퇴 실패:", error.response || error);
+	    alert("회원 탈퇴 중 오류가 발생했습니다. 다시 시도해주세요.");
+	  });
+  }
+}
+>>>>>>> 49abed9 (서버에서 JSON응답처리, JS에서 리다이렉트 처리)
 
 document.addEventListener("DOMContentLoaded", function () {
   const regionSelect = document.getElementById("region-select");

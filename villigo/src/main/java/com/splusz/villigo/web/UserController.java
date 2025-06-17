@@ -319,4 +319,27 @@ public class UserController {
             return ResponseEntity.badRequest().build();
         }
     }
+<<<<<<< HEAD
+=======
+    
+    // 회원 탈퇴 엔드포인트
+    @PostMapping("/withdraw")
+    public ResponseEntity<String> withdrawAccount(HttpServletRequest request, HttpServletResponse response) {
+        log.info("POST /member/withdraw");
+
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null || !auth.isAuthenticated() || auth instanceof AnonymousAuthenticationToken) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("로그인이 필요합니다.");
+        }
+
+        try {
+            userService.withdrawCurrentUser(request, response);
+            return ResponseEntity.ok("탈퇴 성공"); // 리다이렉트 없음
+        } catch (Exception e) {
+            log.error("Error during account withdrawal: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("탈퇴 중 오류 발생");
+        }
+    }
+    
+>>>>>>> 49abed9 (서버에서 JSON응답처리, JS에서 리다이렉트 처리)
 }

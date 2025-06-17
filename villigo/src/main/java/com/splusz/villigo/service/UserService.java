@@ -362,5 +362,53 @@ public class UserService implements UserDetailsService {
     public User findById(Long id) {
         return userRepo.findById(id).orElse(null);
     }
+<<<<<<< HEAD
+=======
+    
+    @Transactional
+    public void withdrawCurrentUser(HttpServletRequest request, HttpServletResponse response) {
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        Optional<User> userOptional = userRepo.findByUsername(username);
+        if (userOptional.isEmpty()) {
+            throw new IllegalArgumentException("User not found with username: " + username);
+        }
+        User user = userOptional.get();
+
+        // 고유한 UUID 생성
+        String uuid = UUID.randomUUID().toString();
+
+        // 유저네임, 닉네임, 이메일을 "탈퇴회원_UUID" 형식으로 변경 (이메일은 중복 방지)
+        user.setUsername("탈퇴회원_" + uuid);
+        user.setNickname("탈퇴회원_" + uuid);
+        user.setEmail("deleted_" + uuid + "@example.com"); // 고유한 더미 이메일
+
+        // 개인 정보 삭제
+        user.setPassword(null);
+        user.setPhone(null);
+        user.setRegion(null);
+        if (user.getAvatar() != null) {
+            File file = new File(UPLOAD_DIR + File.separator + user.getAvatar());
+            if (file.exists()) {
+                file.delete();
+            }
+            user.setAvatar(null);
+        }
+        user.setRealname(null);
+        user.setTheme(null);
+        user.setMarketingConsent(false);
+        user.setMannerScore(0);
+        user.setOnline(false);
+        user.setSnsLogin(false);
+
+        // 사용자 정보 저장
+        userRepo.save(user);
+
+        // 현재 사용자 로그아웃 처리
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth != null) {
+            new SecurityContextLogoutHandler().logout(request, response, auth);
+        }
+    }
+>>>>>>> 49abed9 (서버에서 JSON응답처리, JS에서 리다이렉트 처리)
 
 }
