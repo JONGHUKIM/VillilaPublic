@@ -76,6 +76,7 @@
         <input type="hidden" id="theme-id-hidden" name="themeId" th:value="${user != null and user.themeId != null ? user.themeId : ''}">
 
         <button type="submit" class="btn-save">수정하기</button>
+        <button type="button" class="btn-withdraw" onclick="confirmWithdraw()">탈퇴하기</button>
     </form>
   </div>
 </div>
