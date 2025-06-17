@@ -30,6 +30,7 @@
 			    </div>
 			
 <<<<<<< HEAD
+<<<<<<< HEAD
 			<!-- ✅ user-info는 바깥으로 분리 -->
 			<div class="user-info-container">
 			    <div class="user-info">
@@ -54,6 +55,8 @@
 			    </div>
 			</div>
 =======
+=======
+>>>>>>> b22d0f0 (탈퇴한 사용자 링크 클릭 불가 코드 추가, CSS추가)
         	<!-- 사용자 정보 -->
         	<div class="user-info-container">
             	<div class="user-info">
@@ -62,7 +65,11 @@
                         	<!-- 탈퇴한 회원은 링크 제거 -->
                         	<th:block th:if="${user.username.startsWith('탈퇴회원_')}">
                             	<strong th:text="${user.nickname}">닉네임</strong>
+<<<<<<< HEAD
                             	<span class="withdrawn-label"></span>
+=======
+                            	<span class="withdrawn-label">(탈퇴회원)</span>
+>>>>>>> b22d0f0 (탈퇴한 사용자 링크 클릭 불가 코드 추가, CSS추가)
                         	</th:block>
                         	<th:block th:unless="${user.username.startsWith('탈퇴회원_')}">
                             	<a th:href="@{/member/details(userId=${user.id})}">
@@ -98,7 +105,10 @@
                 	</th:block>
             	</div>
 	       	</div>
+<<<<<<< HEAD
 >>>>>>> 2ce7f40 ((탈퇴회원)삭제)
+=======
+>>>>>>> b22d0f0 (탈퇴한 사용자 링크 클릭 불가 코드 추가, CSS추가)
 
             <!-- 가방 정보 -->
             <div class="section">

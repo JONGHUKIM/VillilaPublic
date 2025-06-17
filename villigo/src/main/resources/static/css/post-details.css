@@ -405,3 +405,26 @@ a {
 	font-weight: bold;
 	cursor: pointer;
 }
+
+/* 비활성화된 버튼 스타일 */
+.disabled {
+    opacity: 0.5; /* 투명도 낮춤 */
+    cursor: not-allowed; /* 커서 변경 */
+    background-color: #cccccc; /* 회색 배경 */
+    pointer-events: none; /* 클릭 불가 */
+}
+
+/* 탈퇴한 사용자 라벨 스타일 */
+.withdrawn-label {
+    color: #ff0000; /* 빨간색 */
+    font-size: 12px; /* 작게 표시 */
+    margin-left: 5px;
+}
+
+/* 탈퇴한 회원의 닉네임 및 아바타 스타일 */
+.user-info .username .disabled,
+.user-info .emoji-frog.disabled,
+.user-info img.disabled {
+    cursor: not-allowed;
+    opacity: 0.6;
+}
