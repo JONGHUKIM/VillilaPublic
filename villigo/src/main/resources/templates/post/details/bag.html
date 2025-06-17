@@ -39,6 +39,10 @@
 			                <a th:href="@{/member/details(userId=${user.id})}">
 			                    <strong th:text="${user.nickname}">닉네임</strong>
 			                </a>
+			             	<!-- 탈퇴한 사용자 표시 -->
+			                <th:block th:if="${user.username.startsWith('탈퇴회원_')}">
+			                    <span class="withdrawn-label">(탈퇴회원)</span>
+			                </th:block>
 			            </p>
 			            <p class="user-location" th:text="${user.region}">활동지역</p>
 			        </div>
@@ -155,12 +159,16 @@
                 <button class="owner-btn" id="deleteBagBtn" th:data-id="${product.id}">삭제하기</button>
             </div>
 
-            <!--  일반 유저 모드 (하트 + 예약 버튼) -->
+			<!-- 일반 유저 모드 (하트 + 예약 버튼, 탈퇴한 사용자면 비활성화) -->
             <div class="bottom-buttons" th:unless="${#authentication.name eq user.username}">
                 <button class="heart-btn" 
-		        th:attr="data-product-id=${product.id}"
-		        th:onclick="'toggleHeart(' + ${product.id} + ')'">🤍</button>
-                <button class="reserve-btn" onclick="openReservationPopup()">예약 신청</button>
+                        th:attr="data-product-id=${product.id}, disabled=${user.username.startsWith('탈퇴회원_')}"
+                        th:onclick="'toggleHeart(' + ${product.id} + ')'"
+                        th:classappend="${user.username.startsWith('탈퇴회원_')} ? 'disabled' : ''">🤍</button>
+                <button class="reserve-btn" 
+                        th:attr="disabled=${user.username.startsWith('탈퇴회원_')}"
+                        th:onclick="'openReservationPopup()'"
+                        th:classappend="${user.username.startsWith('탈퇴회원_')} ? 'disabled' : ''">예약 신청</button>
             </div>
         </div>
     </main>
