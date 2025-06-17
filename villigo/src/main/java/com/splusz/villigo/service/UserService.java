@@ -384,6 +384,7 @@ public class UserService implements UserDetailsService {
         // 유저네임과 닉네임을 "탈퇴회원_UUID" 형식으로 변경
 >>>>>>> 7e55b2a (탈퇴회원_UUID로 변경)
         String uuid = UUID.randomUUID().toString();
+<<<<<<< HEAD
 
         // 유저네임, 닉네임, 이메일을 "탈퇴회원_UUID" 형식으로 변경 (이메일은 중복 방지)
         user.setUsername("탈퇴회원_" + uuid);
@@ -409,6 +410,32 @@ public class UserService implements UserDetailsService {
         user.setSnsLogin(false);
 
         // 사용자 정보 저장
+=======
+        user.setUsername("탈퇴회원_" + uuid); // 유저네임 변경
+        user.setNickname("탈퇴회원_" + uuid); // 닉네임 변경
+        
+        // 개인 정보 삭제
+        user.setPassword(null); // 비밀번호 삭제
+        user.setPhone(null); // 전화번호 삭제
+        user.setRegion(null); // 지역 삭제
+        // 프로필 이미지 삭제 (파일 시스템 및 데이터베이스)
+        if (user.getAvatar() != null) {
+            File file = new File(UPLOAD_DIR + File.separator + user.getAvatar());
+            if (file.exists()) {
+                file.delete(); // 파일 시스템에서 프로필 이미지 삭제
+            }
+            user.setAvatar(null); // 데이터베이스에서 avatar 필드 null로 설정
+        }
+        user.setEmail(null); // 이메일 삭제
+        user.setRealname(null); // 실제 이름 삭제
+        user.setTheme(null); // 관심 상품 삭제
+        user.setMarketingConsent(false); // 마케팅 동의 해제
+        user.setMannerScore(0); // 매너 점수 초기화
+        user.setOnline(false); // 온라인 상태 해제
+        user.setSnsLogin(false); // 소셜 로그인 여부 해제
+        
+        // 사용자 정보 저장 (Product, Review, Chat은 유지)
+>>>>>>> bededd5 (탈퇴한 회원 -> 탈퇴회원으로 변경)
         userRepo.save(user);
 
         // 현재 사용자 로그아웃 처리
