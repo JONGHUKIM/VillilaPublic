@@ -12,6 +12,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -28,6 +29,8 @@ import com.splusz.villigo.repository.ThemeRepository;
 import com.splusz.villigo.repository.UserJjamRepository;
 import com.splusz.villigo.repository.UserRepository;
 
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -408,6 +411,16 @@ public class UserService implements UserDetailsService {
         if (auth != null) {
             new SecurityContextLogoutHandler().logout(request, response, auth);
         }
+<<<<<<< HEAD
+=======
+
+        // 탈퇴 후 홈으로 리다이렉트
+        try {
+			response.sendRedirect(request.getContextPath() + "/");
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+>>>>>>> 05dfe10 (회원 탈퇴 후 로그아웃 -> 홈으로 리다이렉트 코드 추가)
     }
 >>>>>>> 49abed9 (서버에서 JSON응답처리, JS에서 리다이렉트 처리)
 

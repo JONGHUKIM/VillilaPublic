@@ -38,6 +38,8 @@ import com.splusz.villigo.service.ReviewService;
 import com.splusz.villigo.service.ThemeService;
 import com.splusz.villigo.service.UserService;
 
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -325,16 +327,25 @@ public class UserController {
     // 회원 탈퇴 엔드포인트
     @PostMapping("/withdraw")
     public ResponseEntity<String> withdrawAccount(HttpServletRequest request, HttpServletResponse response) {
+<<<<<<< HEAD
         log.info("POST /member/withdraw");
 
+=======
+        log.info("POST /member/withdraw"); // 요청 로그
+>>>>>>> 05dfe10 (회원 탈퇴 후 로그아웃 -> 홈으로 리다이렉트 코드 추가)
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         if (auth == null || !auth.isAuthenticated() || auth instanceof AnonymousAuthenticationToken) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("로그인이 필요합니다.");
         }
 
         try {
+<<<<<<< HEAD
             userService.withdrawCurrentUser(request, response);
             return ResponseEntity.ok("탈퇴 성공"); // 리다이렉트 없음
+=======
+            userService.withdrawCurrentUser(request, response); // 사용자 탈퇴 서비스 호출
+            return ResponseEntity.ok("Account withdrawn successfully"); // 성공 응답
+>>>>>>> 05dfe10 (회원 탈퇴 후 로그아웃 -> 홈으로 리다이렉트 코드 추가)
         } catch (Exception e) {
             log.error("Error during account withdrawal: {}", e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("탈퇴 중 오류 발생");
