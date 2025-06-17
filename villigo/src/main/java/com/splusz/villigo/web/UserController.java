@@ -8,6 +8,7 @@ import java.util.List;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
@@ -322,6 +323,7 @@ public class UserController {
         }
     }
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
     
     // 회원 탈퇴 엔드포인트
@@ -353,4 +355,28 @@ public class UserController {
     }
     
 >>>>>>> 49abed9 (서버에서 JSON응답처리, JS에서 리다이렉트 처리)
+=======
+    
+ // 회원 탈퇴 엔드포인트
+    @PostMapping("/withdraw")
+    public ResponseEntity<String> withdrawAccount() {
+        log.info("POST /member/withdraw"); // 요청 로그
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        // 인증되지 않은 사용자는 탈퇴 불가
+        if (auth == null || !auth.isAuthenticated() || auth instanceof AnonymousAuthenticationToken) {
+            log.warn("User not authenticated, cannot withdraw"); // 비인증 사용자 로그
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User not authenticated");
+        }
+        
+        try {
+            userService.withdrawCurrentUser(); // 사용자 탈퇴 서비스 호출
+            SecurityContextHolder.clearContext(); // 로그아웃 처리
+            return ResponseEntity.ok("Account withdrawn successfully"); // 성공 응답
+        } catch (Exception e) {
+            log.error("Error during account withdrawal: {}", e.getMessage(), e); // 에러 로그
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error withdrawing account");
+        }
+    }
+    
+>>>>>>> fe7f247 (게시물, 리뷰, 채팅만 남겨놓음 탈퇴코드 controller, service에 추가)
 }

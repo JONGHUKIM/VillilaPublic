@@ -366,6 +366,7 @@ public class UserService implements UserDetailsService {
         return userRepo.findById(id).orElse(null);
     }
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
     
     @Transactional
@@ -413,11 +414,29 @@ public class UserService implements UserDetailsService {
 =======
         user.setUsername("탈퇴회원_" + uuid); // 유저네임 변경
         user.setNickname("탈퇴회원_" + uuid); // 닉네임 변경
+=======
+    
+    // 현재 사용자 계정 탈퇴 처리: 개인 정보 삭제, 유저네임/닉네임 변경
+    @Transactional
+    public void withdrawCurrentUser() {
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        Optional<User> userOptional = userRepo.findByUsername(username);
+        if (userOptional.isEmpty()) {
+            throw new IllegalArgumentException("User not found with username: " + username); // 사용자 없음 예외
+        }
+        User user = userOptional.get();
+        
+        // 유저네임과 닉네임을 "탈퇴한 회원_UUID" 형식으로 변경
+        String uuid = UUID.randomUUID().toString();
+        user.setUsername("탈퇴회원_" + uuid);
+        user.setNickname("탈퇴회원_" + uuid);
+>>>>>>> fe7f247 (게시물, 리뷰, 채팅만 남겨놓음 탈퇴코드 controller, service에 추가)
         
         // 개인 정보 삭제
         user.setPassword(null); // 비밀번호 삭제
         user.setPhone(null); // 전화번호 삭제
         user.setRegion(null); // 지역 삭제
+<<<<<<< HEAD
         // 프로필 이미지 삭제 (파일 시스템 및 데이터베이스)
         if (user.getAvatar() != null) {
             File file = new File(UPLOAD_DIR + File.separator + user.getAvatar());
@@ -426,6 +445,9 @@ public class UserService implements UserDetailsService {
             }
             user.setAvatar(null); // 데이터베이스에서 avatar 필드 null로 설정
         }
+=======
+        user.setAvatar(null); // 프로필 이미지 삭제
+>>>>>>> fe7f247 (게시물, 리뷰, 채팅만 남겨놓음 탈퇴코드 controller, service에 추가)
         user.setEmail(null); // 이메일 삭제
         user.setRealname(null); // 실제 이름 삭제
         user.setTheme(null); // 관심 상품 삭제
@@ -435,6 +457,7 @@ public class UserService implements UserDetailsService {
         user.setSnsLogin(false); // 소셜 로그인 여부 해제
         
         // 사용자 정보 저장 (Product, Review, Chat은 유지)
+<<<<<<< HEAD
 >>>>>>> bededd5 (탈퇴한 회원 -> 탈퇴회원으로 변경)
         userRepo.save(user);
 
@@ -455,5 +478,9 @@ public class UserService implements UserDetailsService {
 >>>>>>> 05dfe10 (회원 탈퇴 후 로그아웃 -> 홈으로 리다이렉트 코드 추가)
     }
 >>>>>>> 49abed9 (서버에서 JSON응답처리, JS에서 리다이렉트 처리)
+=======
+        userRepo.save(user);
+    }
+>>>>>>> fe7f247 (게시물, 리뷰, 채팅만 남겨놓음 탈퇴코드 controller, service에 추가)
 
 }
