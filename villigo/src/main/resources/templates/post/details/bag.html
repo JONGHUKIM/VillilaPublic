@@ -29,6 +29,7 @@
 			        </th:block>
 			    </div>
 			
+<<<<<<< HEAD
 			<!-- ✅ user-info는 바깥으로 분리 -->
 			<div class="user-info-container">
 			    <div class="user-info">
@@ -52,6 +53,52 @@
 			        </a>
 			    </div>
 			</div>
+=======
+        	<!-- 사용자 정보 -->
+        	<div class="user-info-container">
+            	<div class="user-info">
+                	<div class="user-details">
+                    	<p class="username">
+                        	<!-- 탈퇴한 회원은 링크 제거 -->
+                        	<th:block th:if="${user.username.startsWith('탈퇴회원_')}">
+                            	<strong th:text="${user.nickname}">닉네임</strong>
+                            	<span class="withdrawn-label"></span>
+                        	</th:block>
+                        	<th:block th:unless="${user.username.startsWith('탈퇴회원_')}">
+                            	<a th:href="@{/member/details(userId=${user.id})}">
+                                	<strong th:text="${user.nickname}">닉네임</strong>
+                            	</a>
+                        	</th:block>
+                    	</p>
+                    	<p class="user-location" th:text="${user.region != null ? user.region : '활동 지역 미설정'}">활동지역</p>
+                	</div>
+                	<!-- 탈퇴한 회원은 아바타 링크 제거 -->
+                	<th:block th:if="${user.username.startsWith('탈퇴회원_')}">
+                    	<th:block th:if="${user.avatar != null}">
+                        	<img id="profileImage"
+                             	th:src="@{/member/images/{avatar}(avatar=${user.avatar})}"
+                             	alt="프로필 이미지"
+                             	class="disabled" />
+                    	</th:block>
+                    	<th:block th:unless="${user.avatar != null}">
+                        	<span id="profileImage" class="emoji-frog disabled">🐸</span>
+                    	</th:block>
+                	</th:block>
+                	<th:block th:unless="${user.username.startsWith('탈퇴회원_')}">
+                    	<a th:href="@{/member/details(userId=${user.id})}">
+                       	 	<th:block th:if="${user.avatar != null}">
+                            	<img id="profileImage"
+                                 	th:src="@{/member/images/{avatar}(avatar=${user.avatar})}"
+                                	 alt="프로필 이미지" />
+                        	</th:block>
+                        	<th:block th:unless="${user.avatar != null}">
+                            	<span id="profileImage" class="emoji-frog">🐸</span>
+                        	</th:block>
+                    	</a>
+                	</th:block>
+            	</div>
+	       	</div>
+>>>>>>> 2ce7f40 ((탈퇴회원)삭제)
 
             <!-- 가방 정보 -->
             <div class="section">
