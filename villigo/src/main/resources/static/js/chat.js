@@ -45,11 +45,14 @@ document.addEventListener("DOMContentLoaded", function () {
     let imageList = [];
 
     // chatUserName 초기값 가공
-    const chatUserNameElement = document.getElementById("chatUserName");
-    if (chatUserNameElement) {
-        const initialChatUserName = chatUserNameElement.innerText;
-        chatUserNameElement.innerText = initialChatUserName.split(",")[0].trim();
-    }
+	const chatUserNameElement = document.getElementById("chatUserName");
+	if (chatUserNameElement) {
+	    let initialChatUserName = chatUserNameElement.innerText.split(",")[0].trim();
+	    if (initialChatUserName.startsWith("탈퇴회원_")) {
+	        initialChatUserName = "탈퇴회원";
+	    }
+	    chatUserNameElement.innerText = initialChatUserName;
+	}
 
     chatMessages.addEventListener("click", function (e) {
         if (e.target.tagName === "IMG" && e.target.closest(".message")) {
@@ -604,7 +607,11 @@ document.addEventListener("DOMContentLoaded", function () {
 	    chatRoomId = chatRoom.id;
 	    activeChatRoomId = chatRoom.id;
 	    chatMain.setAttribute("data-chatroom-id", chatRoom.id);
-	    document.getElementById("chatUserName").innerText = chatRoom.otherUserNickName || "알 수 없는 사용자";
+		let chatTitleUserName = chatRoom.otherUserNickName ? chatRoom.otherUserNickName.split(",")[0].trim() : "알 수 없는 사용자";
+			    if (chatTitleUserName.startsWith("탈퇴회원_")) {
+			        chatTitleUserName = "탈퇴회원";
+			    }
+			    document.getElementById("chatUserName").innerText = chatTitleUserName;
 
 	    fetchChatMessages(chatRoom.id).then(() => {
 	        subscribeToChatRoom(chatRoom.id);
@@ -916,7 +923,11 @@ document.addEventListener("DOMContentLoaded", function () {
 	    chatMain.setAttribute("data-chatroom-id", newChatRoomId);
 	    chatRoomId = newChatRoomId;
 
-	    document.getElementById("chatUserName").innerText = chatRoom.otherUserNickName || "알 수 없는 사용자";
+		let chatTitleUserName = chatRoom.otherUserNickName ? chatRoom.otherUserNickName.split(",")[0].trim() : "알 수 없는 사용자";
+		if (chatTitleUserName.startsWith("탈퇴회원_")) {
+		    chatTitleUserName = "탈퇴회원";
+		}
+		document.getElementById("chatUserName").innerText = chatTitleUserName;
 
 	    // 경고 메시지 표시 (첫 번째 열림 시에만)
 	    const hasSeenWarning = localStorage.getItem(`warningSeen_${newChatRoomId}`);
@@ -955,6 +966,23 @@ document.addEventListener("DOMContentLoaded", function () {
 	            subscribeToChatRoom(chatRoomId);
 	        });
 	    }
+		
+		document.getElementById("chatUserName").innerText = chatTitleUserName;
+
+		// 탈퇴회원인 경우 메시지 입력 및 전송 비활성화
+		const isOtherUserWithdrawn = chatRoom.otherUserNickName && chatRoom.otherUserNickName.startsWith("탈퇴회원_");
+
+		messageInput.disabled = isOtherUserWithdrawn;
+		sendButton.disabled = isOtherUserWithdrawn;
+		if (isOtherUserWithdrawn) {
+		    sendButton.classList.remove("active");
+		    sendButton.classList.add("disabled");
+		    messageInput.placeholder = "탈퇴한 회원에게는 메시지를 보낼 수 없습니다.";
+		} else {
+		    sendButton.classList.remove("disabled");
+		    sendButton.classList.add("active"); // 메시지 입력창에 내용이 없어도 기본적으로 active 상태로 시작
+		    messageInput.placeholder = "메시지를 입력하세요";
+		}
 
 	    window.history.pushState({}, '', `/chat?chatRoomId=${chatRoomId}`);
 	}
@@ -996,7 +1024,10 @@ document.addEventListener("DOMContentLoaded", function () {
 	            }
 	            const statusIndicator = chat.otherUserIsOnline ? "🟢" : "🔴";
 	            
-	            const otherUserName = chat.otherUserNickName ? chat.otherUserNickName.split(",")[0].trim() : "알 수 없는 사용자";
+				let otherUserName = chat.otherUserNickName ? chat.otherUserNickName.split(",")[0].trim() : "알 수 없는 사용자";
+				if (otherUserName.startsWith("탈퇴회원_")) {
+				    otherUserName = "탈퇴회원";
+				}
 	            
 	            // 검색어 하이라이팅
 	            let displayName = otherUserName;
@@ -1116,6 +1147,17 @@ document.addEventListener("DOMContentLoaded", function () {
     const MIN_SEND_INTERVAL = 2000;
 
 	function sendMessage() {
+		
+		// 현재 활성화된 채팅방 정보를 가져옴
+		const currentChatRoom = chatRoomsCache.find(room => room.id === chatRoomId);
+
+		// 상대방이 탈퇴회원인지 확인
+		if (currentChatRoom && currentChatRoom.otherUserNickName && currentChatRoom.otherUserNickName.startsWith("탈퇴회원_")) {
+		    alert("탈퇴한 회원에게는 메시지를 보낼 수 없습니다.");
+		    messageInput.value = ""; // 입력창 비우기
+		    return; // 메시지 전송 중단
+		}
+		
 	    const now = Date.now();
 	    if (now - lastSentTime < MIN_SEND_INTERVAL) {
 	        console.log("너무 빠른 메시지 전송 시도. 무시됨.");
