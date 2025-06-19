@@ -1,0 +1,71 @@
+# GitHub Actions 워크플로 이름
+name: Deploy to EC2 using ECR and S3
+
+# main 브랜치에 push 이벤트 발생 시 실행
+on:
+  push:
+    branches: [main]
+
+# 공통 환경 변수 (커밋 SHA를 이미지 태그로 사용)
+env:
+  IMAGE_TAG: ${{ github.sha }}
+
+jobs:
+  # 1단계: Docker 이미지 빌드 후 ECR에 푸시
+  build-and-push:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v2
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: ${{ secrets.REGION }}
+
+    - name: Login to ECR
+      run: |
+        aws ecr get-login-password --region ${{ secrets.REGION }} \
+        | docker login --username AWS --password-stdin ${{ secrets.ECR_REGISTRY }}
+
+    - name: Build and Push Docker image
+      run: |
+        docker build -t ${{ secrets.ECR_REPOSITORY }}:$IMAGE_TAG .
+        docker tag ${{ secrets.ECR_REPOSITORY }}:$IMAGE_TAG ${{ secrets.ECR_REGISTRY }}/${{ secrets.ECR_REPOSITORY }}:$IMAGE_TAG
+        docker push ${{ secrets.ECR_REGISTRY }}/${{ secrets.ECR_REPOSITORY }}:$IMAGE_TAG
+
+  # 2단계: EC2에 SSH 접속해 배포
+  deploy:
+    needs: build-and-push
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Deploy on EC2 via SSH
+      uses: appleboy/ssh-action@v1.0.0
+      with:
+        host: ${{ secrets.EC2_HOST }}
+        username: ${{ secrets.EC2_USER }}
+        key: ${{ secrets.EC2_SSH_KEY }}
+
+        script: |
+          # 1. ECR 로그인
+          aws ecr get-login-password --region ${{ secrets.REGION }} \
+          | docker login --username AWS --password-stdin ${{ secrets.ECR_REGISTRY }}
+
+          # 2. prod.env S3에서 다운로드
+          aws s3 cp s3://villila/prod.env ./prod.env
+
+          # 3. 기존 컨테이너 종료 및 제거 (있을 경우)
+          docker stop villila || true
+          docker rm villila || true
+
+          # 4. 최신 이미지 Pull
+          docker pull ${{ secrets.ECR_REGISTRY }}/${{ secrets.ECR_REPOSITORY }}:${{ github.sha }}
+
+          # 5. 새 컨테이너 실행 (S3에서 받은 prod.env 사용)
+          docker run -d --name villila -p 80:8080 \
+            --env-file ./prod.env \
+            ${{ secrets.ECR_REGISTRY }}/${{ secrets.ECR_REPOSITORY }}:${{ github.sha }}
