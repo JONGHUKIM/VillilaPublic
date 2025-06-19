@@ -76,6 +76,6 @@ jobs:
 
           # 새로운 컨테이너 실행
           docker run -d --name villila -p 80:8080 \
-            --env-file ./prod.env \  # 환경 변수 파일 적용
-            ${{ secrets.ECR_REGISTRY }}/${{ secrets.ECR_REPOSITORY }}:${{ github.sha }}
+            --env-file ./prod.env \  
+            ${{ secrets.ECR_REGISTRY }}/${{ secrets.ECR_REPOSITORY }}:${{ github.sha }} # 환경 변수 파일 적용
           # 애플리케이션을 EC2에서 포트 80으로 서비스 시작
