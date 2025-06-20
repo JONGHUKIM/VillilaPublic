@@ -155,6 +155,7 @@
             </div>
         </main>
         <th:block th:replace="~{layout/fragments :: bootstrapJS}"></th:block>
+        <script th:src="@{/js/common.js}"></script>
         <script th:inline="javascript">
             /*<![CDATA[*/
             var bagbrands = JSON.parse(document.getElementById("brandData").dataset.bagbrands);

@@ -81,6 +81,8 @@
 	    <th:block th:replace="~{layout/fragments :: bootstrapJS}"></th:block>
 		<script src="https://cdn.jsdelivr.net/npm/sockjs-client@1.6.1/dist/sockjs.min.js"></script>
 		<script src="https://cdn.jsdelivr.net/npm/@stomp/stompjs@7.1.0/bundles/stomp.umd.min.js"></script>
+		<script th:src="@{/js/common.js}"></script>
+		
 	
 	    <!-- JavaScript 로직 -->
 	    <script th:src="@{/js/chat.js}"></script>
