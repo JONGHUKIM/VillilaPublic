@@ -151,9 +151,24 @@ public class User extends BaseTimeEntity implements UserDetails {
 		return authorities;
 	}
 	
+    @Enumerated(EnumType.STRING)
+    @Column(name = "social_type")
+    private SocialType socialType;
+
+    public SocialType getSocialType() {
+        return socialType;
+    }
+
+    public void setSocialType(SocialType socialType) {
+        this.socialType = socialType;
+    }
+	
     // Marketing Consent 필드 추가
     @Column(name = "marketing_consent", nullable = false, columnDefinition = "BOOLEAN DEFAULT FALSE")
     private boolean marketingConsent;
+    
+
+
 	
 	// UserDetails 인터페이스 메서드 구현
     @Override

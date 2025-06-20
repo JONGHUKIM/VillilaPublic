@@ -275,16 +275,29 @@ document.addEventListener("DOMContentLoaded", function () {
 	            .catch((error) => console.log(error));
 	    }
 
-		function handleCheckEmailResult({data}) {
-		        if (data === true) {
-		            checkEmailResult.innerHTML = '이미 사용중인 이메일입니다.';
-		            isEmailChecked = false;
-		        } else {
-		            checkEmailResult.innerHTML = '';
-		            isEmailChecked = true;
-		        }
-		        changeBtnStatus();
+		function handleCheckEmailResult({ data }) {
+		    const password = document.getElementById('password');
+		    const passwordConfirm = document.getElementById('passwordConfirm');
+
+		    if (data === 'SNS_USER') {
+		        checkEmailResult.innerHTML = 'SNS로 가입된 계정입니다.';
+		        password.disabled = true;
+		        passwordConfirm.disabled = true;
+		        isEmailChecked = false;
+		    } else if (data === 'DUPLICATE') {
+		        checkEmailResult.innerHTML = '이미 사용중인 이메일입니다.';
+		        password.disabled = false;
+		        passwordConfirm.disabled = false;
+		        isEmailChecked = false;
+		    } else {
+		        checkEmailResult.innerHTML = '';
+		        password.disabled = false;
+		        passwordConfirm.disabled = false;
+		        isEmailChecked = true;
 		    }
+
+		    changeBtnStatus();
+		}
 
 	function checkPhone() { // event 매개변수 제거 (input 이벤트에서 바로 호출하므로 제거)
 	        const phone = phoneInput.value.trim(); // <-- trim() 추가

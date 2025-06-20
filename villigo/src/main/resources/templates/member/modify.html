@@ -30,13 +30,17 @@
                     <input type="text" id="username" name="username" th:value="${user != null ? user.username : ''}" readonly>
                 </div>
 
-                <div class="input-group">
-                    <label for="password">비밀번호</label>
-                    <div class="password-wrapper">
-                        <input type="password" id="password" name="password" placeholder="비밀번호 입력">
-                        <span class="toggle-password">👁️</span>
-                    </div>
-                </div>
+				<div class="input-group">
+				    <label for="password">비밀번호</label>
+				    <div class="password-wrapper">
+				        <input type="password" id="password" name="password" placeholder="비밀번호 입력"
+				               th:disabled="${user != null and user.socialType != null}">
+				        <span class="toggle-password">👁️</span>
+				    </div>
+				    <div class="text-muted" th:if="${user != null and user.socialType != null}">
+				        소셜 로그인 회원은 비밀번호를 수정할 수 없습니다.
+				    </div>
+				</div>
 
                 <div class="input-group">
                     <label for="phone">휴대전화번호</label>

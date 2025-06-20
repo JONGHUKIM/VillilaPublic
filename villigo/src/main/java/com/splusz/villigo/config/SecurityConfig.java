@@ -18,6 +18,8 @@ import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.filter.ForwardedHeaderFilter;
 
+import com.splusz.villigo.service.CustomOAuth2UserService;
+
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -31,6 +33,10 @@ public class SecurityConfig {
 	
 	@Autowired
 	private HttpsEnforcedRedirectStrategy redirectStrategy;
+	
+	@Autowired
+	private CustomOAuth2UserService customOAuth2UserService;
+
 
 	
 	// Spring Security 5 버전부터 비밀번호는 반드시 암호화(encoding)를 해야만 함 
@@ -106,6 +112,7 @@ public class SecurityConfig {
 					.defaultSuccessUrl("/home", true)
 					.failureUrl("/member/signin?error=true")
 					.successHandler(oauth2SuccessHandler)
+					.userInfoEndpoint(user -> user.userService(customOAuth2UserService))
 			)
 			.logout(logout -> logout
 					.logoutSuccessUrl("/")

@@ -21,4 +21,6 @@ public interface UserRepository extends JpaRepository<User, Long> {
 	
 	@Query("SELECT u FROM User u LEFT JOIN FETCH u.theme WHERE u.username = :username")
 	Optional<User> findByUsernameWithTheme(String username);
+	
+	
 }

@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
@@ -23,6 +24,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.splusz.villigo.domain.Product;
@@ -174,11 +176,20 @@ public class UserController {
     	return ResponseEntity.ok(userService.checkNickname(nickname));
     }
     
-    @GetMapping("/checkemail")
-    public ResponseEntity<Boolean> checkEmail(@RequestParam(name = "email") String email) {
-    	log.info("checkemail(email={})", email);
-    	return ResponseEntity.ok(userService.checkEmail(email));
+    @GetMapping("/check-email")
+    @ResponseBody
+    public ResponseEntity<String> checkEmail(@RequestParam String email) {
+        Optional<User> userOpt = userService.findByEmail(email);
+        if (userOpt.isPresent()) {
+            if (userOpt.get().getSocialType() != null) {
+                return ResponseEntity.ok("SNS_USER");
+            } else { 
+                return ResponseEntity.ok("DUPLICATE");
+            }
+        }
+        return ResponseEntity.ok("AVAILABLE");
     }
+
     
     @GetMapping("/modify")
     public String modify(Model model) {

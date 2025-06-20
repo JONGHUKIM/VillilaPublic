@@ -181,6 +181,11 @@ public class UserService implements UserDetailsService {
         
         return false;
     }
+    
+    public Optional<User> findByEmail(String email) {
+        return userRepo.findByEmail(email);  // 또는 .findUserByEmail()
+    }
+
 
     // 채팅에서 사용자가 온라인/오프라인 구분 메서드 추가
     public void setUserOnline(Long userId, boolean isOnline) {
