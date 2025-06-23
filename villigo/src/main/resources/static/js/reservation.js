@@ -32,7 +32,7 @@ document.addEventListener("DOMContentLoaded", function () {
             noCalendar: true,
             dateFormat: "H:i",
             time_24hr: true,
-            position: "below",
+            position: "auto",
             locale: "ko", /* 한글 로케일 설정 */
             onChange: function (selectedDates, dateStr) {
                 console.log("⏰ 시작 시간 선택:", dateStr);
@@ -45,8 +45,11 @@ document.addEventListener("DOMContentLoaded", function () {
             noCalendar: true,
             dateFormat: "H:i",
             time_24hr: true,
-            position: "below",
+            position: "auto",
             locale: "ko", /* 한글 로케일 설정 */
+			onOpen: function () { // onOpen 이벤트 추가
+			    this.calendarContainer.style.zIndex = "9999"; // 시간 선택기의 z-index
+			},
             onChange: function (selectedDates, dateStr) {
                 console.log("⏰ 종료 시간 선택:", dateStr);
                 calculatePrice();
@@ -66,7 +69,7 @@ document.addEventListener("DOMContentLoaded", function () {
             pricePerMin = data;
             // 이용 요금 표시 input 요소
             const inputPricePerMin = document.getElementById("price-per-min");
-            inputPricePerMin.value = `${pricePerMin.toLocaleString()} JJAM / 분`;
+            inputPricePerMin.value = `${pricePerMin.toLocaleString()} 원 / 분`;
             console.log('요금 반영 완료 => pricePerMin=', pricePerMin);
         })
         .catch((error) => console.log(error));
@@ -83,9 +86,9 @@ document.addEventListener("DOMContentLoaded", function () {
                 const inputTotalPrice = document.getElementById("total-price");
                 if (diffMinutes > 0) {
                     const totalPrice = diffMinutes * pricePerMin;
-                    inputTotalPrice.value = `${totalPrice.toLocaleString()} JJAM`;
+                    inputTotalPrice.value = `${totalPrice.toLocaleString()} 원`;
                 } else {
-                    document.getElementById("total-price").value = "0 JJAM";
+                    document.getElementById("total-price").value = "0 원";
                 }
             }
         }

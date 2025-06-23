@@ -43,12 +43,22 @@ input {
     outline: none;
     text-align: center;
     box-sizing: border-box;
-    transition: border-color 0.2s;
+    transition: all 0.3s ease;
+    background: #fafafa;
 }
 
 input:focus {
     border-color: #6B46C1;
-    box-shadow: 0 0 5px rgba(107, 70, 193, 0.3);
+    box-shadow: 0 0 8px rgba(107, 70, 193, 0.25);
+    background: white;
+    /* transform: translateY(-1px); */
+}
+
+input:hover {
+    border-color: #9575CD;
+    background: white;
+    box-shadow: 0 2px 6px rgba(107, 70, 193, 0.15);
+    transform: translateY(-1px);
 }
 
 .time-selection {
@@ -104,117 +114,236 @@ input:focus {
     background: #805AD5;
 }
 
-/* Flatpickr 시간 선택 UI 스타일 */
-.flatpickr-time {
-    
-    background: #fff;
-    border: 1px solid #ddd;
-    border-radius: 6px;
-    z-index: 9999;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    box-sizing: border-box;
-}
-
-.flatpickr-time .numInputWrapper {
-    width: 45%;
-    margin: 0 5px;
-    position: relative;
-}
-
-.flatpickr-time .numInput {
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    padding: 5px;
-    font-size: 0.9rem;
-    text-align: center;
-    outline: none;
-    width: 100%;
-    box-sizing: border-box;
-    transition: border-color 0.2s;
-}
-
-.flatpickr-time .numInput:focus {
-    border-color: #6B46C1;
-    box-shadow: 0 0 5px rgba(107, 70, 193, 0.3);
-}
-.flatpickr-time input.flatpickr-minute{
-    font-weight: bold !important;
-}
-.flatpickr-time .arrowUp,
-.flatpickr-time .arrowDown {
-    border: none;
-    background: #6B46C1;
-    color: white;
-    
-    cursor: pointer;
-    transition: background 0.2s;
-    width: 24px;
-    height: 24px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.flatpickr-time .arrowUp::before,
-.flatpickr-time .arrowDown::before {
-    font-size: 14px;
-}
-
-.flatpickr-time .arrowUp:hover,
-.flatpickr-time .arrowDown:hover {
-    background: #805AD5;
-}
-
-.flatpickr-time .flatpickr-am-pm {
-    font-size: 1rem;
-    color: #6B46C1;
-    cursor: pointer;
-}
-
-.flatpickr-time .flatpickr-am-pm:hover {
-    color: #805AD5;
-}
-.flatpickr-time .numInputWrapper span.arrowDown:after {
-    border-top-color: #ffffff;
-}
-.flatpickr-time .numInputWrapper span.arrowUp:after {
-    border-bottom-color: #ffffff;
-}
-
-/* 캘린더 스타일 (날짜 선택 UI) */
+/* 통일된 Flatpickr 캘린더 스타일 */
 .flatpickr-calendar {
     position: absolute !important;
     background: white !important;
     border: 1px solid #ddd !important;
-    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.15) !important;
+    border-radius: 12px !important;
+    box-shadow: 0px 8px 25px rgba(107, 70, 193, 0.15) !important;
     z-index: 9999 !important;
     max-width: 320px !important;
-    
+    overflow: hidden !important;
+    font-family: inherit !important;
 }
+
+.flatpickr-calendar::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, #6B46C1, #9575CD, #805AD5);
+}
+
+.flatpickr-months {
+    background: #fafafa !important;
+    border-bottom: 1px solid #eee !important;
+    padding: 15px !important;
+}
+
 .flatpickr-current-month input.cur-year {
-    font-weight:bold !important;
+    font-weight: bold !important;
+    color: #6B46C1 !important;
+    background: transparent !important;
+    border: none !important;
 }
+
 .flatpickr-current-month .flatpickr-monthDropdown-months {
-    font-weight:bold !important;
+    font-weight: bold !important;
+    color: #6B46C1 !important;
+    background: transparent !important;
+    border: none !important;
 }
+
+.flatpickr-prev-month,
+.flatpickr-next-month {
+    color: #6B46C1 !important;
+    transition: all 0.2s ease !important;
+}
+
+.flatpickr-prev-month:hover,
+.flatpickr-next-month:hover {
+    color: #805AD5 !important;
+    transform: scale(1.1) !important;
+}
+
+.flatpickr-weekdays {
+    background: #f8f9ff !important;
+    padding: 10px 0 !important;
+}
+
+.flatpickr-weekday {
+    color: #6B46C1 !important;
+    font-weight: bold !important;
+}
+
+.flatpickr-days {
+    padding: 5px !important;
+}
+
 .flatpickr-day {
-    border-radius: 5px !important;
+    border-radius: 8px !important;
+    margin: 2px !important;
+    transition: all 0.2s ease !important;
+    font-weight: 500 !important;
+}
+
+.flatpickr-day:hover {
+    background: #f0f0ff !important;
+    color: #6B46C1 !important;
+    transform: scale(1.05) !important;
+    box-shadow: 0 2px 8px rgba(107, 70, 193, 0.2) !important;
 }
 
 .flatpickr-day.today {
-    background: #6B46C1 !important;
+    background: linear-gradient(135deg, #6B46C1, #805AD5) !important;
     color: white !important;
+    font-weight: bold !important;
 }
 
 .flatpickr-day.selected {
-    background: #805AD5 !important;
+    background: linear-gradient(135deg, #805AD5, #9575CD) !important;
     color: white !important;
+    font-weight: bold !important;
+    transform: scale(1.05) !important;
+    box-shadow: 0 4px 12px rgba(107, 70, 193, 0.3) !important;
+}
+
+.flatpickr-day.selected:hover {
+    background: linear-gradient(135deg, #9575CD, #B39DDB) !important;
+}
+
+/* 통일된 Flatpickr 시간 선택 UI 스타일 */
+.flatpickr-time {
+    background: white !important;
+    border: none !important;
+    border-top: 1px solid #eee !important;
+    border-radius: 0 0 12px 12px !important;
+    z-index: 9999 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    box-sizing: border-box !important;
+    padding: 20px 15px !important;
+}
+
+.flatpickr-time .numInputWrapper {
+    width: 45% !important;
+    margin: 0 5px !important;
+    position: relative !important;
+    background: transparent !important;
+    border-radius: 8px !important;
+    overflow: visible !important;
+}
+
+.flatpickr-time .numInput {
+    border: 1px solid #ddd !important;
+    border-radius: 6px !important;
+    padding: 8px !important;
+    font-size: 0.9rem !important;
+    text-align: center !important;
+    outline: none !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+    transition: all 0.2s ease !important;
+    background: white !important;
+    font-weight: bold !important;
+}
+
+.flatpickr-time .numInput:focus {
+	border-color: #ddd !important;
+    box-shadow: 0 0 5px rgba(107, 70, 193, 0.2) !important;
+}
+
+.flatpickr-time input.flatpickr-minute {
+    font-weight: bold !important;
+}
+
+.flatpickr-time .arrowUp,
+.flatpickr-time .arrowDown {
+    border: none !important;
+    background: linear-gradient(135deg, #6B46C1, #805AD5) !important;
+    color: white !important;
+    cursor: pointer !important;
+    transition: all 0.2s ease !important;
+    width: 20px !important;
+    height: 16px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    border-radius: 3px !important;
+    margin: 0.5px !important;
+}
+
+.flatpickr-time .arrowUp::before,
+.flatpickr-time .arrowDown::before {
+    font-size: 14px !important;
+}
+
+.flatpickr-time .arrowUp:hover,
+.flatpickr-time .arrowDown:hover {
+    background: linear-gradient(135deg, #805AD5, #9575CD) !important;
+    transform: scale(1.1) !important;
+}
+
+.flatpickr-time .flatpickr-am-pm {
+    font-size: 1rem !important;
+    color: #6B46C1 !important;
+    cursor: pointer !important;
+    font-weight: bold !important;
+    padding: 8px 12px !important;
+    border-radius: 6px !important;
+    transition: all 0.2s ease !important;
+    background: #f8f9ff !important;
+    border: 1px solid #e0e7ff !important;
+}
+
+.flatpickr-time .flatpickr-am-pm:hover {
+    color: white !important;
+    background: linear-gradient(135deg, #6B46C1, #805AD5) !important;
+    transform: scale(1.05) !important;
+    box-shadow: 0 2px 8px rgba(107, 70, 193, 0.2) !important;
+}
+
+.flatpickr-time .numInputWrapper span.arrowDown:after {
+    border-top-color: #ffffff !important;
+}
+
+.flatpickr-time .numInputWrapper span.arrowUp:after {
+    border-bottom-color: #ffffff !important;
+}
+
+/* 애니메이션 효과 */
+.flatpickr-calendar {
+    animation: slideIn 0.3s ease-out !important;
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px) scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
 }
 
 @media (max-width: 480px) {
     .flatpickr-calendar {
         max-width: 100% !important;
+        margin: 0 10px !important;
+    }
+    
+    .flatpickr-time {
+        padding: 15px 10px !important;
+    }
+    
+    .flatpickr-time .arrowUp,
+    .flatpickr-time .arrowDown {
+        width: 18px !important;
+        height: 14px !important;
     }
 }
