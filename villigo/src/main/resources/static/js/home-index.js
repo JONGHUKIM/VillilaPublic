@@ -1,78 +1,3 @@
-
-// -------------------------
-// 브랜드 데이터
-// -------------------------
-
-// 브랜드 데이터 불러오기 완료
-/*const brandData = {
-  car: [
-    { name: 'BMW', img: '/images/test/Alfa-Romeo.png' },
-    { name: '벤츠', img: '/images/test/Aston_Martin.png' },
-    { name: '현대', img: '/images/test/Jaguar.png' },
-    { name: '기아', img: '/images/test/Koenigsegg.png' },
-    { name: '기아', img: '/images/test/Lagonda.png' },
-    { name: '기아', img: '/images/test/Maybach.png' },
-    { name: '기아', img: '/images/test/Mercedes.png' },
-    { name: '기아', img: '/images/test/tesla.png' },
-	{ name: '현대', img: '/images/test/Jaguar.png' },
-    { name: 'BMW', img: '/images/test/Alfa-Romeo.png' },
-    { name: '벤츠', img: '/images/test/Aston_Martin.png' },
-    { name: '현대', img: '/images/test/Jaguar.png' },
-    { name: '기아', img: '/images/test/Koenigsegg.png' },
-    { name: '기아', img: '/images/test/Lagonda.png' },
-    { name: '기아', img: '/images/test/Maybach.png' },
-    { name: '기아', img: '/images/test/Mercedes.png' },
-    { name: '기아', img: '/images/test/tesla.png' },
-    { name: 'BMW', img: '/images/test/Alfa-Romeo.png' },
-    { name: '벤츠', img: '/images/test/Aston_Martin.png' },
-    { name: '현대', img: '/images/test/Jaguar.png' },
-    { name: '기아', img: '/images/test/Koenigsegg.png' },
-    { name: '기아', img: '/images/test/Lagonda.png' },
-    { name: '기아', img: '/images/test/Maybach.png' },
-    { name: '기아', img: '/images/test/Mercedes.png' },
-    { name: '기아', img: '/images/test/tesla.png' }
-   
-    
-  ],
-  bag: [
-    { name: '샤넬', img: '/images/test/Celine.png' },
-    { name: '루이비통', img: '/images/test/chanel.png' },
-    { name: '프라다', img: '/images/test/gucci.png' },
-    { name: '프라다', img: '/images/test/hermes.png' },
-    { name: '샤넬', img: '/images/test/louisvuitton.png' },
-    { name: '샤넬', img: '/images/test/ysl.png' },
-    { name: '샤넬', img: '/images/test/Celine.png' },
-    { name: '루이비통', img: '/images/test/chanel.png' },
-    { name: '프라다', img: '/images/test/gucci.png' },
-    { name: '프라다', img: '/images/test/hermes.png' },
-    { name: '샤넬', img: '/images/test/louisvuitton.png' },
-    { name: '샤넬', img: '/images/test/ysl.png' },
-    { name: '샤넬', img: '/images/test/Celine.png' },
-    { name: '루이비통', img: '/images/test/chanel.png' },
-    { name: '프라다', img: '/images/test/gucci.png' },
-    { name: '프라다', img: '/images/test/hermes.png' },
-    { name: '샤넬', img: '/images/test/louisvuitton.png' },
-    { name: '샤넬', img: '/images/test/ysl.png' }
-  
-  ]
-}; */
-
-/*const sampleProducts = [
-  { name: '샘플 상품 A', price: '270,000원~', img: '/images/testbag2.jfif' },
-  { name: '샘플 상품 B', price: '308,500원~', img: '/images/testbag3.jfif' },
-  { name: '샘플 상품 C', price: '160,600원~', img: '/images/testbag.jfif' },
-  { name: '샘플 상품 D', price: '160,600원~', img: '/images/testbag.jfif' },
-  { name: '샘플 상품 B', price: '308,500원~', img: '/images/testbag3.jfif' },
-  { name: '샘플 상품 C', price: '160,600원~', img: '/images/testbag.jfif' },
-  { name: '샘플 상품 D', price: '160,600원~', img: '/images/testbag.jfif' },
-  { name: '샘플 상품 B', price: '308,500원~', img: '/images/testbag3.jfif' },
-  { name: '샘플 상품 C', price: '160,600원~', img: '/images/testbag.jfif' },
-  { name: '샘플 상품 D', price: '160,600원~', img: '/images/testbag.jfif' },
-  { name: '샘플 상품 B', price: '308,500원~', img: '/images/testbag3.jfif' },
-  { name: '샘플 상품 C', price: '160,600원~', img: '/images/testbag.jfif' },
-  { name: '샘플 상품 D', price: '160,600원~', img: '/images/testbag.jfif' }
-];*/
-
 const container = document.getElementById("homeProductsData");
 const homeProducts  = JSON.parse(container.dataset.homeproducts);
 console.log(homeProducts);
@@ -330,6 +255,16 @@ function startNoticeSlider() {
 const itemsPerSlide = 4;
 const sliderStates = {}; // 각 슬라이더 상태 저장
 
+function applyServiceFee(fee) {
+    const value = Math.round(fee * 1.05);
+    const remainder = value % 10;
+    if (remainder < 5) {
+        return value - remainder;
+    } else {
+        return value + (10 - remainder);
+    }
+}
+
 function loadProducts(sectionId, products) {
     const container = document.getElementById(sectionId);
     container.innerHTML = '';
@@ -338,7 +273,7 @@ function loadProducts(sectionId, products) {
         products.forEach(p => {
             const card = document.createElement('div');
             card.className = 'product-card grid-card';
-            const displayFee = Math.round(p.fee * 1.05); // 5% 수수료 추가
+            const displayFee = applyServiceFee(p.fee); // 5% 수수료 추가
             card.innerHTML = `
                 <img src="${p.img}" alt="${p.name}">
                 <div class="mt-1">
@@ -362,7 +297,7 @@ function loadProducts(sectionId, products) {
                 const p = products[j];
                 const card = document.createElement('div');
                 card.className = 'product-card';
-                const displayFee = Math.round(p.fee * 1.05); // 5% 수수료 추가
+                const displayFee = applyServiceFee(p.fee);
                 let html = '';
                 switch (p.rentalCategoryId) {
                     case 1:

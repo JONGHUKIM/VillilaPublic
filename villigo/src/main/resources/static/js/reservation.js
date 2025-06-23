@@ -75,23 +75,35 @@ document.addEventListener("DOMContentLoaded", function () {
         .catch((error) => console.log(error));
 
         // 총 요금 계산
-        function calculatePrice() {
-            const startTime = document.getElementById("start-time").value;
-            const endTime = document.getElementById("end-time").value;
+		function calculatePrice() {
+		    const startTime = document.getElementById("start-time").value;
+		    const endTime = document.getElementById("end-time").value;
 
-            if (startTime && endTime) {
-                const start = new Date(`2000-01-01T${startTime}:00`);
-                const end = new Date(`2000-01-01T${endTime}:00`);
-                const diffMinutes = (end - start) / (1000 * 60);
-                const inputTotalPrice = document.getElementById("total-price");
-                if (diffMinutes > 0) {
-                    const totalPrice = diffMinutes * pricePerMin;
-                    inputTotalPrice.value = `${totalPrice.toLocaleString()} 원`;
-                } else {
-                    document.getElementById("total-price").value = "0 원";
-                }
-            }
-        }
+		    if (startTime && endTime) {
+		        const start = new Date(`2000-01-01T${startTime}:00`);
+		        const end = new Date(`2000-01-01T${endTime}:00`);
+		        const diffMinutes = (end - start) / (1000 * 60);
+		        const inputTotalPrice = document.getElementById("total-price");
+
+		        if (diffMinutes > 0) {
+		            const basePrice = diffMinutes * pricePerMin;
+		            const totalPriceWithFee = basePrice * 1.05;
+		            const roundedPrice = roundToNearest10Won(totalPriceWithFee); // 여기 반영
+		            inputTotalPrice.value = `${roundedPrice.toLocaleString()} 원`;
+		        } else {
+		            inputTotalPrice.value = "0 원";
+		        }
+		    }
+		}
+
+		function roundToNearest10Won(value) {
+		    const remainder = value % 10;
+		    if (remainder < 5) {
+		        return value - remainder;
+		    } else {
+		        return value + (10 - remainder);
+		    }
+		}
     }
 
     initializeFlatpickr();
