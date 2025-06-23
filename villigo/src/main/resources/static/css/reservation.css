@@ -331,6 +331,24 @@ input:hover {
     }
 }
 
+.reservation-box {
+    background-color: #fff5f5;
+    border: 1px solid #feb2b2;
+    padding: 10px;
+    border-radius: 8px;
+    margin-top: 10px;
+    font-size: 0.9rem;
+    line-height: 1.5;
+    display: none;
+    max-height: 100px;
+    overflow-y: auto;
+}
+
+button:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+}
+
 @media (max-width: 480px) {
     .flatpickr-calendar {
         max-width: 100% !important;

@@ -12,6 +12,7 @@
 
         <label for="rental-date">대여 날짜</label>
         <input type="text" id="rental-date" placeholder="날짜를 선택하세요" readonly>
+		<div id="reservation-notice" class="reservation-box" style="display: none;"></div>
 
         <div class="time-selection">
             <div>
@@ -48,7 +49,7 @@
         <p class="jjam-status">
              <span id="user-jjams">조회 중...</span>
         </p>
-        <button class="btn-ok" id="submit-btn">예약 신청</button>
+        <button class="btn-ok" id="submit-btn" disabled>예약 신청</button>
         
         <!-- 로그인한 사용자의 Id값을 저장 -->
         <input type="hidden" id="userId" th:value="${userId}" />

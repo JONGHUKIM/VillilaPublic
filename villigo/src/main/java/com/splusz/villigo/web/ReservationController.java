@@ -1,6 +1,9 @@
 package com.splusz.villigo.web;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Sort;
@@ -193,6 +196,19 @@ public class ReservationController {
     	
     	return ResponseEntity.ok(new PagedModel<>(dtoPage));
     }
+    
+    @GetMapping("/api/reservations")
+    public ResponseEntity<List<Map<String, String>>> getReservations(@RequestParam Long productId) {
+        List<Reservation> reservations = reserveService.readAll(productId);
+        List<Map<String, String>> list = reservations.stream().map(r -> {
+            Map<String, String> map = new HashMap<>();
+            map.put("start", r.getStartTime().toString()); // 예: 2025-06-24T15:30
+            map.put("end", r.getEndTime().toString());     // 예: 2025-06-24T17:30
+            return map;
+        }).collect(Collectors.toList());
+        return ResponseEntity.ok(list);
+    }
+
 
 }
 
