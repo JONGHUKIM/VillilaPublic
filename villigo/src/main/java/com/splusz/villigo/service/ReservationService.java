@@ -16,12 +16,15 @@ import org.springframework.data.domain.Sort;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
+import com.splusz.villigo.domain.Alarm;
 import com.splusz.villigo.domain.ChatRoom;
 import com.splusz.villigo.domain.Product;
 import com.splusz.villigo.domain.RentalImage;
 import com.splusz.villigo.domain.Reservation;
 import com.splusz.villigo.domain.User;
 import com.splusz.villigo.dto.ReservationCardDto;
+import com.splusz.villigo.repository.AlarmCategoryRepository;
+import com.splusz.villigo.repository.AlarmRepository;
 import com.splusz.villigo.repository.ChatRoomReservationRepository;
 import com.splusz.villigo.repository.ProductRepository;
 import com.splusz.villigo.repository.RentalImageRepository;
@@ -40,6 +43,8 @@ public class ReservationService {
 	private final RentalImageRepository rentalimgRepo;
 	private final ChatRoomReservationRepository chatRoomReservationRepo;
 	private final SimpMessagingTemplate messagingTemplate; // 알림용
+	private final AlarmCategoryRepository alarmCatRepo;
+	private final AlarmRepository alarmRepo;
 	
 	public Reservation read(Long id) {
 		log.info("read(id={})", id);
@@ -84,40 +89,45 @@ public class ReservationService {
 	}
 	
 	@Transactional
-    public void delete(Long id) {
-        log.info("delete(id={})", id);
+	public void delete(Long id) {
+	    log.info("delete(id={})", id);
 
-        // 1. 예약 존재 여부 확인
-        Optional<Reservation> reservationOpt = reserveRepo.findById(id);
-        if (!reservationOpt.isPresent()) {
-            log.warn("이미 삭제된 예약: id={}", id);
-            return;
-        }
-        Reservation reservation = reservationOpt.get();
+	    Reservation reservation = reserveRepo.findById(id).orElseThrow();
+	    int status = reservation.getStatus();
+	    if (!(status == 0 || status == 1 || status == 5)) {
+	        throw new IllegalStateException("현재 상태에서는 예약을 취소/삭제할 수 없습니다.");
+	    }
 
-        // 2. CHAT_ROOM_RESERVATIONS에서 관련 레코드 삭제
-        chatRoomReservationRepo.deleteByReservationId(id);
-        log.info("예약 ID {}와 연결된 CHAT_ROOM_RESERVATIONS 레코드 삭제 완료", id);
+	    // 필요한 데이터 미리 꺼내기
+	    String cancellerNickname = reservation.getRenter().getNickname();
+	    User host = reservation.getProduct().getUser();
+	    String productName = reservation.getProduct().getProductName();
+	    String hostUsername = host.getUsername();
 
-        // 3. 예약 삭제
-        reserveRepo.deleteById(id);
-        log.info("예약 삭제 완료: id={}", id);
+	    // CHAT_ROOM_RESERVATIONS 삭제
+	    chatRoomReservationRepo.deleteByReservationId(id);
 
-        // 4. 관련 사용자들에게 알림 전송
-        List<ChatRoom> chatRooms = chatRoomReservationRepo.findChatRoomsByReservationId(id);
-        for (ChatRoom chatRoom : chatRooms) {
-            List<Long> participantIds = chatRoom.getParticipantsAsUsers()
-                .stream()
-                .map(User::getId)
-                .collect(Collectors.toList());
-            for (Long userId : participantIds) {
-                messagingTemplate.convertAndSend(
-                    "/topic/notifications." + userId,
-                    Map.of("message", "예약이 삭제되었습니다. 채팅방은 유지됩니다.")
-                );
-            }
-        }
-    }
+	    // 예약 삭제
+	    reserveRepo.deleteById(id);
+
+	    // 알림 저장 및 전송
+	    String content = "❌ 예약 취소 알림\n" +
+	            cancellerNickname + "님이 [" + productName + "] 예약을 취소했어요.";
+
+	    Alarm alarm = Alarm.builder()
+	            .alarmCategory(alarmCatRepo.findById(1L).orElseThrow())
+	            .receiver(host)
+	            .content(content)
+	            .status(false)
+	            .build();
+	    alarmRepo.save(alarm);
+
+	    messagingTemplate.convertAndSendToUser(hostUsername, "/queue/alert", content);
+
+	    log.info("알림 전송 및 저장 완료: {} → {}", cancellerNickname, hostUsername);
+	}
+
+
 	
 	public Reservation changeStatusTodelete(Long id) {
 		log.info("changeStatusTodelete(id={})");

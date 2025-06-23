@@ -13,6 +13,26 @@ document.addEventListener("DOMContentLoaded", () => {
         if (index === 2) bindReservationCardEvents();
         if (index === 4) loadReviews();
     };
+	
+	// WebSocket 알림 구독
+	const userId = document.body.dataset.userId;
+	if (userId) {
+	  const socket = new SockJS('/ws');
+	  const stompClient = Stomp.over(socket);
+
+	  // userId 헤더 포함해서 연결
+	  stompClient.connect({ userId: userId }, () => {
+	    console.log('✅ WebSocket connected');
+
+	    // 알림 구독
+	    stompClient.subscribe(`/topic/notifications.${userId}`, (message) => {
+	      const data = JSON.parse(message.body);
+	      alert(data.message);  // 혹은 원하는 알림 표시 방식
+	    });
+	  }, (error) => {
+	    console.error('❌ WebSocket 연결 실패:', error);
+	  });
+	}
 
     axios.get('/api/user/profile', { withCredentials: true })
         .then(response => {

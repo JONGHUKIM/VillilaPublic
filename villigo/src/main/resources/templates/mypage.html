@@ -99,13 +99,19 @@
 
                         <input type="hidden" class="reservation-status" th:value="${reservation.status} ?: 0" />
 
-                        <!-- status가 5일 때 삭제 버튼 추가 -->
-                        <div th:if="${reservation.status == 5}">
-                            <!-- data-reservation-id만 설정하고 이벤트는 JavaScript에서 처리 -->
-                            <button class="delete-btn RLdelete" th:data-reservation-id="${reservation.reservationId}">
-                                삭제
-                            </button>
-                        </div>
+						<!-- 상태가 0(예약신청) 또는 1(대기중)인 경우 → '예약 취소' 버튼 -->
+						<div th:if="${reservation.status == 0 or reservation.status == 1}">
+						    <button class="delete-btn RLdelete" th:data-reservation-id="${reservation.reservationId}">
+						        예약 취소
+						    </button>
+						</div>
+						
+						<!-- 상태가 5(거절됨 후 삭제 가능)인 경우 → '삭제' 버튼 -->
+						<div th:if="${reservation.status == 5}">
+						    <button class="delete-btn RLdelete" th:data-reservation-id="${reservation.reservationId}">
+						        삭제
+						    </button>
+						</div>
 
                         <div class="res-buttons deal-buttons" th:style="${reservation.status == 2} ? 'display: flex' : 'display: none'">
                             <button class="btn-chat" th:data-id="${reservation.reservationId}" th:data-room-id="${reservation.chatRoomId != null ? reservation.chatRoomId : ''}">채팅</button>
@@ -141,6 +147,8 @@
         </div>
     </main>
     <th:block th:replace="~{layout/fragments :: bootstrapJS}"></th:block>
+    <script src="https://cdn.jsdelivr.net/npm/sockjs-client/dist/sockjs.min.js"></script>
+	<script src="https://cdn.jsdelivr.net/npm/stompjs/lib/stomp.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <script th:src="@{/js/common.js}"></script>
     <script th:src="@{/js/mypage.js}"></script>
