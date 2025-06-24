@@ -13,7 +13,7 @@ document.addEventListener("DOMContentLoaded", function () {
         .then(res => res.json())
         .then(data => {
             reservationData = data;
-            console.log("✅ 예약 정보:", reservationData);
+            console.log("예약 정보:", reservationData);
             initializeFlatpickr(); // 예약 정보 준비된 뒤에 초기화
         });
 
@@ -41,15 +41,46 @@ document.addEventListener("DOMContentLoaded", function () {
 				const todayStr = new Date().toISOString().slice(0, 10);
 				const now = new Date();
 				const startPicker = document.querySelector("#start-time")._flatpickr;
+				const endPicker = document.querySelector("#end-time")._flatpickr;
+				
+				let baseStartTime;
 				
 				if (dateStr === todayStr) {
-					// 현재 시작 이후로만 시작 시간 선택
-					const minTime = now.getHours().toString().padStart(2, '0') + ":" + now.getMinutes().toString().padStart(2, '0');
-					startPicker.set("minTime", minTime);
+					// 오늘 날짜에 해당하는 예약 찾기
+					const todayReservations = reservationData
+						.filter(r => r.start.startsWith(dateStr))
+						.sort((a,b) => new Date(a.end) - new Date(b.end)); // 종료 시간 기준 정렬
+						
+					if (todayReservations.length > 0) {
+						const lastReservationEnd = new Date(todayReservations[todayReservations.length - 1].end);
+						baseStartTime = new Date(lastReservationEnd.getTime() + 10 * 60000); // 마지막 예약 종료 + 10분
+						if (baseStartTime < now) {
+							// 만약 지금 시각보다 이전이라면 now 기준
+							baseStartTime = new Date(now.getTime() + 10 * 60000);
+						}						
+					} else {
+						// 예약이 없을 경우 현재 시각 + 10 분
+						baseStartTime = new Date(now.getTime() + 10 * 60000);
+					}
+					
+					// minTime 문자열로 변환
+					const minTimeStr = baseStartTime.getHours().toString().padStart(2, '0') + ":" + baseStartTime.getMinutes().toString().padStart(2, '0'); 
+					startPicker.set("minTime", minTimeStr);
+					startPicker.setDate(baseStartTime, true);
+					
+					// end-Time 자동 설정
+					const endTime = new Date(baseStartTime.getTime() + 5 * 60000);
+					const endTimeStr = endTime.getHours().toString().padStart(2, '0') + ":" + endTime.getMinutes().toString().padStart(2, '0');
+					endPicker.set("minTime", endTimeStr);
+					endPicker.setDate(endTime, true);
 				} else {
-					// 오늘이 아닐 경우 00:00부터 시작 시간 선택
+					// 오늘이 아니면 초기화
 					startPicker.set("minTime", "00:00");
+					startPicker.clear();
+					endPicker.clear();
 				}
+				calculatePrice();
+				checkTimeConflict();
             }
         });
 
