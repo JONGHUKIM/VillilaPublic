@@ -36,7 +36,20 @@ document.addEventListener("DOMContentLoaded", function () {
             },
             onChange: function (selectedDates, dateStr) {
                 console.log("📅 선택된 날짜:", dateStr);
-                showReservationsForDate(dateStr);
+				showReservationsForDate(dateStr);
+				
+				const todayStr = new Date().toISOString().slice(0, 10);
+				const now = new Date();
+				const startPicker = document.querySelector("#start-time")._flatpickr;
+				
+				if (dateStr === todayStr) {
+					// 현재 시작 이후로만 시작 시간 선택
+					const minTime = now.getHours().toString().padStart(2, '0') + ":" + now.getMinutes().toString().padStart(2, '0');
+					startPicker.set("minTime", minTime);
+				} else {
+					// 오늘이 아닐 경우 00:00부터 시작 시간 선택
+					startPicker.set("minTime", "00:00");
+				}
             }
         });
 
@@ -47,7 +60,21 @@ document.addEventListener("DOMContentLoaded", function () {
             dateFormat: "H:i",
             time_24hr: true,
             locale: "ko",
-            onChange: () => calculatePrice()
+			minTime: "00:00", //기본값
+			onChange: function (selectedDates, dateStr, instance) {
+			    const start = selectedDates[0];
+			    const endPicker = document.querySelector("#end-time")._flatpickr;
+
+			    if (start && endPicker) {
+			        const end = new Date(start.getTime() + 5 * 60000); // +5분
+			        const formatted = end.getHours().toString().padStart(2, '0') + ":" + end.getMinutes().toString().padStart(2, '0');
+			        endPicker.set("minTime", formatted);
+			        endPicker.setDate(end);
+			    }
+
+			    calculatePrice();
+			    checkTimeConflict();
+			}
         });
 
         flatpickr("#end-time", {
@@ -64,63 +91,62 @@ document.addEventListener("DOMContentLoaded", function () {
 		
 		// 시간 선택 시 겹침 검사, 버튼 비활성화 여부제어
 		["start-time", "end-time"].forEach(id => {
-		    document.getElementById(id).addEventListener("change", checkTimeConflict);
-		});
+				    document.getElementById(id).addEventListener("change", checkTimeConflict);
+				});
 
-		function checkTimeConflict() {
-		    const date = document.getElementById("rental-date").value;
-		    const start = document.getElementById("start-time").value;
-		    const end = document.getElementById("end-time").value;
-		    const button = document.getElementById("submit-btn");
-		    const noticeBox = document.getElementById("reservation-notice");
+				function checkTimeConflict() {
+				    const date = document.getElementById("rental-date").value;
+				    const start = document.getElementById("start-time").value;
+				    const end = document.getElementById("end-time").value;
+				    const button = document.getElementById("submit-btn");
+				    const noticeBox = document.getElementById("reservation-notice");
 
-		    if (!(date && start && end)) {
-		        button.disabled = true;
-		        return;
-		    }
+				    if (!(date && start && end)) {
+				        button.disabled = true;
+				        return;
+				    }
 
-		    const startTime = new Date(`${date}T${start}:00`).getTime();
-		    const endTime = new Date(`${date}T${end}:00`).getTime();
+				    const startTime = new Date(`${date}T${start}:00`).getTime();
+				    const endTime = new Date(`${date}T${end}:00`).getTime();
 
-		    if (startTime >= endTime) {
-		        button.disabled = true;
-		        return;
-		    }
+				    if (startTime >= endTime) {
+				        button.disabled = true;
+				        return;
+				    }
 
-		    const isConflict = reservationData.some(r => {
-		        const rStart = new Date(r.start).getTime();
-		        const rEnd = new Date(r.end).getTime();
-		        return startTime < rEnd && endTime > rStart;
-		    });
+				    const isConflict = reservationData.some(r => {
+				        const rStart = new Date(r.start).getTime();
+				        const rEnd = new Date(r.end).getTime();
+				        return startTime < rEnd && endTime > rStart;
+				    });
 
-		    if (isConflict) {
-		        button.disabled = true;
+				    if (isConflict) {
+				        button.disabled = true;
 
-		        const warn = document.createElement("p");
-		        warn.textContent = "예약시간이 겹쳐요 😢";
-		        warn.style.color = "#e53e3e";
-		        warn.style.fontWeight = "bold";
-		        warn.style.marginTop = "5px";
-		        warn.classList.add("conflict-message");
+				        const warn = document.createElement("p");
+				        warn.textContent = "예약시간이 겹쳐요 😢";
+				        warn.style.color = "#e53e3e";
+				        warn.style.fontWeight = "bold";
+				        warn.style.marginTop = "5px";
+				        warn.classList.add("conflict-message");
 
-		        // 중복 방지: 이미 있으면 안 추가
-		        const already = noticeBox.querySelector(".conflict-message");
-		        if (!already) noticeBox.appendChild(warn);
+				        const already = noticeBox.querySelector(".conflict-message");
+				        if (!already) noticeBox.appendChild(warn);
 
-		        noticeBox.style.display = "block";
-		    } else {
-		        button.disabled = false;
+				        noticeBox.style.display = "block";
+				    } else {
+				        button.disabled = false;
 
-		        // 기존 경고 메시지 제거
-		        const warn = noticeBox.querySelector(".conflict-message");
-		        if (warn) warn.remove();
+				        // 기존 경고 메시지 제거
+				        const warn = noticeBox.querySelector(".conflict-message");
+				        if (warn) warn.remove();
 
-		        // 다른 예약이 없을 경우 다시 숨김
-		        if (noticeBox.children.length === 0) {
-		            noticeBox.style.display = "none";
-		        }
-		    }
-		}
+				        // 다른 예약이 없을 경우 다시 숨김
+				        if (noticeBox.children.length === 0) {
+				            noticeBox.style.display = "none";
+				        }
+				    }
+				}
 
         // 요금 불러오기
         fetch(`./api/productfee?id=${productId}`)
