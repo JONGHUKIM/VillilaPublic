@@ -223,8 +223,18 @@ document.addEventListener('DOMContentLoaded', () => {
             // 수정: 삼항 연산자로 간소화
             divAlarmContents.forEach((div) => div.innerHTML = currentPageNo === 0 ? htmlStr : div.innerHTML + htmlStr);
 
-            // 수정: 이벤트 리스너 등록 간소화
-            document.querySelectorAll('a.alarm-link').forEach(link => link.addEventListener('click', checkAlarm));
+            // 클릭 시점에 알림이 렌더링되지 않았으면 클릭 못 하게 하기
+			document.querySelectorAll('a.alarm-link').forEach(link => {
+			    const alarmId = link.dataset.id;
+			    if (!alarmId || alarmId === "undefined") {
+			        link.style.pointerEvents = 'none';
+			        link.style.opacity = '0.6';
+			        console.warn("비정상 링크 감지: data-id 없음", link);
+			    } else {
+			        link.addEventListener('click', checkAlarm);
+			    }
+			});
+			
             document.querySelectorAll('button.delete-alarm-btn').forEach(btn => btn.addEventListener('click', deleteAlarm));
         }
     
@@ -255,24 +265,37 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     
     // 알람 확인 처리 함수
-    function checkAlarm(event) {
-        event.preventDefault();
-        // 수정: link 변수 간소화
-        const link = event.target;
-        link.style.pointerEvents = 'none';
-        link.style.opacity = '0.5';
-        fetch(`/alarm/check/${link.dataset.id}`)
-        .then(response => response.json())
-        .then(data => {
-            console.log('확인 처리된 알람 ID: ', data);
-            window.location.href = link.getAttribute('href');
-        })
-        .catch(error => {
-            console.log(error);
-            link.style.pointerEvents = 'auto';
-            link.style.opacity = '1.0';
-        });
-    }
+	function checkAlarm(event) {
+	    event.preventDefault();
+	    const link = event.target;
+	    const alarmId = link.dataset.id; // data-id 값 가져오기
+
+	    if (!alarmId || alarmId === 'undefined') {
+	        console.error('오류: 알람 ID가 유효하지 않습니다.', alarmId);
+	        alert('알림 정보가 올바르지 않아 처리할 수 없습니다.');
+	        return; // 유효하지 않은 ID로 요청 보내지 않음
+	    }
+
+	    link.style.pointerEvents = 'none';
+	    link.style.opacity = '0.5';
+	    fetch(`/alarm/check/${alarmId}`) // 이제 alarmId 사용
+	    .then(response => {
+	        if (!response.ok) { // HTTP 상태 코드가 200번대가 아니면 오류 처리
+	            return response.json().then(err => { throw new Error(err.message || '서버 오류 발생'); });
+	        }
+	        return response.json();
+	    })
+	    .then(data => {
+	        console.log('확인 처리된 알람 ID: ', data);
+	        window.location.href = link.getAttribute('href');
+	    })
+	    .catch(error => {
+	        console.error('알림 확인 중 오류 발생:', error);
+	        link.style.pointerEvents = 'auto';
+	        link.style.opacity = '1.0';
+	        alert('알림 처리 중 오류가 발생했습니다. 다시 시도해 주세요.');
+	    });
+	}
     
     // 알람 삭제 처리 함수
     function deleteAlarm(event) {

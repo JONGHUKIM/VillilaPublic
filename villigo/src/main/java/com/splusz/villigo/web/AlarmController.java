@@ -2,10 +2,12 @@ package com.splusz.villigo.web;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.NoSuchElementException;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PagedModel;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
@@ -74,10 +76,17 @@ public class AlarmController {
 	// 알람의 상태를 읽지 않음(false)에서 읽음(true)로 변경
 	@GetMapping("/alarm/check/{alarmId}")
 	public ResponseEntity<Long> checkAlarm(@PathVariable(name = "alarmId") Long alarmId) {
-		log.info("checkAlarm(id={})", alarmId);
-		
-		alarmService.updateAlarmStatus(alarmId);
-		return ResponseEntity.ok(alarmId);
+	    log.info("checkAlarm(id={})", alarmId);
+	    try {
+	        alarmService.updateAlarmStatus(alarmId);
+	        return ResponseEntity.ok(alarmId);
+	    } catch (NoSuchElementException e) {
+	        log.error("ID가 {}인 알림을 찾을 수 없거나 유효하지 않은 ID", alarmId, e);
+	        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+	    } catch (Exception e) {
+	        log.error("ID가 {}인 알림을 확인하는 중 오류가 발생", alarmId, e);
+	        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+	    }
 	}
 	
 	// 알람을 삭제
