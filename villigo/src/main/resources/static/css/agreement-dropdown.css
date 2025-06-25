@@ -1,6 +1,3 @@
-/* resources/static/css/agreement-dropdown.css */
-
-/* --- 기존 agreement.css에서 사용되었던 스타일 (약관 동의 컨테이너 및 기본 요소) --- */
 .agreement-container {
     margin: 100px auto 0;
     background-color: #2a2a2a;
@@ -116,5 +113,33 @@
 
 .accordion-header .accordion-button:hover {
     background-color: rgba(255, 255, 255, 0.05);
+}
+
+@media (max-width: 576px) {
+  .agreement-container {
+    width: 90%;
+    padding: 20px;
+    margin: 60px auto 0;
+  }
+
+  .accordion-body .terms-content-textarea {
+    height: 150px;
+    font-size: 12px;
+  }
+
+  .accordion-body label {
+    font-size: 13px;
+    flex-wrap: wrap;
+  }
+
+  .accordion-header .accordion-button {
+    font-size: 14px;
+    padding: 10px 0;
+  }
+
+  .agreement-container button {
+    font-size: 14px;
+    padding: 10px;
+  }
 }
 
