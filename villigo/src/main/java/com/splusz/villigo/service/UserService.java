@@ -324,40 +324,45 @@ public class UserService implements UserDetailsService {
 	}
     
     // 현재 사용자 프로필 가져오기
-	@Transactional
-	public UserProfileDto getCurrentUserProfile() {
+    // 현재 사용자 프로필 가져오기
+    @Transactional
+    public UserProfileDto getCurrentUserProfile() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         if (auth == null || !auth.isAuthenticated()) {
             log.error("No authenticated user found for getCurrentUserProfile");
             throw new IllegalStateException("No authenticated user found");
         }
 
-	    String username = auth.getName();
-	    log.info("getCurrentUserProfile: username={}", username);
+        String username = auth.getName();
+        log.info("getCurrentUserProfile: username={}", username);
         if (username == null || username.isEmpty()) {
             log.error("Username is null or empty in getCurrentUserProfile");
             throw new IllegalStateException("Username is null or empty");
         }
 
-	    User user = userRepo.findByUsername(username)
-	            .orElseThrow(() -> new IllegalArgumentException("User not found with username: " + username));
+        User user = userRepo.findByUsername(username)
+                    .orElseThrow(() -> new IllegalArgumentException("User not found with username: " + username));
 
-	    UserProfileDto dto = new UserProfileDto();
-	    dto.setId(user.getId());
-	    dto.setUsername(user.getUsername());
-	    dto.setNickname(user.getNickname());
-	    dto.setPhone(user.getPhone());
-	    dto.setRegion(user.getRegion());
-	    dto.setAvatar(user.getAvatar());
-	    dto.setMannerScore(user.getMannerScore());
-	    if (user.getTheme() != null) {
-	        dto.setThemeId(user.getTheme().getId());
-	        dto.setTheme(user.getTheme().getTheme());
-	    }
-	    dto.setJjamPoints(calculateUserJjamPoints(user)); // 잼 포인트 계산 후 dto에 설정
-
-	    return dto;
-	}
+        UserProfileDto dto = new UserProfileDto();
+        dto.setId(user.getId());
+        dto.setUsername(user.getUsername());
+        dto.setNickname(user.getNickname());
+        dto.setPhone(user.getPhone());
+        dto.setRegion(user.getRegion());
+        dto.setAvatar(user.getAvatar());
+        dto.setMannerScore(user.getMannerScore());
+        if (user.getTheme() != null) {
+            dto.setThemeId(user.getTheme().getId());
+            dto.setTheme(user.getTheme().getTheme());
+        }
+        dto.setJjamPoints(calculateUserJjamPoints(user)); // 잼 포인트 계산 후 dto에 설정
+        if (user.getSocialType() != null) {
+            dto.setSocialType(user.getSocialType().name()); // Enum을 String으로 변환
+        } else {
+            dto.setSocialType(null); // 또는 null 처리 (필요에 따라)
+        }
+        return dto;
+    }
    
 	// 사용자의 JJAM 포인트 총합 계산 메서드 추가
     public int calculateUserJjamPoints(User user) {

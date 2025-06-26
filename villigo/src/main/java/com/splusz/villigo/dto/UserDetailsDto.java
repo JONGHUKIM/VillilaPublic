@@ -14,4 +14,5 @@ public class UserDetailsDto {
     private List<PostSummaryDto> posts;  // 유저가 올린 상품 목록
     private List<ReviewDto> reviews;     // 유저에 대한 후기 목록
     private int mannerScore;
+    private String socialType;
 }

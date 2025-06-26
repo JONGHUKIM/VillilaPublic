@@ -14,4 +14,5 @@ public class UserProfileDto {
     private String theme;
     private int jjamPoints;
     private int mannerScore;
+    private String socialType;
 }
