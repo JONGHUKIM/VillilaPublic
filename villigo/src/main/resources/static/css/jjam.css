@@ -137,3 +137,74 @@
     
 }
 
+@media screen and (max-width: 768px) {
+  /* 카드 전체 축소 */
+  .card {
+    margin-bottom: 20px;
+  }
+
+  /* 리본 크기 & 위치 조정 */
+  .ribbon {
+    font-size: 0.75rem;
+    padding: 6px 20px;
+    width: 150px;
+    top: 10px;
+    left: -40px;
+    transform: rotate(-35deg);
+  }
+
+  /* 리본 안 글씨 줄임 처리 */
+  .ribbon span {
+    font-size: 0.75rem;
+  }
+
+  /* 카드 본문 여백 줄이기 */
+  .card-body {
+    padding: 16px;
+  }
+
+  /* 젤리 개수 폰트 크기 축소 */
+  .card-body h3 {
+    font-size: 1.4rem;
+  }
+
+  /* 버튼 크기 축소 */
+  .btn-charge {
+    font-size: 0.95rem;
+    padding: 10px;
+    border-radius: 6px;
+  }
+
+  /* 젤리 정보 (상단) 여백 & 정렬 수정 */
+  .jelly-info {
+    font-size: 16px;
+    flex-direction: column;
+    align-items: flex-end;
+    margin-bottom: 10px;
+  }
+
+  .jjam-badge {
+    padding: 6px 14px;
+    font-size: 14px;
+    gap: 6px;
+    border-width: 2px;
+  }
+
+  .jjam-badge .emoji {
+    font-size: 18px;
+  }
+
+  .jjam-badge .amount {
+    font-size: 15px;
+  }
+
+  .fw-bold {
+    font-size: 15px;
+  }
+
+  .jjamemoji {
+    font-size: 1.3em;
+  }
+}
+
+

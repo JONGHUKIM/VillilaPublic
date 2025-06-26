@@ -885,3 +885,95 @@ button {
 .warning-action button:hover {
   background-color: #c9302c;
 }
+
+@media (max-width: 768px) {
+  /* 전체 채팅 프레임 세로 정렬로 변경 */
+  .chat-container {
+    flex-direction: column;
+    width: 95%;
+    height: 90vh;
+    margin-top: 50px;
+  }
+
+  /* 사이드바(채팅 목록) 너비 ↓ */
+  .chat-sidebar {
+    width: 100%;
+    height: 40%;
+    border-right: none;
+    border-bottom: 1px solid #ddd;
+    padding: 10px;
+  }
+
+  /* 채팅창 너비 ↓ */
+  .chat-main {
+    width: 100%;
+    height: 60%;
+  }
+
+  /* 메시지 입력 영역 정렬 개선 */
+  .chat-input {
+    flex-direction: column;
+    gap: 5px;
+  }
+
+  .send-btn {
+    width: 100%;
+  }
+
+  /* 미리보기 이미지 크기 ↓ */
+  .preview-image {
+    width: 60px;
+    height: 60px;
+  }
+
+  .group-image {
+    width: 80px;
+    height: 80px;
+  }
+
+  /* 채팅 아이템 아바타 크기 ↓ */
+  .chat-avatar {
+    width: 40px;
+    height: 40px;
+  }
+
+  .chat-title {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+  }
+
+  .chat-time {
+    font-size: 10px;
+  }
+
+  .chat-preview {
+    flex-direction: column;
+    gap: 4px;
+    font-size: 12px;
+  }
+
+  .chat-header-buttons {
+    flex-direction: column;
+    gap: 5px;
+    margin-left: 0;
+  }
+
+  #reportChat, #leaveChat {
+    min-width: auto;
+    padding: 4px 8px;
+    font-size: 13px;
+  }
+
+  /* 메시지 크기 제한 해제 */
+  .message.sent,
+  .message.received {
+    max-width: 85%;
+  }
+
+  /* 경고 박스 너비 ↓ */
+  .warning-box {
+    max-width: 90%;
+    padding: 15px;
+  }
+}

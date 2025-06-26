@@ -453,4 +453,115 @@
   border-bottom: none;
 }
 
+@media screen and (max-width: 768px) {
+  /* 헤더 내부 정렬 변경 */
+  .header-top, .header-bottom {
+    flex-direction: column;
+    align-items: flex-start;
+    height: auto;
+    padding: 10px 15px;
+  }
+
+  /* 로고 + 메뉴 */
+  .header-top .navbar-brand,
+  .header-top .nav {
+    width: 100%;
+    text-align: left;
+    margin: 5px 0;
+  }
+
+  .navbar-nav {
+    flex-direction: column;
+    align-items: flex-start;
+    width: 100%;
+  }
+
+  .nav-link {
+    padding: 8px 0;
+    width: 100%;
+  }
+
+  /* 검색 박스 너비 및 정렬 조정 */
+  .search-box {
+    max-width: 100% !important;
+    width: 100% !important;
+    margin: 10px 0 !important;
+    padding: 10px 12px !important;
+  }
+
+  .search-box input {
+    font-size: 15px !important;
+  }
+
+  /* 알람 위치 조정 */
+  .nav-item.alarm {
+    margin-left: 0;
+    width: 100%;
+    text-align: right;
+    margin-top: 5px;
+  }
+
+  /* 챗봇 버튼 위치 조정 */
+  .ai-chatbot-button {
+    bottom: 20px !important;
+    right: 20px !important;
+    width: 50px;
+    height: 50px;
+  }
+
+  .floating-plus-button {
+    bottom: 90px;
+    right: 20px;
+    width: 50px;
+    height: 50px;
+  }
+
+  .floating-popup {
+    bottom: 150px;
+    right: 20px;
+    width: 85%;
+  }
+
+  /* 챗봇 창도 화면에 맞게 조정 */
+  .chatbot-container {
+    width: 90%;
+    right: 5%;
+    bottom: 20px;
+  }
+
+  .chatbot-messages {
+    height: 200px;
+  }
+
+  .chatbot-input {
+    font-size: 13px;
+  }
+
+  .chatbot-send-btn {
+    font-size: 13px;
+    padding: 4px 8px;
+  }
+
+  .faq-button {
+    font-size: 12px;
+    padding: 4px 10px;
+  }
+
+  .chatbot-faq-buttons {
+    justify-content: center;
+  }
+
+  .bubble {
+    font-size: 13px;
+  }
+
+  .container-global {
+    padding: 100px 14px; /* 패딩 살짝 줄이기 */
+  }
+
+  .container-head {
+    padding: 0 14px;
+  }
+}
+
     
