@@ -131,7 +131,7 @@
                     <!-- 로그인 상태별 분기 -->
                     <th:block sec:authorize="isAnonymous()">
                         <li class="nav-item"><a class="nav-link" th:href="@{/member/signin}">LOGIN</a></li>
-                        <li class="nav-item"><a class="nav-link" th:href="@{/member/signup}">JOIN</a></li>
+                        <li class="nav-item"><a class="nav-link" th:href="@{/member/agreement}">JOIN</a></li>
                     </th:block>
                 
                     <th:block sec:authorize="isAuthenticated()">
