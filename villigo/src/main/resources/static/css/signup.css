@@ -120,3 +120,36 @@
     margin-top: 5px;
     display: block;
 }
+
+/* ✅ 반응형 처리 - iPhone 11 Pro 기준 (max-width: 430px) */
+@media (max-width: 430px) {
+    .signup-form-container {
+        width: 90%;
+        padding: 20px;
+        margin: 40px auto 0;
+    }
+
+    .signup-form-container input,
+    .signup-form-container button,
+    .signup-form-container .select-box {
+        font-size: 15px;
+        padding: 10px;
+    }
+
+    .signup-form-container label {
+        font-size: 13px;
+    }
+
+    .signup-form-container .text-danger {
+        font-size: 0.85em;
+    }
+
+    .signup-form-container .dropdown .option {
+        font-size: 14px;
+    }
+
+    .signup-form-container .select-box {
+        width: 100%;
+        margin-left: 0 !important;
+    }
+}

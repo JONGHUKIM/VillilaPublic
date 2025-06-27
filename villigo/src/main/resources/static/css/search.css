@@ -1,16 +1,13 @@
 body {
     margin: 0;
     background-color: #ffffff;
-   
 }
 
 main {
     margin-top: 100px;
 }
 
-/* 검색 바 스타일 */
 .search-section {
-   
     padding-bottom: 20px;
     border-bottom: 2px solid #000000;
 }
@@ -38,7 +35,6 @@ main {
     cursor: pointer;
 }
 
-/* 필터 섹션 스타일 */
 .filter-section {
     margin-bottom: 30px;
 }
@@ -57,8 +53,8 @@ main {
     padding: 5px 10px;
     border-radius: 15px;
     font-size: 13px;
-    color:#543fe4;
-    font-weight:bold;
+    color: #543fe4;
+    font-weight: bold;
 }
 
 .selected-filter span {
@@ -73,7 +69,6 @@ main {
     font-size: 12px;
 }
 
-/* 필터 테이블 스타일 */
 .filter-table {
     width: 100%;
     border-collapse: collapse;
@@ -97,18 +92,19 @@ main {
 
 .filter-buttons {
     display: flex;
-    align-items: center; 
+    align-items: center;
     gap: 10px;
     flex-wrap: wrap;
 }
 
 .filter-btn {
-    padding: 8px 8px;
+    padding: 8px;
     border: none;
     background: none;
     cursor: pointer;
     font-size: 13px;
 }
+
 .price-input {
     padding: 0 12px;
     margin: 0 3px;
@@ -120,6 +116,7 @@ main {
     box-sizing: border-box;
     vertical-align: middle;
 }
+
 .price-search-icon {
     width: 32px;
     height: 32px;
@@ -133,9 +130,11 @@ main {
     margin-left: 4px;
     transition: background 0.2s;
 }
+
 .price-search-icon:hover {
     background-color: #543fe4;
 }
+
 .filter-btn,
 .price-input,
 .price-search-icon,
@@ -147,6 +146,7 @@ main {
     display: inline-flex;
     align-items: center;
 }
+
 .unit-label {
     font-size: 13px;
     line-height: 1;
@@ -154,20 +154,19 @@ main {
     display: inline-flex;
     align-items: center;
 }
+
 .filter-btn.selected {
-    background-color: #6b59e8;  
-    color: white;               
+    background-color: #6b59e8;
+    color: white;
     font-weight: bold;
     border-radius: 20px;
     padding: 3px 9px;
-    
 }
 
 .color-options {
     display: flex;
-    gap:4px;
+    gap: 4px;
     margin-left: 16px;
-    
 }
 
 .color-circle {
@@ -176,7 +175,7 @@ main {
     border-radius: 50%;
     cursor: pointer;
     border: 1px solid #ccc;
-    margin:5px;
+    margin: 5px;
 }
 
 .color-circle.selected {
@@ -194,15 +193,16 @@ main {
     text-decoration: underline;
     text-decoration-color: #6b59e8;
 }
+
 .search-result {
-    grid-column: 1 / -1; /* 그리드 전체 폭 사용 */
+    grid-column: 1 / -1;
     margin-bottom: 15px;
     border-bottom: 2px solid #000;
     padding-bottom: 10px;
-    font-size:17px;
-    font-weight:bold;
+    font-size: 17px;
+    font-weight: bold;
 }
-/* 검색 결과 스타일 */
+
 .results-section {
     margin-top: 20px;
     padding: 0 16px;
@@ -214,6 +214,7 @@ main {
     grid-template-columns: repeat(3, 1fr);
     gap: 30px;
     margin-bottom: 30px;
+    min-height: 720px;
 }
 
 .result-item {
@@ -221,7 +222,8 @@ main {
 }
 
 .result-item img {
-    width: 260px;
+    width: 100%;
+    max-width: 260px;
     height: 260px;
     object-fit: cover;
     border-radius: 10px;
@@ -233,14 +235,13 @@ main {
     font-size: 15px;
 }
 
-/* 지도 보기 버튼 스타일 */
 .map-button-section {
     position: fixed;
     bottom: 20px;
     left: 0;
     width: 100%;
     display: flex;
-    flex-direction: column; /* 자식 요소들을 세로로 정렬 */
+    flex-direction: column;
     align-items: center;
 }
 
@@ -259,13 +260,13 @@ main {
     border-radius: 5px;
     font-size: 16px;
     cursor: pointer;
-    z-index : 1000;
+    z-index: 1000;
 }
 
 .map-btn:hover {
     background: #543fe4;
 }
-  
+
 #map {
     display: none;
     position: absolute;
@@ -276,9 +277,9 @@ main {
     height: 80%;
     pointer-events: auto;
 }
-  
+
 #map.open {
-    display: block; 
+    display: block;
     bottom: 10%;
 }
 
@@ -286,10 +287,10 @@ main {
     position: fixed;
     bottom: 0;
     width: 100%;
-    height: 100%; /* 높이 명시 */
+    height: 100%;
     pointer-events: none;
 }
-  
+
 .map-box {
     width: 100%;
     max-width: 1150px;
@@ -300,14 +301,14 @@ main {
 }
 
 .close-map {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  background: #fff;
-  border: 1px solid #ccc;
-  border-radius: 50%;
-  width: 32px;
-  height: 32px;
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: #fff;
+    border: 1px solid #ccc;
+    border-radius: 50%;
+    width: 32px;
+    height: 32px;
 }
 
 .product-content {
@@ -315,19 +316,13 @@ main {
     font-style: bold;
     text-decoration: none;
 }
-#searchResultDiv {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 30px;
-    margin-bottom: 20px;
 
-    min-height: 720px; 
-}
 #paginationDiv {
-    margin-bottom: 10px; 
+    margin-bottom: 10px;
     display: flex !important;
     justify-content: center;
 }
+
 .pagination {
     display: inline-flex;
     border: 1px solid #000;
@@ -336,7 +331,6 @@ main {
     margin-top: 30px;
 }
 
-/* 기본 버튼 스타일 */
 .page-item .page-link {
     padding: 8px 16px;
     background-color: #fff;
@@ -344,31 +338,26 @@ main {
     font-weight: 700;
     font-size: 16px;
     border: none;
-    
     cursor: pointer;
     transition: background 0.2s, color 0.2s;
 }
 
-/* 마지막 버튼은 border-right 제거 */
 .page-item:last-child .page-link {
     border-right: none;
 }
 
-/* hover 시 역상 효과 */
 .page-item .page-link:hover {
     background-color: #dcd8fa;
-    color:#000000;
+    color: #000000;
     font-weight: bold;
 }
 
-/* 활성 페이지 (현재 페이지) */
 .page-item.active .page-link {
     background-color: #ffffff;
-    color:#6b59e8;
+    color: #6b59e8;
     font-weight: bold;
 }
 
-/* 비활성화 버튼 (이전/다음 막을 때) */
 .page-item.disabled .page-link {
     background-color: #f0f0f0;
     color: #ccc;
@@ -384,3 +373,38 @@ main {
     padding: 3px 9px !important;
 }
 
+@media (max-width: 768px) {
+    #searchResultDiv {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 20px;
+    }
+}
+
+@media (max-width: 480px) {
+    .form-input,
+    .filter-btn,
+    .price-input,
+    .map-btn {
+        font-size: 14px;
+    }
+
+    .filter-label {
+        font-size: 14px;
+        width: auto;
+    }
+
+    #searchResultDiv {
+        grid-template-columns: 1fr;
+        gap: 15px;
+    }
+
+    .result-item img {
+        width: 100%;
+        height: auto;
+    }
+
+    .map-btn {
+        width: 90%;
+        padding: 10px;
+    }
+}

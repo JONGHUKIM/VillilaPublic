@@ -428,3 +428,115 @@ a {
     cursor: not-allowed;
     opacity: 0.6;
 }
+
+@media (max-width: 430px) {
+  .container {
+    padding: 15px 12px;
+  }
+
+  h2 {
+    font-size: 1.3rem;
+    padding-bottom: 10px;
+  }
+
+  .section p,
+  .section p strong {
+    font-size: 1rem;
+  }
+
+  .section-title {
+    font-size: 1.1rem;
+  }
+
+  .user-info-container {
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 8px;
+  }
+
+  .user-info {
+    width: 100%;
+    justify-content: flex-end;
+    padding: 10px;
+  }
+
+  .user-details p {
+    font-size: 0.95rem;
+  }
+
+  #profileImage,
+  .emoji-frog {
+    width: 44px;
+    height: 44px;
+    font-size: 24px;
+  }
+
+  .image-container {
+    width: 100%;
+    height: auto;
+  }
+
+  .image-container img,
+  .slide-image {
+    width: 100%;
+    height: auto;
+    object-fit: contain;
+  }
+
+  .dots {
+    margin-top: 12px;
+  }
+
+  .color-circle {
+    width: 24px;
+    height: 24px;
+  }
+
+  .bottom-buttons {
+    padding: 12px 15px;
+    justify-content: center;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .reserve-btn,
+  .owner-btn {
+    font-size: 14px;
+    padding: 8px 14px;
+  }
+
+  .heart-btn {
+    font-size: 20px;
+  }
+
+  .image-modal-content {
+    width: 90%;
+    height: 90%;
+  }
+
+  .image-modal .close {
+    font-size: 30px;
+    right: 20px;
+  }
+
+  .image-modal .modal-prev,
+  .image-modal .modal-next {
+    font-size: 32px;
+  }
+
+  .description {
+    padding-top: 20px;
+  }
+
+  .car-info {
+    font-size: 0.95rem;
+  }
+
+  .temp-box {
+    padding: 10px;
+  }
+
+  .withdrawn-label {
+    font-size: 11px;
+  }
+}

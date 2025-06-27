@@ -317,4 +317,123 @@
   border-radius: 6px;
   font-size: 14px;
 }
+
+@media screen and (max-width: 430px) {
+  main {
+    margin-top: 60px;
+  }
+
+  .container {
+    padding: 15px 10px;
+  }
+
+  .section-title,
+  h2 {
+    font-size: 1.1rem;
+    padding-bottom: 8px;
+  }
+
+  .form-label {
+    font-size: 1rem;
+  }
+
+  .form-input,
+  select,
+  textarea {
+    font-size: 14px;
+    padding: 10px;
+  }
+
+  .image-upload-container {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .image-upload,
+  .preview-image {
+    width: 100%;
+    max-width: 100%;
+    height: auto;
+  }
+
+  .preview-container {
+    gap: 8px;
+  }
+
+  .color-options {
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .color-circle {
+    width: 26px;
+    height: 26px;
+  }
+
+  .bottom-buttons {
+    padding: 15px 10px;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .bottom-buttons button {
+    width: 100%;
+    padding: 10px;
+    font-size: 15px;
+  }
+
+  .year-container {
+    flex-direction: row;
+    justify-content: space-between;
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .year-btn {
+    width: 36px;
+    height: 36px;
+    font-size: 18px;
+  }
+
+  .year-display {
+    font-size: 16px;
+    width: 70px;
+    height: 36px;
+  }
+
+  .drive-status-container {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .toggle-switch {
+    width: 50px;
+    height: 26px;
+  }
+
+  .slider::before {
+    width: 20px;
+    height: 20px;
+  }
+
+  .status-label {
+    font-size: 14px;
+  }
+
+  .address-input-group {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .address-input-group .btn {
+    width: 100%;
+    text-align: center;
+  }
+
+  .address-input-group .form-input {
+    width: 100%;
+    box-sizing: border-box;
+  }
+}
+
       

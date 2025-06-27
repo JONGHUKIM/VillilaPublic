@@ -1,4 +1,5 @@
 @charset "UTF-8";
+
 /* ✅ 로그인 폼 컨테이너 */
 .signin-form-container {
     margin: 100px auto 0;
@@ -35,7 +36,7 @@
 /* ✅ 비밀번호 토글 아이콘 */
 .signin-form-container .password-wrapper {
     display: flex;
-    align-items: center; /* 세로 중앙 정렬 */
+    align-items: center;
     position: relative;
     width: 100%;
 }
@@ -78,4 +79,27 @@
 
 .signin-form-container .extra-links a:hover {
     text-decoration: underline;
+}
+
+/* ✅ 반응형 처리 - iPhone 11 Pro 기준 (375px) */
+@media (max-width: 430px) {
+    .signin-form-container {
+        width: 90%;
+        padding: 20px;
+        margin: 60px auto 0;
+    }
+
+    .signin-form-container input,
+    .signin-form-container button {
+        font-size: 15px;
+        padding: 10px;
+    }
+
+    .signin-form-container label {
+        font-size: 13px;
+    }
+
+    .signin-form-container .extra-links a {
+        font-size: 13px;
+    }
 }

@@ -350,18 +350,45 @@ button:disabled {
 }
 
 @media (max-width: 480px) {
-    .flatpickr-calendar {
-        max-width: 100% !important;
-        margin: 0 10px !important;
-    }
-    
-    .flatpickr-time {
-        padding: 15px 10px !important;
-    }
-    
-    .flatpickr-time .arrowUp,
-    .flatpickr-time .arrowDown {
-        width: 18px !important;
-        height: 14px !important;
-    }
+  html, body {
+    height: auto;
+    overflow-y: auto;
+    padding: 20px 10px;
+    display: block;
+  }
+
+  .flatpickr-calendar {
+    max-width: 100% !important;
+    margin: 0 10px !important;
+  }
+
+  .flatpickr-time {
+    padding: 15px 10px !important;
+  }
+
+  .flatpickr-time .arrowUp,
+  .flatpickr-time .arrowDown {
+    width: 18px !important;
+    height: 14px !important;
+  }
+
+  .container {
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+    padding: 20px 15px;
+  }
+
+  .btn-ok {
+    font-size: 0.95rem;
+    padding: 9px;
+  }
+
+  input {
+    font-size: 0.85rem;
+  }
+
+  h2 {
+    font-size: 1.2rem;
+  }
 }
