@@ -324,7 +324,6 @@ public class UserService implements UserDetailsService {
 	}
     
     // 현재 사용자 프로필 가져오기
-    // 현재 사용자 프로필 가져오기
     @Transactional
     public UserProfileDto getCurrentUserProfile() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();

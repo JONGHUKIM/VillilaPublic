@@ -224,3 +224,47 @@ body{
 .delete-alarm-btn:hover {
     color: black;
 }
+
+@media screen and (max-width: 600px) {
+  .mypage-popup,
+  .alarm-popup {
+    width: 90vw;
+    left: 50%;
+    transform: translateX(-50%);
+    min-width: unset;
+    max-height: 80vh;
+  }
+
+  .mypage-popup .pop-nav-link {
+    font-size: 14px;
+    padding: 8px 10px;
+    gap: 4px;
+  }
+
+  .popup-body a {
+    padding: 8px;
+    font-size: 0.9rem;
+  }
+
+  .alarm-item {
+    padding: 8px 12px;
+    font-size: 13px;
+  }
+
+  .alarm-loading {
+    font-size: 11px;
+  }
+
+  .badge {
+    top: 12px;
+    right: -4px;
+    font-size: 0.7rem;
+    padding: 3px 5px;
+  }
+
+  .delete-alarm-btn {
+    top: 3px;
+    right: 3px;
+    font-size: 12px;
+  }
+}
