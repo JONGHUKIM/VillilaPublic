@@ -154,6 +154,21 @@
 				</div>-->
             </div>
         </main>
+        
+        <footer class="footer">
+            <div class="footer-content">
+                <ul class="footer-links">
+                    <li>회사소개</li>
+                    <li>인재채용</li>
+                    <li>제휴제안</li>
+                    <li><a th:href="@{member/terms}">이용약관</a></li>
+                    <li><a th:href="@{member/privacy}">개인정보처리방침</a></li>
+                </ul>
+                <p class="footer-text">본 페이지는 포트폴리오용 페이지입니다. 상업적 목적 없이 개인적인 프로젝트나 포트폴리오를 위한 용도로만 제공됩니다.</p>
+                <p class="footer-copyright">Copyright (c) 2025.06.30 어쩌구저쩌구. All rights reserved.</p>
+            </div>
+        </footer>
+        
         <th:block th:replace="~{layout/fragments :: bootstrapJS}"></th:block>
         <script th:src="@{/js/common.js}"></script>
         <script th:inline="javascript">
