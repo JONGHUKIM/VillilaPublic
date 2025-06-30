@@ -101,6 +101,8 @@ public class SecurityConfig {
 					.requestMatchers("/", "/login", "/error", "/search", "/api/search", "/api/brand",
 							"/member/signin", "/member/signup", "/member/signup-social", 
 							"/member/agreement", // /member/agreement 허용
+                            "/member/terms",    // /member/terms 허용
+                            "/member/privacy",  // /member/privacy 허용
 							"/member/checkusername", "/member/checkemail", "/member/checknickname",
 							"/member/checkphone",
 							"/api/faqs", "/css/**", "/js/**", "/images/**", "/ws/**", "/sockjs/**","/fonts/**",
