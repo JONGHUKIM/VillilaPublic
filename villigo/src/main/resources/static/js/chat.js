@@ -222,6 +222,17 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
 	function sendImageGroup(files) {
+		const currentChatRoom = chatRoomsCache.find(room => room.id === chatRoomId);
+		    if (currentChatRoom && currentChatRoom.otherUserNickName && currentChatRoom.otherUserNickName.startsWith("탈퇴회원_")) {
+		        alert("탈퇴한 회원에게는 메시지를 보낼 수 없습니다.");
+		        // 이미지 미리보기 제거 (만약 있다면)
+		        previewMessages.forEach((previewElement, file) => {
+		            previewElement.remove();
+		            URL.revokeObjectURL(file);
+		        });
+		        previewMessages.clear();
+		        return; // 이미지 전송 중단
+		    }
 	    const formData = new FormData();
 	    files.forEach(file => formData.append("files", file));
 	    formData.append("roomId", chatRoomId);
@@ -971,16 +982,20 @@ document.addEventListener("DOMContentLoaded", function () {
 
 		// 탈퇴회원인 경우 메시지 입력 및 전송 비활성화
 		const isOtherUserWithdrawn = chatRoom.otherUserNickName && chatRoom.otherUserNickName.startsWith("탈퇴회원_");
-
+		
 		messageInput.disabled = isOtherUserWithdrawn;
 		sendButton.disabled = isOtherUserWithdrawn;
+		attachButton.disabled = isOtherUserWithdrawn;
+		
 		if (isOtherUserWithdrawn) {
 		    sendButton.classList.remove("active");
 		    sendButton.classList.add("disabled");
+			attachButton.classList.add("disabled");
 		    messageInput.placeholder = "탈퇴한 회원에게는 메시지를 보낼 수 없습니다.";
 		} else {
 		    sendButton.classList.remove("disabled");
 		    sendButton.classList.add("active"); // 메시지 입력창에 내용이 없어도 기본적으로 active 상태로 시작
+			attachButton.classList.remove("disabled");
 		    messageInput.placeholder = "메시지를 입력하세요";
 		}
 
@@ -1401,6 +1416,21 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 
 	function sendImage(file) {
+		
+		const currentChatRoom = chatRoomsCache.find(room => room.id === chatRoomId);
+			    if (currentChatRoom && currentChatRoom.otherUserNickName && currentChatRoom.otherUserNickName.startsWith("탈퇴회원_")) {
+			        alert("탈퇴한 회원에게는 메시지를 보낼 수 없습니다.");
+			        // 단일 이미지 미리보기가 있다면 제거
+			        if (previewMessages.size > 0) { // 단일 이미지도 previewMessages에 들어갈 수 있으므로 확인
+			            previewMessages.forEach((previewElement, file) => {
+			                previewElement.remove();
+			                URL.revokeObjectURL(file);
+			            });
+			            previewMessages.clear();
+			        }
+			        return; // 이미지 전송 중단
+			    }
+				
 	    if (!file) return;
 	    const formData = new FormData();
 	    formData.append("file", file);

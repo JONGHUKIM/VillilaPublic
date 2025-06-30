@@ -203,6 +203,12 @@ button {
     opacity: 1;
 }
 
+.send-btn.disabled,
+.attach-btn.disabled {
+    opacity: 0.5; /* 버튼을 흐리게 만듦 */
+    cursor: not-allowed; /* 마우스 커서를 '금지' 표시로 변경 */
+}
+
 /* ✅ 신고 & 나가기 버튼 컨테이너 */
 .chat-header-buttons {
     display: flex;
