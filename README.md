@@ -20,27 +20,6 @@ Villila는 고가의 명품, 슈퍼카를<br>
 
 &nbsp;
 
-## 프로젝트 목적  
-
-&nbsp;
-
-1. 명품, 슈퍼카 고가의 촬영용/체험용 아이템을 보유한 회원과  
-   대여를 원하는 회원 간의 직거래가 가능한 공유 플랫폼<br>
-
-2. SNS 콘텐츠 제작, 광고 촬영, 특별한 경험을 원하는 이용자들이  
-   중고거래처럼 간편하고 빠르게 대여할 수 있도록 설계<br>
-
-3. 개인 간 거래(P2P)뿐 아니라, 업체와 회원 간의 직접 거래(B2C)까지도 지원하여  
-   플랫폼 활용 범위를 확장성 기대<br>
-
-4. 저택, 펜션, 스튜디오 등 공간 기반 자산도 대여 대상으로 포함하여  
-   촬영 스팟 공유 플랫폼으로의 확장 가능성<br>
-
-5. 고가 아이템에 대한 파손 및 분쟁 예방을 위해  
-   보험사와의 제휴를 통한 파손 보험 연계 기능 도입 가능성<br>
-
-&nbsp;
-
 ## 구현 기능  
 
 &nbsp;
@@ -77,7 +56,9 @@ Villila는 고가의 명품, 슈퍼카를<br>
      - JJAM은 호스트가 상품을 광고할 때 필요한 기능으로 수정 중
      - JJAM은 예약 시 필요없음
     
-**주요 기능📸**
+### 주요 기능📸 
+<br>
+
 <p>
   <img src="https://github.com/user-attachments/assets/ff91e90b-5ccc-41e2-9fdd-8393b1a5bbd3" alt="기능 이미지 1" width="350"/>
   <img src="https://github.com/user-attachments/assets/5addbc66-6be7-4741-881d-0187c088b895" alt="기능 이미지 2" width="350"/>
@@ -89,7 +70,9 @@ Villila는 고가의 명품, 슈퍼카를<br>
 </p>
 
 
-**기술 스택⚙️**
+### 기술 스택⚙️
+<br>
+
 - Backend: Java 21, Spring Boot, Spring Security, JPA
 - Frontend: Thymeleaf, JavaScript, Bootstrap
 - Database: MySQL (AWS RDS)
@@ -97,36 +80,25 @@ Villila는 고가의 명품, 슈퍼카를<br>
 - Realtime: WebSocket, STOMP, SockJS
 - Auth: OAuth2 (Google)
 
-**아키텍처🏗️**
+### 아키텍처🏗️
 
-[사용자] <br>
-   ↓ <br>
-[Web 브라우저 (Thymeleaf, JS, Bootstrap)] <br>
-   ↓ <br>
-[Spring Boot Backend] <br>
-   ├─🔐 Spring Security + OAuth2 <br>
-   ├─🟢 WebSocket (실시간 채팅) <br>
-   ├─📦 JPA + MySQL (RDS) <br>
-   ↓ <br>
-[AWS RDS (MySQL)] <br>
-
-[정적 자산: S3] <br>
-[서버 실행: EC2] <br>
-[CI/CD: GitHub Actions → Docker → EC2] <br>
 <br>
+
 ![서버 아키택처](https://github.com/user-attachments/assets/459be491-2904-468b-8124-729c67ea90b5)
 
 <br>
 
-**트러블슈팅 🧩**
- - ***오류 상황: 호스트가 예약 알람 클릭 시 오류코드:400***
- - **오류 원인:**
-   - `GET "/alarm/check/undefined"` <br>
-`Failed to convert value of type 'java.lang.String' to required type 'java.lang.Long'; For input string: "undefined"`
-   - 예약 알림 클릭 시, 알람 ID를 넘겨야 하는데 "`undefined`"가 전달되고 있음
- - **해결책:**
+### 트러블슈팅 🧩
+<br>
+
+ - ***오류 상황 호스트가 예약 알람 클릭 시 오류코드:400***
+ - **오류 원인**
+   - 예약 알림 클릭 시, 클라이언트측에서 서버로 `alarmId`를 넘겨야 하는데 `undefined`가 전달되고 있음
+ - **해결 방안**
    - 클릭 시점에 알람이 렌더링 되지 않았으면 클릭 못하게 막음
-     - 		document.querySelectorAll('a.alarm-link').forEach(link => {
+   
+      		
+     		document.querySelectorAll('a.alarm-link').forEach(link => {
 			    const alarmId = link.dataset.id;
 			    if (!alarmId || alarmId === "undefined") {
 			        link.style.pointerEvents = 'none';
@@ -135,37 +107,43 @@ Villila는 고가의 명품, 슈퍼카를<br>
 			    } else {
 			        link.addEventListener('click', checkAlarm);
 			    }
-			});  
-- **개선 사항:** 클라이언트 측에서 유효성 검증을 통해 `undefined` 값이 서버로 전달되는 것을 사전에 방지하여, <br>
-불필요한 서버 오류 요청을 줄이고 시스템 안정성을 높임.
+			});
 
 <br>
 
-   - **느낀점:** 클라이언트와 서버 간의 데이터 전달 시 타입 일치 및 유효성 검증의 중요성을 느낌 <br>
-   특히 API 호출 시 예상치 못한 `undefined` 값이나 잘못된 타입이 전달될 경우, <br>
+   - **느낀점** <br>
+   클라이언트와 서버 간의 데이터 전달 시 타입 일치 및 유효성 검증의 중요성을 느낌 <br>
+   특히 API 호출 시 예상치 못한 `undefined` 값이나 잘못된 타입이 전달될 경우 <br>
    서버에서 `400 Bad Request`와 같은 오류가 발생하여 서비스의 안정성을 해칠 수 있음을 경험
 
 <br>
 
- - ***오류 상황: 채팅리스트가 계속 늘어나고, 온라인/오프라인 기능이 안됨  오류코드: 405 Method Not Allowed***
+ - ***오류 상황 채팅리스트가 계속 늘어나고 온라인/오프라인 기능이 안됨  오류코드: 405 Method Not Allowed***
+<br>
+   
 <p>
   <img src="https://github.com/user-attachments/assets/2d11a9dd-9638-43c7-9621-b3e9ac3d966e" alt="트러블슈팅 이미지 1" width="350"/>
   <img src="https://github.com/user-attachments/assets/d87a394e-73d4-47c0-a24f-d19f57842640" alt="트러블슈팅 이미지 2" width="350"/>
 </p>
 
- - **오류 원인:**
+<br>
+
+ - **오류 원인**
    - 채팅방 생성 요청(`/api/chat/rooms`)이 중복으로 발생
-   - 채팅 리스트에서 상대방의 온라인/오프라인 상태가 모두 "오프라인" (🔴) 표시됨
- - **해결책:**
+   - 채팅 리스트에서 userId를 전달받지 못하여 사용자 상태가 모두 "오프라인" 표시됨
+ - **해결 방안**
    - 클라이언트측에서 먼저 중복 확인, `ensureChatRoom` 함수에서 <br>
      `chatRoomCreationLock` 이라는 `Map` 객체를 사용하여 <br>
      특정 두 사용자(`userId1, userId2`) 간의 채팅방 생성 요청이 이미 진행 중인지 확인
-     -       async function ensureChatRoom(userId1, userId2) {
+
+            async function ensureChatRoom(userId1, userId2) {
 	            const key = `${userId1}-${userId2}`;
 	            if (chatRoomCreationLock.has(key)) {
 	                console.log(`이미 ${key}에 대한 채팅방 생성 요청 진행 중`);
 	                return chatRoomCreationLock.get(key);
-	            } (생략) 
+	            } (생략)
+
+     <br>
    - 채팅방을 생성하기 전에 `/api/chat/rooms/find` 엔드포인트로 먼저 요청을 보내, <br>
      두 사용자 간에 이미 존재하는 채팅방이 있는지 조회
    - `chatRoomsCache`에 채팅방 객체를 추가하기 전에, 동일한 id를 가진 채팅방이 이미 캐시에 있는지 확인 <br>
@@ -174,12 +152,6 @@ Villila는 고가의 명품, 슈퍼카를<br>
    - 프론트엔드에서는 `/topic/userStatus`를 구독하고 있지만, <br>
      `userId`가 문자열로 전송되고 그 과정에서 문제가 발생하여 <br>
      `const userId = parseInt(statusUpdate.userId);` 숫자로 변환하여 전송 <br>
-- **개선 사항:**
-   - 안정적인 채팅방 생성 로직을 구현하여 `405 Method Not Allowed` 오류를 줄이고 채팅방 데이터의 정합성을 확보
-   - `userId` 타입 변환 오류 해결을 통해 온라인/오프라인 상태가 <br>
-     실시간으로 정확하게 표시되도록 하여 커뮤니케이션 편의성 증대
-   - `chatRoomsCache`, `chatRoomCreationLock` 등의 캐싱 전략을 도입하여 <br>
-     불필요한 네트워크 요청을 줄이고 응답 속도를 향상
      
      <br>
      
@@ -188,7 +160,8 @@ Villila는 고가의 명품, 슈퍼카를<br>
    - [ChatService](https://github.com/JONGHUKIM/VillilaPublic/blob/main/villigo/src/main/java/com/splusz/villigo/service/ChatService.java)
 
      <br>
-   - **느낀점:** 이번 트러블슈팅을 통해 복잡한 실시간 통신 환경에서 <br>
+   - **느낀점** <br>
+   이번 트러블슈팅을 통해 복잡한 실시간 통신 환경에서 <br>
    클라이언트-서버 간의 동시성 및 데이터 일관성 관리가 핵심임을 느낌 <br>
    특히 채팅방 중복 생성 방지를 위한 캐싱 전략(`chatRoomsCache`, `chatRoomCreationLock`)의 중요성과 <br>
    정확한 데이터 타입 변환(`parseInt`)이 기능의 안정성과 사용자 경험에 직결됨을 배움 <br>
