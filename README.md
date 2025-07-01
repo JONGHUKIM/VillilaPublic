@@ -79,12 +79,15 @@ Villila는 고가의 명품, 슈퍼카를<br>
     
 **주요 기능📸**
 <p>
-  <img src="https://github.com/user-attachments/assets/ff91e90b-5ccc-41e2-9fdd-8393b1a5bbd3" alt="기능 이미지 1" width="500"/> <img src="https://github.com/user-attachments/assets/5addbc66-6be7-4741-881d-0187c088b895" alt="기능 이미지 2" width="500"/>
+  <img src="https://github.com/user-attachments/assets/ff91e90b-5ccc-41e2-9fdd-8393b1a5bbd3" alt="기능 이미지 1" width="350"/>
+  <img src="https://github.com/user-attachments/assets/5addbc66-6be7-4741-881d-0187c088b895" alt="기능 이미지 2" width="350"/>
 </p>
 
 <p>
-  <img src="https://github.com/user-attachments/assets/ef0cca9a-44e0-45b8-8892-e62876b37ea9" alt="기능 이미지 3" width="500"/> <img src="https://github.com/user-attachments/assets/b0647a2c-e735-4045-be89-de06069f4601" alt="기능 이미지 4" width="500"/>
+  <img src="https://github.com/user-attachments/assets/ef0cca9a-44e0-45b8-8892-e62876b37ea9" alt="기능 이미지 3" width="350"/>
+  <img src="https://github.com/user-attachments/assets/b0647a2c-e735-4045-be89-de06069f4601" alt="기능 이미지 4" width="350"/>
 </p>
+
 
 **기술 스택⚙️**
 - Backend: Java 21, Spring Boot, Spring Security, JPA
@@ -146,15 +149,16 @@ Villila는 고가의 명품, 슈퍼카를<br>
 
  - ***오류 상황: 채팅리스트가 계속 늘어나고, 온라인/오프라인 기능이 안됨  오류코드: 405 Method Not Allowed***
 <p>
-  <img src="https://github.com/user-attachments/assets/2d11a9dd-9638-43c7-9621-b3e9ac3d966e" alt="트러블슈팅 이미지 1" width="500"/>
-  <img src="https://github.com/user-attachments/assets/d87a394e-73d4-47c0-a24f-d19f57842640" alt="트러블슈팅 이미지 2" width="500"/>
+  <img src="https://github.com/user-attachments/assets/2d11a9dd-9638-43c7-9621-b3e9ac3d966e" alt="트러블슈팅 이미지 1" width="350"/>
+  <img src="https://github.com/user-attachments/assets/d87a394e-73d4-47c0-a24f-d19f57842640" alt="트러블슈팅 이미지 2" width="350"/>
 </p>
 
  - **오류 원인:**
    - 채팅방 생성 요청(`/api/chat/rooms`)이 중복으로 발생
    - 채팅 리스트에서 상대방의 온라인/오프라인 상태가 모두 "오프라인" (🔴) 표시됨
  - **해결책:**
-   - 클라이언트측에서 먼저 중복 확인, `ensureChatRoom` 함수에서 `chatRoomCreationLock` 이라는 `Map` 객체를 사용하여 <br>
+   - 클라이언트측에서 먼저 중복 확인, `ensureChatRoom` 함수에서 <br>
+     `chatRoomCreationLock` 이라는 `Map` 객체를 사용하여 <br>
      특정 두 사용자(`userId1, userId2`) 간의 채팅방 생성 요청이 이미 진행 중인지 확인
      -       async function ensureChatRoom(userId1, userId2) {
 	            const key = `${userId1}-${userId2}`;
@@ -162,16 +166,20 @@ Villila는 고가의 명품, 슈퍼카를<br>
 	                console.log(`이미 ${key}에 대한 채팅방 생성 요청 진행 중`);
 	                return chatRoomCreationLock.get(key);
 	            } (생략) 
-   - 채팅방을 생성하기 전에 `/api/chat/rooms/find` 엔드포인트로 먼저 요청을 보내, 두 사용자 간에 이미 존재하는 채팅방이 있는지 조회
+   - 채팅방을 생성하기 전에 `/api/chat/rooms/find` 엔드포인트로 먼저 요청을 보내, <br>
+     두 사용자 간에 이미 존재하는 채팅방이 있는지 조회
    - `chatRoomsCache`에 채팅방 객체를 추가하기 전에, 동일한 id를 가진 채팅방이 이미 캐시에 있는지 확인 <br>
      이미 존재하면 추가하지 않고, 클라이언트 메모리 내에서 중복된 채팅방 정보가 쌓이는 것을 방지
    - 서버측에서도 중복 확인 메서드 강화 `ChatRestController.createChatRoom`, `ChatService.createChatRoom`
-   - 프론트엔드에서는 `/topic/userStatus`를 구독하고 있지만, `userId`가 문자열로 전송되고 그 과정에서 문제가 발생하여 <br>
+   - 프론트엔드에서는 `/topic/userStatus`를 구독하고 있지만, <br>
+     `userId`가 문자열로 전송되고 그 과정에서 문제가 발생하여 <br>
      `const userId = parseInt(statusUpdate.userId);` 숫자로 변환하여 전송 <br>
 - **개선 사항:**
    - 안정적인 채팅방 생성 로직을 구현하여 `405 Method Not Allowed` 오류를 줄이고 채팅방 데이터의 정합성을 확보
-   - `userId` 타입 변환 오류 해결을 통해 온라인/오프라인 상태가 실시간으로 정확하게 표시되도록 하여 커뮤니케이션 편의성 증대
-   - `chatRoomsCache`, `chatRoomCreationLock` 등의 캐싱 전략을 도입하여 불필요한 네트워크 요청을 줄이고 응답 속도를 향상
+   - `userId` 타입 변환 오류 해결을 통해 온라인/오프라인 상태가 <br>
+     실시간으로 정확하게 표시되도록 하여 커뮤니케이션 편의성 증대
+   - `chatRoomsCache`, `chatRoomCreationLock` 등의 캐싱 전략을 도입하여 <br>
+     불필요한 네트워크 요청을 줄이고 응답 속도를 향상
      
      <br>
      
@@ -180,7 +188,8 @@ Villila는 고가의 명품, 슈퍼카를<br>
    - [ChatService](https://github.com/JONGHUKIM/VillilaPublic/blob/main/villigo/src/main/java/com/splusz/villigo/service/ChatService.java)
 
      <br>
-   - **느낀점:** 이번 트러블슈팅을 통해 복잡한 실시간 통신 환경에서 클라이언트-서버 간의 동시성 및 데이터 일관성 관리가 핵심임을 느낌 <br>
+   - **느낀점:** 이번 트러블슈팅을 통해 복잡한 실시간 통신 환경에서 <br>
+   클라이언트-서버 간의 동시성 및 데이터 일관성 관리가 핵심임을 느낌 <br>
    특히 채팅방 중복 생성 방지를 위한 캐싱 전략(`chatRoomsCache`, `chatRoomCreationLock`)의 중요성과 <br>
    정확한 데이터 타입 변환(`parseInt`)이 기능의 안정성과 사용자 경험에 직결됨을 배움 <br>
    문제의 근본 원인을 찾아 구조적으로 해결하는 개발 습관의 필요성을 다시 한번 느낌
