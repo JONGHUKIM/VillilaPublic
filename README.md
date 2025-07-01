@@ -84,7 +84,7 @@ Villila는 고가의 명품, 슈퍼카를<br>
 
 <br>
 
-![서버 아키택처](https://github.com/user-attachments/assets/459be491-2904-468b-8124-729c67ea90b5)
+<img src="https://github.com/user-attachments/assets/06c12e78-3984-49ec-a0a7-092d472d81fa" alt="서버 아키텍처" width="720"/>
 
 <br>
 
@@ -164,6 +164,7 @@ Villila는 고가의 명품, 슈퍼카를<br>
 - **느낀점** <br>
    이번 트러블슈팅을 통해 복잡한 실시간 통신 환경에서 <br>
    클라이언트-서버 간의 동시성 및 데이터 일관성 관리가 핵심임을 느낌 <br>
+
    특히 채팅방 중복 생성 방지를 위한 캐싱 전략(`chatRoomsCache`, `chatRoomCreationLock`)의 중요성과 <br>
    정확한 데이터 타입 변환(`parseInt`)이 기능의 안정성과 사용자 경험에 직결됨을 배움 <br>
    문제의 근본 원인을 찾아 구조적으로 해결하는 개발 습관의 필요성을 다시 한번 느낌
