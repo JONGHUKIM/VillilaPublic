@@ -68,11 +68,6 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-actuator'
     runtimeOnly 'io.micrometer:micrometer-registry-prometheus'
     
-    // micrometer 의존성 추가
-	implementation 'io.micrometer:micrometer-core:1.12.3'
-	implementation 'io.micrometer:micrometer-observation:1.12.3'
-	implementation 'org.hibernate.orm:hibernate-micrometer:6.6.18.Final'
-    
 }
 
 // Querydsl 관련 빌드 옵션들:
