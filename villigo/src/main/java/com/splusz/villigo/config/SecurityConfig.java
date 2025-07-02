@@ -98,6 +98,7 @@ public class SecurityConfig {
 		// 구글 로그인 인증 설정
 		http
 			.authorizeHttpRequests(authorize -> authorize
+					.requestMatchers("/actuator/prometheus").permitAll() // Actuator Prometheus 엔드포인트를 인증 없이 허용
 					.requestMatchers("/", "/login", "/error", "/search", "/api/search", "/api/brand",
 							"/member/signin", "/member/signup", "/member/signup-social", 
 							"/member/agreement", // /member/agreement 허용
