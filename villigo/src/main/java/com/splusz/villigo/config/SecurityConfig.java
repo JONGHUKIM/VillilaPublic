@@ -135,7 +135,8 @@ public class SecurityConfig {
 	    config.setAllowedOrigins(List.of(
 	    	    "http://localhost:3000",
 	    	    "http://localhost:8080",
-	    	    "https://villila.store"
+	    	    "https://villila.store",
+	    	    "http://<prometheus-server-host>:<port>"
 	    	));
 	    config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
 	    config.setAllowedHeaders(List.of("Authorization", "Content-Type", "x-requested-with"));
