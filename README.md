@@ -19,13 +19,13 @@ Villila는 고가의 명품, 슈퍼카를<br>
 <br>
 
 <p>
-  <img src="https://github.com/user-attachments/assets/291f57e1-99c2-4981-8392-53e6c35c0cd5" alt="기능 이미지 1" width="350"/>
-  <img src="https://github.com/user-attachments/assets/b559eef0-638c-4d7c-bd38-7a0677f0ff79" alt="기능 이미지 2" width="350"/>
+  <img src="error/기능 이미지 1.png" width="350" alt="기능 이미지 1"/>
+  <img src="error/기능 이미지 2.png" width="350" alt="기능 이미지 2"/>
 </p>
 
 <p>
-  <img src="https://github.com/user-attachments/assets/d4ce1ff8-09ab-4f94-a815-04ac0893b50e" alt="기능 이미지 3" width="350"/>
-  <img src="https://github.com/user-attachments/assets/b0647a2c-e735-4045-be89-de06069f4601" alt="기능 이미지 4" width="350"/>
+  <img src="error/기능 이미지 3.png" width="350" alt="기능 이미지 3"/>
+  <img src="error/기능 이미지 4.png" width="350" alt="기능 이미지 4"/>
 </p>
 
 &nbsp;
@@ -80,7 +80,9 @@ Villila는 고가의 명품, 슈퍼카를<br>
 
 <br>
 
-<img src="https://github.com/user-attachments/assets/06c12e78-3984-49ec-a0a7-092d472d81fa" alt="서버 아키텍처" width="720"/>
+<p>
+  <img src="error/서버 아키텍처.jpg" width="720" alt="서버 아키텍처"/>
+</p>
 
 <br>
 &nbsp;
@@ -92,6 +94,7 @@ Villila는 고가의 명품, 슈퍼카를<br>
  ### 오류 상황: 호스트가 예약 알림 메시지 클릭 시 Bad Request(400)
  - **오류 원인**
    - 예약 알림 메시지 클릭 시, 클라이언트측에서 서버로 `alarmId`를 넘겨야 하는데 `undefined`가 전달되고 있음
+
  - **해결 방안**
    - 클릭 시점에 알람이 렌더링 되지 않았으면 클릭 못하게 막음
    
@@ -122,8 +125,8 @@ Villila는 고가의 명품, 슈퍼카를<br>
 <br>
    
 <p>
-  <img src="https://github.com/user-attachments/assets/2d11a9dd-9638-43c7-9621-b3e9ac3d966e" alt="트러블슈팅 이미지 1" width="350"/>
-  <img src="https://github.com/user-attachments/assets/d87a394e-73d4-47c0-a24f-d19f57842640" alt="트러블슈팅 이미지 2" width="350"/>
+  <img src="error/트러블슈팅 이미지 1.png" width="350" alt="트러블슈팅 이미지 1"/>
+  <img src="error/트러블슈팅 이미지 2.png" width="350" alt="트러블슈팅 이미지 2"/>
 </p>
 
 <br>
@@ -131,6 +134,7 @@ Villila는 고가의 명품, 슈퍼카를<br>
  - **오류 원인**
    - 채팅방 생성 요청(`/api/chat/rooms`)이 중복으로 발생
    - 채팅 리스트에서 userId를 전달받지 못하여 사용자 상태가 모두 오프라인으로 표시됨
+
  - **해결 방안**
    - 클라이언트측에서 먼저 중복 확인, `ensureChatRoom` 함수에서 <br>
      `chatRoomCreationLock` 이라는 `Map` 객체를 사용하여 <br>
@@ -175,19 +179,20 @@ Villila는 고가의 명품, 슈퍼카를<br>
    <br>
    <br>
 
-  ### 오류 상황: Google OAuth2 배포 환경(EC2 + Nginx)에 400 redirect_uri_mismatch 오류 발생 
+### 오류 상황: Google OAuth2 배포 환경(EC2 + Nginx)에 400 redirect_uri_mismatch 오류 발생 
 <br>
 
 <p>
-  <img src="https://github.com/user-attachments/assets/e74de09b-169d-4eb3-b4cb-5463f4c2a7bc" alt="트러블슈팅 이미지 3" width="350"/>
+  <img src="error/트러블슈팅 이미지 3.png" width="350" alt="트러블슈팅 이미지 3"/>
 </p>
 
 <br>
 
- - **오류 원인**  <br>
+ - **오류 원인**  
    - Spring Boot가 HTTPS 요청을 HTTP로 잘못 추론
    - 프록시(Nginx)에서 X-Forwarded-Proto 미전달
- - **해결 방안**  <br>
+
+ - **해결 방안**  
    - Nginx 설정에서 헤더를 명확히 지정하여 Spring Boot가 HTTPS로 인식하도록 설정 <br>
 
   ```nginx
@@ -240,6 +245,22 @@ server {
 - **느낀점** <br>
    OAuth에서 가장 민감한 요소는 redirect_uri의 정확성 <br>
    배포 환경에서는 프록시 설정 실수 하나로 인증 실패가 발생할 수 있음을 명확히 체감 <br>
+
+<br>
+
+ ### 오류 상황: 배포 자동화 중 bind: address already in use 오류 발생
+
+- **오류 원인**  
+  - Docker 컨테이너가 80 포트를 사용하려 했으나, EC2 인스턴스에서 Nginx가 해당 포트를 이미 사용 중이어서 충돌 발생
+
+- **해결 방안**  
+  - Docker 컨테이너 포트를 8080으로 변경하고, Nginx에서 proxy_pass http://localhost:8080으로 설정하여 분리
+  - GitHub Actions를 통한 CI/CD 자동 배포 흐름 정상 작동 확인
+
+- **느낀점** <br>
+  인프라 레벨에서의 포트 충돌 이슈를 경험하며 배포 환경 전반의 자원 사용 현황을 고려한 설계의 중요성을 체감함 <br>
+  특히 EC2에서의 Nginx 리버스 프록시 구성과 컨테이너 포트 매핑에 대한 이해가 깊어짐 <br>
+
 
 &nbsp;
 
