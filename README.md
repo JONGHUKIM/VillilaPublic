@@ -13,9 +13,9 @@ Villila는 고가의 명품, 슈퍼카를<br>
 대여를 원하는 유저는 중고거래처럼 간단한 절차로 예약 → 채팅 → 거래 확정까지
 원스톱으로 진행할 수 있습니다.
 
-🛠️ 배포 링크: https://villila.store/
+**배포 링크**: https://villila.store/
 
-### 주요 기능📸 
+### 주요 기능
 <br>
 
 <p>
@@ -66,17 +66,17 @@ Villila는 고가의 명품, 슈퍼카를<br>
      - JJAM은 호스트가 상품을 광고할 때 필요한 기능으로 수정 중
      - JJAM은 예약 시 필요없음
 
-### 기술 스택⚙️
+### 기술 스택
 <br>
 
-- Backend: Java 21, Spring Boot, Spring Security, JPA
-- Frontend: Thymeleaf, JavaScript, Bootstrap
-- Database: MySQL (AWS RDS)
-- DevOps: GitHub Actions, Docker, AWS EC2/S3/ECR
-- Realtime: WebSocket, STOMP, SockJS
-- Auth: OAuth2 (Google)
+- **Backend**: Java 21, Spring Boot, Spring Security, JPA
+- **Frontend**: Thymeleaf, JavaScript, Bootstrap
+- **Database**: MySQL (AWS RDS)
+- **DevOps**: GitHub Actions, Docker, AWS EC2/S3/ECR
+- **Realtime**: WebSocket, STOMP, SockJS
+- **Auth**: OAuth2 (Google)
 
-### 아키텍처🏗️
+### 아키텍처
 
 <br>
 
@@ -85,19 +85,19 @@ Villila는 고가의 명품, 슈퍼카를<br>
 <br>
 &nbsp;
 
-## 트러블슈팅 🧩
+## 트러블슈팅 
 
 &nbsp;
 
- ### - 오류 상황: 호스트가 예약 알림 메시지 클릭 시 Bad Request(400)
+ ### 오류 상황: 호스트가 예약 알림 메시지 클릭 시 Bad Request(400)
  - **오류 원인**
    - 예약 알림 메시지 클릭 시, 클라이언트측에서 서버로 `alarmId`를 넘겨야 하는데 `undefined`가 전달되고 있음
  - **해결 방안**
    - 클릭 시점에 알람이 렌더링 되지 않았으면 클릭 못하게 막음
    
-      		
-     		document.querySelectorAll('a.alarm-link').forEach(link => {
-			    const alarmId = link.dataset.id;
+     ```js
+              document.querySelectorAll('a.alarm-link').forEach(link => {
+			  const alarmId = link.dataset.id;
 			    if (!alarmId || alarmId === "undefined") {
 			        link.style.pointerEvents = 'none';
 			        link.style.opacity = '0.6';
@@ -106,6 +106,7 @@ Villila는 고가의 명품, 슈퍼카를<br>
 			        link.addEventListener('click', checkAlarm);
 			    }
 			});
+     ```
 
 <br>
 
@@ -117,7 +118,7 @@ Villila는 고가의 명품, 슈퍼카를<br>
 <br>
 <br>
 
- ### - 오류 상황: 채팅리스트가 계속 늘어나고 채팅방에 입장불가(405 Method Not Allowed), 온라인/오프라인 기능이 안됨
+ ### 오류 상황: 채팅리스트가 계속 늘어나고 채팅방에 입장불가(405 Method Not Allowed), 온라인/오프라인 기능이 안됨
 <br>
    
 <p>
@@ -135,15 +136,19 @@ Villila는 고가의 명품, 슈퍼카를<br>
      `chatRoomCreationLock` 이라는 `Map` 객체를 사용하여 <br>
      특정 두 사용자(`userId1, userId2`) 간의 채팅방 생성 요청이 이미 진행 중인지 확인
 
+     <br>
+     
+	```js
             async function ensureChatRoom(userId1, userId2) {
 	            const key = `${userId1}-${userId2}`;
 	            if (chatRoomCreationLock.has(key)) {
 	                console.log(`이미 ${key}에 대한 채팅방 생성 요청 진행 중`);
 	                return chatRoomCreationLock.get(key);
-	            } (생략)
-
+	            }
+	```
      <br>
-   - 채팅방을 생성하기 전에 `/api/chat/rooms/find` 엔드포인트로 먼저 요청을 보내 <br>
+     
+   - 채팅방을 생성하기 전에 `/api/chat/rooms/find` 엔드포인트로 먼저 요청을 보내  <br>
      두 사용자 간에 이미 존재하는 채팅방이 있는지 조회
    - `chatRoomsCache`에 채팅방 객체를 추가하기 전에 동일한 id를 가진 채팅방이 이미 캐시에 있는지 확인 <br>
      이미 존재하면 추가하지 않고 클라이언트 메모리 내에서 중복된 채팅방 정보가 쌓이는 것을 방지
@@ -153,7 +158,7 @@ Villila는 고가의 명품, 슈퍼카를<br>
      `const userId = parseInt(statusUpdate.userId);` 숫자로 변환하여 전송 <br>
      
      <br>
-     
+
    - [chat.js](https://github.com/JONGHUKIM/VillilaPublic/blob/main/villigo/src/main/resources/static/js/chat.js)
    - [ChatRestController](https://github.com/JONGHUKIM/VillilaPublic/blob/main/villigo/src/main/java/com/splusz/villigo/web/ChatRestController.java)
    - [ChatService](https://github.com/JONGHUKIM/VillilaPublic/blob/main/villigo/src/main/java/com/splusz/villigo/service/ChatService.java)
@@ -170,7 +175,7 @@ Villila는 고가의 명품, 슈퍼카를<br>
    <br>
    <br>
 
-  ### - 오류 상황: 로컬 환경에선 구글 로그인 정상 작동, 배포 환경에선 구글 로그인 불가(400 redirect_uri_mismatch)
+  ### 오류 상황: Google OAuth2 배포 환경(EC2 + Nginx)에 400 redirect_uri_mismatch 오류 발생 
 <br>
 
 <p>
@@ -179,45 +184,62 @@ Villila는 고가의 명품, 슈퍼카를<br>
 
 <br>
 
- - **오류 원인**
-   - 채팅방 생성 요청(`/api/chat/rooms`)이 중복으로 발생
-   - 채팅 리스트에서 userId를 전달받지 못하여 사용자 상태가 모두 오프라인으로 표시됨
- - **해결 방안**
-   - 클라이언트측에서 먼저 중복 확인, `ensureChatRoom` 함수에서 <br>
-     `chatRoomCreationLock` 이라는 `Map` 객체를 사용하여 <br>
-     특정 두 사용자(`userId1, userId2`) 간의 채팅방 생성 요청이 이미 진행 중인지 확인
+ - **오류 원인**  <br>
+   - Spring Boot가 HTTPS 요청을 HTTP로 잘못 추론
+   - 프록시(Nginx)에서 X-Forwarded-Proto 미전달
+ - **해결 방안**  <br>
+   - Nginx 설정에서 헤더를 명확히 지정하여 Spring Boot가 HTTPS로 인식하도록 설정 <br>
 
-            async function ensureChatRoom(userId1, userId2) {
-	            const key = `${userId1}-${userId2}`;
-	            if (chatRoomCreationLock.has(key)) {
-	                console.log(`이미 ${key}에 대한 채팅방 생성 요청 진행 중`);
-	                return chatRoomCreationLock.get(key);
-	            } (생략)
+  ```nginx
+server {
+    listen 80;
+    server_name villila.store www.villila.store;
+    return 301 https://$host$request_uri;
+}
 
-     <br>
-   - 채팅방을 생성하기 전에 `/api/chat/rooms/find` 엔드포인트로 먼저 요청을 보내 <br>
-     두 사용자 간에 이미 존재하는 채팅방이 있는지 조회
-   - `chatRoomsCache`에 채팅방 객체를 추가하기 전에 동일한 id를 가진 채팅방이 이미 캐시에 있는지 확인 <br>
-     이미 존재하면 추가하지 않고 클라이언트 메모리 내에서 중복된 채팅방 정보가 쌓이는 것을 방지
-   - 서버측에서도 중복 확인 메서드 강화 `ChatRestController.createChatRoom`, `ChatService.createChatRoom`
-   - 프론트엔드에서는 `/topic/userStatus`를 구독하고 있지만 <br>
-     `userId`가 문자열로 전송되고 그 과정에서 문제가 발생하여 <br>
-     `const userId = parseInt(statusUpdate.userId);` 숫자로 변환하여 전송 <br>
-     
-     <br>
-     
-   - [chat.js](https://github.com/JONGHUKIM/VillilaPublic/blob/main/villigo/src/main/resources/static/js/chat.js)
-   - [ChatRestController](https://github.com/JONGHUKIM/VillilaPublic/blob/main/villigo/src/main/java/com/splusz/villigo/web/ChatRestController.java)
-   - [ChatService](https://github.com/JONGHUKIM/VillilaPublic/blob/main/villigo/src/main/java/com/splusz/villigo/service/ChatService.java)
+server {
+    listen 443 ssl;
+    server_name villila.store www.villila.store;
+    client_max_body_size 50M;
 
-     <br>
+    ssl_certificate     /etc/letsencrypt/live/villila.store/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/villila.store/privkey.pem;
+    include             /etc/letsencrypt/options-ssl-nginx.conf;
+    ssl_dhparam         /etc/letsencrypt/ssl-dhparams.pem;
+
+    location / {
+        proxy_pass http://localhost:8080;
+        proxy_http_version 1.1;
+
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_set_header X-Forwarded-Port $server_port;
+    }
+
+    location /ws/ {
+        proxy_pass http://localhost:8080/ws/;
+        proxy_http_version 1.1;
+
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "Upgrade";
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Port $server_port;
+    }
+}
+```
+
+<br>
+
 - **느낀점** <br>
-   이번 트러블슈팅을 통해 복잡한 실시간 통신 환경에서 <br>
-   클라이언트-서버 간의 동시성 및 데이터 일관성 관리가 핵심임을 느낌 <br>
-
-   특히 채팅방 중복 생성 방지를 위한 캐싱 전략(`chatRoomsCache`, `chatRoomCreationLock`)의 중요성과 <br>
-   정확한 데이터 타입 변환(`parseInt`)이 기능의 안정성과 사용자 경험에 직결됨을 배움 <br>
-   문제의 근본 원인을 찾아 구조적으로 해결하는 개발 습관의 필요성을 다시 한번 느낌
+   OAuth에서 가장 민감한 요소는 redirect_uri의 정확성 <br>
+   배포 환경에서는 프록시 설정 실수 하나로 인증 실패가 발생할 수 있음을 명확히 체감 <br>
 
 &nbsp;
 
