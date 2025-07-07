@@ -7,16 +7,26 @@
 &nbsp;
 
 Villila는 고가의 명품, 슈퍼카를<br>
-촬영 또는 체험 목적으로 개인 간 대여(P2P) 또는 사업자와의 거래(B2C)가 가능한 직거래 기반 고가 자산 공유 플랫폼입니다.
+촬영 또는 체험 목적으로 개인 간 대여(P2P) 가능한 직거래 기반 고가 자산 공유 플랫폼입니다.
 
 사용자는 자신이 보유한 고가 아이템을 등록하여 수익을 창출할 수 있으며, <br>
 대여를 원하는 유저는 중고거래처럼 간단한 절차로 예약 → 채팅 → 거래 확정까지
 원스톱으로 진행할 수 있습니다.
 
-또한, 실시간 채팅 시스템, 10분 단위 정밀 예약 기능, SNS 스타일 게시물 검색 등 <br>
-편리한 사용자 경험을 제공하여 촬영·광고·이색 체험을 원하는 고객 니즈에 최적화되어 있습니다.
-
 🛠️ 배포 링크: https://villila.store/
+
+### 주요 기능📸 
+<br>
+
+<p>
+  <img src="https://github.com/user-attachments/assets/291f57e1-99c2-4981-8392-53e6c35c0cd5" alt="기능 이미지 1" width="350"/>
+  <img src="https://github.com/user-attachments/assets/b559eef0-638c-4d7c-bd38-7a0677f0ff79" alt="기능 이미지 2" width="350"/>
+</p>
+
+<p>
+  <img src="https://github.com/user-attachments/assets/d4ce1ff8-09ab-4f94-a815-04ac0893b50e" alt="기능 이미지 3" width="350"/>
+  <img src="https://github.com/user-attachments/assets/b0647a2c-e735-4045-be89-de06069f4601" alt="기능 이미지 4" width="350"/>
+</p>
 
 &nbsp;
 
@@ -55,20 +65,6 @@ Villila는 고가의 명품, 슈퍼카를<br>
    - 구현중인 내용:
      - JJAM은 호스트가 상품을 광고할 때 필요한 기능으로 수정 중
      - JJAM은 예약 시 필요없음
-    
-### 주요 기능📸 
-<br>
-
-<p>
-  <img src="https://github.com/user-attachments/assets/ff91e90b-5ccc-41e2-9fdd-8393b1a5bbd3" alt="기능 이미지 1" width="350"/>
-  <img src="https://github.com/user-attachments/assets/5addbc66-6be7-4741-881d-0187c088b895" alt="기능 이미지 2" width="350"/>
-</p>
-
-<p>
-  <img src="https://github.com/user-attachments/assets/ef0cca9a-44e0-45b8-8892-e62876b37ea9" alt="기능 이미지 3" width="350"/>
-  <img src="https://github.com/user-attachments/assets/b0647a2c-e735-4045-be89-de06069f4601" alt="기능 이미지 4" width="350"/>
-</p>
-
 
 ### 기술 스택⚙️
 <br>
@@ -87,11 +83,13 @@ Villila는 고가의 명품, 슈퍼카를<br>
 <img src="https://github.com/user-attachments/assets/06c12e78-3984-49ec-a0a7-092d472d81fa" alt="서버 아키텍처" width="720"/>
 
 <br>
+&nbsp;
 
-### 트러블슈팅 🧩
-<br>
+## 트러블슈팅 🧩
 
- - ***오류 상황: 호스트가 예약 알림 메시지 클릭 시 Bad Request(400)***
+&nbsp;
+
+ ### - 오류 상황: 호스트가 예약 알림 메시지 클릭 시 Bad Request(400)
  - **오류 원인**
    - 예약 알림 메시지 클릭 시, 클라이언트측에서 서버로 `alarmId`를 넘겨야 하는데 `undefined`가 전달되고 있음
  - **해결 방안**
@@ -119,7 +117,7 @@ Villila는 고가의 명품, 슈퍼카를<br>
 <br>
 <br>
 
- - ***오류 상황: 채팅리스트가 계속 늘어나고 채팅방에 입장불가(405 Method Not Allowed), 온라인/오프라인 기능이 안됨***
+ ### - 오류 상황: 채팅리스트가 계속 늘어나고 채팅방에 입장불가(405 Method Not Allowed), 온라인/오프라인 기능이 안됨
 <br>
    
 <p>
