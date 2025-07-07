@@ -167,6 +167,58 @@ Villila는 고가의 명품, 슈퍼카를<br>
    정확한 데이터 타입 변환(`parseInt`)이 기능의 안정성과 사용자 경험에 직결됨을 배움 <br>
    문제의 근본 원인을 찾아 구조적으로 해결하는 개발 습관의 필요성을 다시 한번 느낌
 
+   <br>
+   <br>
+
+  ### - 오류 상황: 로컬 환경에선 구글 로그인 정상 작동, 배포 환경에선 구글 로그인 불가(400 redirect_uri_mismatch)
+<br>
+
+<p>
+  <img src="https://github.com/user-attachments/assets/e74de09b-169d-4eb3-b4cb-5463f4c2a7bc" alt="트러블슈팅 이미지 3" width="350"/>
+</p>
+
+<br>
+
+ - **오류 원인**
+   - 채팅방 생성 요청(`/api/chat/rooms`)이 중복으로 발생
+   - 채팅 리스트에서 userId를 전달받지 못하여 사용자 상태가 모두 오프라인으로 표시됨
+ - **해결 방안**
+   - 클라이언트측에서 먼저 중복 확인, `ensureChatRoom` 함수에서 <br>
+     `chatRoomCreationLock` 이라는 `Map` 객체를 사용하여 <br>
+     특정 두 사용자(`userId1, userId2`) 간의 채팅방 생성 요청이 이미 진행 중인지 확인
+
+            async function ensureChatRoom(userId1, userId2) {
+	            const key = `${userId1}-${userId2}`;
+	            if (chatRoomCreationLock.has(key)) {
+	                console.log(`이미 ${key}에 대한 채팅방 생성 요청 진행 중`);
+	                return chatRoomCreationLock.get(key);
+	            } (생략)
+
+     <br>
+   - 채팅방을 생성하기 전에 `/api/chat/rooms/find` 엔드포인트로 먼저 요청을 보내 <br>
+     두 사용자 간에 이미 존재하는 채팅방이 있는지 조회
+   - `chatRoomsCache`에 채팅방 객체를 추가하기 전에 동일한 id를 가진 채팅방이 이미 캐시에 있는지 확인 <br>
+     이미 존재하면 추가하지 않고 클라이언트 메모리 내에서 중복된 채팅방 정보가 쌓이는 것을 방지
+   - 서버측에서도 중복 확인 메서드 강화 `ChatRestController.createChatRoom`, `ChatService.createChatRoom`
+   - 프론트엔드에서는 `/topic/userStatus`를 구독하고 있지만 <br>
+     `userId`가 문자열로 전송되고 그 과정에서 문제가 발생하여 <br>
+     `const userId = parseInt(statusUpdate.userId);` 숫자로 변환하여 전송 <br>
+     
+     <br>
+     
+   - [chat.js](https://github.com/JONGHUKIM/VillilaPublic/blob/main/villigo/src/main/resources/static/js/chat.js)
+   - [ChatRestController](https://github.com/JONGHUKIM/VillilaPublic/blob/main/villigo/src/main/java/com/splusz/villigo/web/ChatRestController.java)
+   - [ChatService](https://github.com/JONGHUKIM/VillilaPublic/blob/main/villigo/src/main/java/com/splusz/villigo/service/ChatService.java)
+
+     <br>
+- **느낀점** <br>
+   이번 트러블슈팅을 통해 복잡한 실시간 통신 환경에서 <br>
+   클라이언트-서버 간의 동시성 및 데이터 일관성 관리가 핵심임을 느낌 <br>
+
+   특히 채팅방 중복 생성 방지를 위한 캐싱 전략(`chatRoomsCache`, `chatRoomCreationLock`)의 중요성과 <br>
+   정확한 데이터 타입 변환(`parseInt`)이 기능의 안정성과 사용자 경험에 직결됨을 배움 <br>
+   문제의 근본 원인을 찾아 구조적으로 해결하는 개발 습관의 필요성을 다시 한번 느낌
+
 &nbsp;
 
 ## 저작권 안내  
