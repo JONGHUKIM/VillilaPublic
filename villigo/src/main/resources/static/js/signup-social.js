@@ -100,12 +100,6 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 
-    // 폼 제출 시 전화번호 하이픈 제거
-    document.querySelector('form').addEventListener('submit', function (e) {
-        const phoneValue = phoneInput.value.replace(/\D/g, '');
-        phoneInput.value = phoneValue;
-    });
-
     // 유효성 검사 및 버튼 상태 변경
     btnSubmit.disabled = true;
     nicknameInput.addEventListener('change', checkNickname);
@@ -147,37 +141,41 @@ document.addEventListener('DOMContentLoaded', function () {
         changeBtnStatus();
     }
 
-    function checkPhone() {
-        const phone = phoneInput.value;
-        const phoneRegex = /^010-\d{4}-\d{4}$/;
-        if (phone === '') {
-            checkPhoneResult.innerHTML = '전화번호는 필수 입력 항목입니다.';
-            isPhoneChecked = false;
-            changeBtnStatus();
-            return;
-        }
-        if (!phoneRegex.test(phone)) {
-            checkPhoneResult.innerHTML = '전화번호는 010-1234-5678 형식으로 입력해야 합니다.';
-            isPhoneChecked = false;
-            changeBtnStatus();
-            return;
-        }
+	function checkPhone() { // event 매개변수 제거 (input 이벤트에서 바로 호출하므로 제거)
+	        const phone = phoneInput.value.trim(); // <-- trim() 추가
+	        const phoneRegex = /^010-\d{4}-\d{4}$/;
 
-        const uri = `./checkphone?phone=${phone}`;
-        axios
-            .get(uri)
-            .then(({ data }) => {
-                if (data === true) {
-                    checkPhoneResult.innerHTML = '이미 사용중인 전화번호입니다.';
-                    isPhoneChecked = false;
-                } else {
-                    checkPhoneResult.innerHTML = '';
-                    isPhoneChecked = true;
-                }
-                changeBtnStatus();
-            })
-            .catch((error) => console.error("전화번호 중복 확인 중 오류 발생:", error));
-    }
+	        // 디버깅을 위한 로그 추가
+	        console.log("Debug checkPhone - Raw:", phoneInput.value, "Trimmed:", phone, "Length:", phone.length, "Regex test:", phoneRegex.test(phone));
+
+	        if (phone === '') {
+	            checkPhoneResult.innerHTML = '전화번호는 필수 입력 항목입니다.';
+	            isPhoneChecked = false;
+	            changeBtnStatus();
+	            return;
+	        }
+	        if (!phoneRegex.test(phone)) {
+	            checkPhoneResult.innerHTML = '전화번호는 010-1234-5678 형식으로 입력해야 합니다.';
+	            isPhoneChecked = false;
+	            changeBtnStatus();
+	            return;
+	        }
+
+	        const uri = `./checkphone?phone=${phone}`;
+	        axios
+	            .get(uri)
+	            .then(({data}) => {
+	                if (data === true) {
+	                    checkPhoneResult.innerHTML = '이미 사용중인 전화번호입니다.';
+	                    isPhoneChecked = false;
+	                } else {
+	                    checkPhoneResult.innerHTML = '';
+	                    isPhoneChecked = true;
+	                }
+	                changeBtnStatus();
+	            })
+	            .catch((error) => console.log(error));
+	    }
 
     function testCheckVariables() {
         console.log('닉네임: ' + isNicknameChecked);

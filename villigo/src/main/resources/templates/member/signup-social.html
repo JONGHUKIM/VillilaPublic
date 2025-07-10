@@ -21,9 +21,9 @@
                     <div th:errors="*{nickname}" class="text-danger"></div>
                 </div>
                 <div class="input-group">
-                    <label for="phone">휴대전화번호</label>
+                    <label for="phone">전화번호</label>
                     <!-- 추가: Thymeleaf field 바인딩 및 에러 출력 -->
-                    <input type="tel" id="phone" name="phone" placeholder="휴대전화번호 입력" th:field="*{phone}" required>
+                    <input type="tel" id="phone" name="phone" placeholder="010-1234-5678" th:field="*{phone}" required>
                     <span id="checkPhoneResult" class="text-danger"></span>
                     <div th:errors="*{phone}" class="text-danger"></div>
                 </div>
