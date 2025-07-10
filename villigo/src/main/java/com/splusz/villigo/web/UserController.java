@@ -184,7 +184,7 @@ public class UserController {
     	return ResponseEntity.ok(userService.checkNickname(nickname));
     }
     
-    @GetMapping("/check-email")
+    @GetMapping("/checkemail")
     @ResponseBody
     public ResponseEntity<String> checkEmail(@RequestParam String email) {
         Optional<User> userOpt = userService.findByEmail(email);

@@ -45,10 +45,10 @@ public class UserProfileCompletionFilter extends OncePerRequestFilter {
 	    }
 	    
 	    // 허용된 경로라면 필터 건너뛰기
-//	    if (isPermittedPath) {
-//	        filterChain.doFilter(request, response);
-//	        return;
-//	    }
+	    if (isPermittedPath) {
+	        filterChain.doFilter(request, response);
+	        return;
+	    }
 	    
 		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 		log.info("Authentication: {}", authentication);

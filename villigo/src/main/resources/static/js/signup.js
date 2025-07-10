@@ -268,7 +268,8 @@ document.addEventListener("DOMContentLoaded", function () {
 	            return;
 	        }
 
-	        const uri = `./checkemail?email=${encodeURIComponent(email)}`;
+			const uri = `/member/checkemail?email=${encodeURIComponent(email)}`;
+			
 	        axios
 	            .get(uri)
 	            .then(handleCheckEmailResult)
