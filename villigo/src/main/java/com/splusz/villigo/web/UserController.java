@@ -27,6 +27,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.splusz.villigo.config.CustomOAuth2User;
 import com.splusz.villigo.domain.Product;
 import com.splusz.villigo.domain.Theme;
 import com.splusz.villigo.domain.User;
@@ -156,7 +157,8 @@ public class UserController {
         try {
             String nickname = dto.getNickname();
             String realname = authentication.getName();
-            String email = authentication.getPrincipal().toString();
+            CustomOAuth2User oauthUser = (CustomOAuth2User) authentication.getPrincipal();
+            String email = oauthUser.getAttribute("email");
             User user = userService.create(dto, nickname, realname, email);
             log.info("소셜 회원가입 성공: userId={}, marketingConsent={}", user.getId(), user.isMarketingConsent());
             return "redirect:/";
