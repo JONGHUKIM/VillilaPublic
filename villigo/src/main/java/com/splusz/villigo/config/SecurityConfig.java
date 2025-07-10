@@ -106,6 +106,7 @@ public class SecurityConfig {
                             "/member/privacy",  // /member/privacy 허용
 							"/member/checkusername", "/member/checkemail", "/member/checknickname",
 							"/member/checkphone",
+							"/member/social/checkphone",
 							"/api/faqs", "/css/**", "/js/**", "/images/**", "/ws/**", "/sockjs/**","/fonts/**",
 							"/queue/**","/bot/**").permitAll()
 					.anyRequest().authenticated()

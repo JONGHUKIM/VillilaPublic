@@ -119,6 +119,12 @@ public class UserController {
         return ResponseEntity.ok(userService.checkPhone(phone));
     }
     
+    @GetMapping("/social/checkphone")
+    public ResponseEntity<Boolean> checkPhoneForSocial(@RequestParam(name = "phone") String phone) {
+        log.info("소셜 가입용 checkPhone(phone={})", phone);
+        return ResponseEntity.ok(userService.checkPhone(phone));
+    }
+    
     // 소셜 회원가입 폼 렌더링
     @GetMapping("/signup-social")
     public String showSocialSignUpForm(Model model) {

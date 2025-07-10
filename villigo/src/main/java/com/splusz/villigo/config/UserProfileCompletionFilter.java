@@ -29,6 +29,7 @@ public class UserProfileCompletionFilter extends OncePerRequestFilter {
 	    String[] permitAllPaths = {
 	            "/login", "/error", "/search", "/api/search", "/api/brand", "/member/signin", 
 	            "/member/signup", "/logout", "/member/signup-social", "/member/checkusername",
+	            "/member/social/checkphone",
 	            "/member/checkemail", "/member/checknickname", "/api/faqs", "/css/", "/js/", 
 	            "/images/", "/ws/", "/sockjs/", "/fonts/", "/queue/", "/bot/"
 	        };

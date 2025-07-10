@@ -161,7 +161,9 @@ document.addEventListener('DOMContentLoaded', function () {
 	            return;
 	        }
 
-	        const uri = `./checkphone?phone=${phone}`;
+			// 기존 (상대 경로라서 ./checkphone 으로 인해 경로 해석 오류 발생 가능)
+			const uri = '/member/social/checkphone?phone=' + encodeURIComponent(phone);
+			
 	        axios
 	            .get(uri)
 	            .then(({data}) => {
