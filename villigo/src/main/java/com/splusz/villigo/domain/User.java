@@ -10,6 +10,7 @@ import org.hibernate.annotations.NaturalId;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.util.StringUtils;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -166,9 +167,18 @@ public class User extends BaseTimeEntity implements UserDetails {
     // Marketing Consent 필드 추가
     @Column(name = "marketing_consent", nullable = false, columnDefinition = "BOOLEAN DEFAULT FALSE")
     private boolean marketingConsent;
-    
+   
+    public boolean isProfileComplete() {
 
+        // StringUtils.hasText()는 null 또는 빈 문자열(공백만 있는 문자열 포함)을 모두 false
+        boolean isNicknameComplete = StringUtils.hasText(this.nickname);
+        boolean isPhoneComplete = StringUtils.hasText(this.phone);
+        boolean isRegionComplete = StringUtils.hasText(this.region);
+        boolean isThemeComplete = this.theme != null; // Theme 객체가 설정되어 있는지 확인
 
+        // 모든 필수 필드가 채워져 있어야 true
+        return isNicknameComplete && isPhoneComplete && isRegionComplete && isThemeComplete;
+    }
 	
 	// UserDetails 인터페이스 메서드 구현
     @Override

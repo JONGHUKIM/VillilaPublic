@@ -12,11 +12,13 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.splusz.villigo.config.CustomAuthenticationSuccessHandler;
+import com.splusz.villigo.config.CustomOAuth2User;
 import com.splusz.villigo.domain.Theme;
 import com.splusz.villigo.domain.User;
 import com.splusz.villigo.domain.UserJjam;
@@ -102,9 +104,9 @@ public class UserService implements UserDetailsService {
 
     // 소셜 계정 연결 회원가입 서비스
     @Transactional
-    public User create(SocialUserSignUpDto dto, String nickname, String realname, String email) {
-        log.info("create(dto={}, nickname={}, realname={}, email={})", 
-                dto, nickname, realname, email);
+    public User create(SocialUserSignUpDto dto, String nickname, String email) {
+        log.info("create(dto={}, nickname={}, email={})", 
+                dto, nickname, email);
 
         // 중복 체크
         if (checkNickname(nickname)) {
@@ -120,12 +122,35 @@ public class UserService implements UserDetailsService {
         // 사용자 아이디, 닉네임, 이름, 이메일, 소셜 회원가입 여부(snsLogin)를 엔터티에 추가
         entity.setUsername(email.split("@")[0]); // 이메일에서 아이디 부분만 추출
         entity.setNickname(nickname);
-        entity.setRealname(realname); 
         entity.setEmail(email);
         entity.setSnsLogin(true);
         entity.setPhone(dto.getPhone().replaceAll("-", "")); // 하이픈 제거 후 저장
         entity.setMarketingConsent(dto.isMarketingConsent()); // 마케팅 동의 설정
         entity = userRepo.save(entity);
+
+        // 현재 인증된 Authentication 객체를 가져옴
+        Authentication currentAuth = SecurityContextHolder.getContext().getAuthentication();
+
+        // OAuth2AuthenticationToken이고 CustomOAuth2User인 경우에만 업데이트
+        if (currentAuth instanceof OAuth2AuthenticationToken) {
+            CustomOAuth2User oldCustomOAuth2User = (CustomOAuth2User) currentAuth.getPrincipal();
+
+            // 새로운 CustomOAuth2User 객체를 생성
+            // 이때, 기존 delegate는 유지하고 새롭게 DB에 저장된 entity(User 객체)를 넘김
+            CustomOAuth2User newCustomOAuth2User = new CustomOAuth2User(oldCustomOAuth2User.getDelegate(), entity);
+
+            // 새로운 Authentication 객체를 생성
+            // 기존 권한, 상세 정보 유지하면서 Principal만 새로운 CustomOAuth2User로 교체
+            OAuth2AuthenticationToken newAuth = new OAuth2AuthenticationToken(
+                newCustomOAuth2User,
+                currentAuth.getAuthorities(), // 기존 권한 유지
+                ((OAuth2AuthenticationToken) currentAuth).getAuthorizedClientRegistrationId()
+            );
+
+            // SecurityContext에 업데이트된 Authentication 객체를 설정.
+            SecurityContextHolder.getContext().setAuthentication(newAuth);
+            log.info("SecurityContext의 CustomOAuth2User 객체가 업데이트되었습니다. 새로운 User ID: {}", entity.getId());
+        }
 
         return entity;
     }
@@ -412,7 +437,6 @@ public class UserService implements UserDetailsService {
             }
             user.setAvatar(null);
         }
-        user.setRealname(null);
         user.setTheme(null);
         user.setMarketingConsent(false);
         user.setMannerScore(0);

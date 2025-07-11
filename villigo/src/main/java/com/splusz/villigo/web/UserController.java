@@ -156,12 +156,11 @@ public class UserController {
 
         try {
             String nickname = dto.getNickname();
-            String realname = authentication.getName();
             CustomOAuth2User oauthUser = (CustomOAuth2User) authentication.getPrincipal();
             String email = oauthUser.getAttribute("email");
-            User user = userService.create(dto, nickname, realname, email);
+            User user = userService.create(dto, nickname, email);
             log.info("소셜 회원가입 성공: userId={}, marketingConsent={}", user.getId(), user.isMarketingConsent());
-            return "redirect:/";
+            return "redirect:/member/signin";
         } catch (IllegalArgumentException e) {
             log.warn("소셜 회원가입 실패: {}", e.getMessage());
             model.addAttribute("error", e.getMessage());

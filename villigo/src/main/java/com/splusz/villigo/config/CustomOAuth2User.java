@@ -24,6 +24,11 @@ public class CustomOAuth2User implements OAuth2User {
 	public User getUser() {
 		return user;
 	}
+	
+	// delegate 필드에 접근하기 위한 getter 메서드를 추가
+    public OAuth2User getDelegate() {
+        return delegate;
+    }
     
 	public Long getId() {
     	return user != null ? user.getId() : null;
@@ -44,7 +49,8 @@ public class CustomOAuth2User implements OAuth2User {
         return delegate.getName();
     }
     
-    public boolean isProfileComplete() {
-        return user != null;
-    }
+	public boolean isProfileComplete() {
+		// User 객체가 null이 아니고, 해당 User 객체의 isProfileComplete()가 true
+		return user != null && user.isProfileComplete(); 
+	}
 }
