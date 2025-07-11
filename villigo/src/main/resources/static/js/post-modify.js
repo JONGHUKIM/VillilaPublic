@@ -271,32 +271,25 @@ function initializeFormValidation() {
         selectedFiles.forEach(file => formData.append("images", file));
 
 		fetch(form.action, {
-		    method: "POST",
-		    body: formData,
-		    redirect: 'follow'
+		  method: "POST",
+		  body: formData,
+		  redirect: 'follow'
 		})
 		.then(response => {
-		    if (response.redirected) {
-		        // 서버가 HTTP 303 리다이렉트로 응답한 경우
-		        window.location.href = response.url;
-		        return;
-		    }
-
-		    if (response.ok) {
-		        return response.json();
-		    } else {
-		        throw new Error("서버 오류 발생");
-		    }
-		})
-		.then(data => {
-		    // JSON 안에 redirectUrl 필드가 있다면 이동
+		  if (response.redirected) {
+		    window.location.href = response.url; // 리다이렉트된 URL로 이동
+		    return;
+		  }
+		    return response.json();
+		  })
+		  .then(data => {
 		    if (data && data.redirectUrl) {
-		        window.location.href = data.redirectUrl;
+		      window.location.href = data.redirectUrl;
 		    }
-		})
-		.catch(error => {
-		    alert("에러 발생: " + error.message);
-		});
+		  })
+		  .catch(error => {
+		    alert("서버와 통신 중 문제가 발생했습니다: " + error.message);
+		  });
 
 
     });
