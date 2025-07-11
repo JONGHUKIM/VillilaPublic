@@ -1,5 +1,12 @@
 package com.splusz.villigo.service;
 
+import com.splusz.villigo.domain.*;
+import com.splusz.villigo.dto.ReviewDto;
+import com.splusz.villigo.repository.*;
+import com.splusz.villigo.util.SecurityUserUtil;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
@@ -19,386 +26,265 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.splusz.villigo.config.CustomAuthenticationSuccessHandler;
 import com.splusz.villigo.config.CustomOAuth2User;
-import com.splusz.villigo.domain.Theme;
-import com.splusz.villigo.domain.User;
-import com.splusz.villigo.domain.UserJjam;
-import com.splusz.villigo.domain.UserRole;
 import com.splusz.villigo.dto.SocialUserSignUpDto;
 import com.splusz.villigo.dto.UpdateAvatarRequestDto;
 import com.splusz.villigo.dto.UserProfileDto;
 import com.splusz.villigo.dto.UserSignUpDto;
-import com.splusz.villigo.repository.ThemeRepository;
-import com.splusz.villigo.repository.UserJjamRepository;
-import com.splusz.villigo.repository.UserRepository;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @RequiredArgsConstructor
 @Service
 public class UserService implements UserDetailsService {
-
     private final UserRepository userRepo;
     private final ThemeRepository themeRepo;
     private final PasswordEncoder passwordEncoder;
     private final CustomAuthenticationSuccessHandler successHandler;
-	private final UserJjamRepository userJjamRepo;
-	
-	// 프로필 사진이 저장될 경로
-	private static final String UPLOAD_DIR = "/home/ubuntu/images/avatar";
+    private final UserJjamRepository userJjamRepo;
+
+    private static final String UPLOAD_DIR = "/home/ubuntu/images/avatar";
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         log.info("loadUserByUsername(username = {})", username);
-        
-        Optional<User> entity = userRepo.findByUsername(username);
-        if (entity.isPresent()) {
-            return entity.get();
-        } else {
-            throw new UsernameNotFoundException(username + "과(와) 일치하는 사용자 정보가 없습니다.");
-        }
-    }
-    
-    // 중복체크 시 "-" 제거 후 비교
-    public Boolean checkPhone(String phone) {
-        log.info("checkPhone(phone={})", phone);
-        String normalizedPhone = phone.replaceAll("-", "");
-        Optional<User> entity = userRepo.findByPhone(normalizedPhone);
-        return entity.isPresent();
+        return userRepo.findByUsername(username)
+                .orElseThrow(() -> new UsernameNotFoundException(username + "과(와) 일치하는 사용자 정보가 없습니다."));
     }
 
-    // 회원가입 서비스
+    public Boolean checkPhone(String phone) {
+        log.info("checkPhone(phone={})", phone);
+        return userRepo.findByPhone(phone.replaceAll("-", "")).isPresent();
+    }
+
     @Transactional
     public User create(@Valid UserSignUpDto dto) {
         log.info("create(dto={})", dto);
         dto.validatePasswordMatch();
 
-        // 중복 체크
-        if (checkUsername(dto.getUsername())) {
-            throw new IllegalArgumentException("이미 사용 중인 아이디입니다.");
-        }
-        if (checkNickname(dto.getNickname())) {
-            throw new IllegalArgumentException("이미 사용 중인 닉네임입니다.");
-        }
-        if (checkEmail(dto.getEmail())) {
-            throw new IllegalArgumentException("이미 사용 중인 이메일입니다.");
-        }
-        if (checkPhone(dto.getPhone())) {
-            throw new IllegalArgumentException("이미 사용 중인 전화번호입니다.");
-        }
+        if (checkUsername(dto.getUsername())) throw new IllegalArgumentException("이미 사용 중인 아이디입니다.");
+        if (checkNickname(dto.getNickname())) throw new IllegalArgumentException("이미 사용 중인 닉네임입니다.");
+        if (checkEmail(dto.getEmail())) throw new IllegalArgumentException("이미 사용 중인 이메일입니다.");
+        if (checkPhone(dto.getPhone())) throw new IllegalArgumentException("이미 사용 중인 전화번호입니다.");
 
-        Theme theme = themeRepo.findById(dto.getThemeId())
-            .orElseThrow(() -> new IllegalArgumentException("테마를 찾을 수 없습니다."));
+        Theme theme = themeRepo.findById(dto.getThemeId()).orElseThrow(() -> new IllegalArgumentException("테마를 찾을 수 없습니다."));
+
         User entity = dto.toEntity(passwordEncoder, theme).addRole(UserRole.USER);
-        entity.setPhone(entity.getPhone().replaceAll("-", "")); // 하이픈 제거 후 저장
-        entity.setMarketingConsent(dto.isMarketingConsent()); // 마케팅 동의 설정
-        entity = userRepo.save(entity);
-
-        return entity;
+        entity.setPhone(entity.getPhone().replaceAll("-", ""));
+        entity.setMarketingConsent(dto.isMarketingConsent());
+        return userRepo.save(entity);
     }
 
-    // 소셜 계정 연결 회원가입 서비스
     @Transactional
     public User create(SocialUserSignUpDto dto, String nickname, String email) {
-        log.info("create(dto={}, nickname={}, email={})", 
-                dto, nickname, email);
+        log.info("create(dto={}, nickname={}, email={})", dto, nickname, email);
 
-        // 중복 체크
-        if (checkNickname(nickname)) {
-            throw new IllegalArgumentException("이미 사용 중인 닉네임입니다.");
-        }
-        if (checkPhone(dto.getPhone())) {
-            throw new IllegalArgumentException("이미 사용 중인 번호입니다.");
-        }
+        if (checkNickname(nickname)) throw new IllegalArgumentException("이미 사용 중인 닉네임입니다.");
+        if (checkPhone(dto.getPhone())) throw new IllegalArgumentException("이미 사용 중인 번호입니다.");
 
-        Theme theme = themeRepo.findById(dto.getThemeId())
-            .orElseThrow(() -> new IllegalArgumentException("테마를 찾을 수 없습니다."));
+        Theme theme = themeRepo.findById(dto.getThemeId()).orElseThrow(() -> new IllegalArgumentException("테마를 찾을 수 없습니다."));
+
         User entity = dto.toEntity(theme).addRole(UserRole.USER);
-        // 사용자 아이디, 닉네임, 이름, 이메일, 소셜 회원가입 여부(snsLogin)를 엔터티에 추가
-        entity.setUsername(email.split("@")[0]); // 이메일에서 아이디 부분만 추출
+        entity.setUsername(email.split("@")[0]);
         entity.setNickname(nickname);
         entity.setEmail(email);
         entity.setSnsLogin(true);
-        entity.setPhone(dto.getPhone().replaceAll("-", "")); // 하이픈 제거 후 저장
-        entity.setMarketingConsent(dto.isMarketingConsent()); // 마케팅 동의 설정
+        entity.setPhone(dto.getPhone().replaceAll("-", ""));
+        entity.setMarketingConsent(dto.isMarketingConsent());
         entity = userRepo.save(entity);
 
-        // 현재 인증된 Authentication 객체를 가져옴
         Authentication currentAuth = SecurityContextHolder.getContext().getAuthentication();
-
-        // OAuth2AuthenticationToken이고 CustomOAuth2User인 경우에만 업데이트
         if (currentAuth instanceof OAuth2AuthenticationToken) {
-            CustomOAuth2User oldCustomOAuth2User = (CustomOAuth2User) currentAuth.getPrincipal();
+            String clientRegistrationId = ((OAuth2AuthenticationToken) currentAuth).getAuthorizedClientRegistrationId();
+            // registrationId에 따라 SocialType 설정 (예: "google", "kakao" 등)
+            if ("google".equalsIgnoreCase(clientRegistrationId)) {
+                entity.setSocialType(SocialType.GOOGLE); // SocialType enum에 GOOGLE이 있다고 가정
+            }
+            // else if ("kakao".equalsIgnoreCase(clientRegistrationId)) {
+            //     entity.setSocialType(SocialType.KAKAO);
+            // }
+            // ... 기타 소셜 로그인 서비스에 따라 SocialType 추가
+            
+        } else {
+            // 소셜 로그인이 아닌 경우 (혹은 예상치 못한 경우)
+            entity.setSocialType(null); 
+        }
 
-            // 새로운 CustomOAuth2User 객체를 생성
-            // 이때, 기존 delegate는 유지하고 새롭게 DB에 저장된 entity(User 객체)를 넘김
-            CustomOAuth2User newCustomOAuth2User = new CustomOAuth2User(oldCustomOAuth2User.getDelegate(), entity);
+        entity = userRepo.save(entity);
 
-            // 새로운 Authentication 객체를 생성
-            // 기존 권한, 상세 정보 유지하면서 Principal만 새로운 CustomOAuth2User로 교체
-            OAuth2AuthenticationToken newAuth = new OAuth2AuthenticationToken(
-                newCustomOAuth2User,
-                currentAuth.getAuthorities(), // 기존 권한 유지
-                ((OAuth2AuthenticationToken) currentAuth).getAuthorizedClientRegistrationId()
-            );
-
-            // SecurityContext에 업데이트된 Authentication 객체를 설정.
+        // SecurityContext 업데이트 로직은 기존대로 유지
+        if (currentAuth instanceof OAuth2AuthenticationToken) {
+            CustomOAuth2User oldUser = (CustomOAuth2User) currentAuth.getPrincipal();
+            CustomOAuth2User newUser = new CustomOAuth2User(oldUser.getDelegate(), entity);
+            OAuth2AuthenticationToken newAuth = new OAuth2AuthenticationToken(newUser, currentAuth.getAuthorities(), ((OAuth2AuthenticationToken) currentAuth).getAuthorizedClientRegistrationId());
             SecurityContextHolder.getContext().setAuthentication(newAuth);
-            log.info("SecurityContext의 CustomOAuth2User 객체가 업데이트되었습니다. 새로운 User ID: {}", entity.getId());
+            log.info("SecurityContext CustomOAuth2User updated. ID: {}", entity.getId());
         }
 
         return entity;
     }
 
-    // Id로 유저를 검색
     public User read(Long id) {
         log.info("read(id={})", id);
-        
-        User user = userRepo.findById(id).orElseThrow();
-        return user;
+        return userRepo.findById(id).orElseThrow();
     }
 
-    // 소셜 로그인 사용자의 정보가 데이터베이스에 저장되어있는지 확인
     public String checkSnsLogin(Authentication authentication) {
         log.info("checkSnsLogin(CustomAuthenticationSuccessHandler={})", successHandler);
-        
-        boolean isProfileCompleted = successHandler.customizeOAuth2User(authentication);
-        
-        // 필수 정보가 데이터베이스에 입력이 되어있으면 홈페이지로 리다이렉트
-        if (isProfileCompleted) {
-            return "redirect:/";
-        }
-                
-        return "/member/signup-social";
+        boolean completed = successHandler.customizeOAuth2User(authentication);
+        return completed ? "redirect:/" : "/member/signup-social";
     }
 
-    // 아이디(username) 중복 체크
     public Boolean checkUsername(String username) {
-        log.info("checkUsername(username={})", username);
-        
-        Optional<User> entity = userRepo.findByUsername(username);
-        if (entity.isPresent()) return true;
-        
-        return false;
+        return userRepo.findByUsername(username).isPresent();
     }
 
-    // 닉네임 중복체크
     public Boolean checkNickname(String nickname) {
-        log.info("checkNickname(nickname={})", nickname);
-        
-        Optional<User> entity = userRepo.findByNickname(nickname);
-        if (entity.isPresent()) return true;
-        
-        return false;
+        return userRepo.findByNickname(nickname).isPresent();
     }
 
-    // 이메일 중복 체크
     public Boolean checkEmail(String email) {
-        log.info("checkEmail(email={})", email);
-        
-        Optional<User> entity = userRepo.findByEmail(email);
-        if (entity.isPresent()) return true;
-        
-        return false;
+        return userRepo.findByEmail(email).isPresent();
     }
-    
+
     public Optional<User> findByEmail(String email) {
-        return userRepo.findByEmail(email);  // 또는 .findUserByEmail()
+        return userRepo.findByEmail(email);
     }
 
-
-    // 채팅에서 사용자가 온라인/오프라인 구분 메서드 추가
     public void setUserOnline(Long userId, boolean isOnline) {
-        User user = userRepo.findById(userId)
-            .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다: " + userId));
+        User user = userRepo.findById(userId).orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다: " + userId));
         user.setOnline(isOnline);
         userRepo.save(user);
     }
 
     public boolean isUserOnline(Long userId) {
         log.info("isUserOnline(userId={})", userId);
-        User user = userRepo.findById(userId)
-            .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다: " + userId));
-        return user.isOnline();
+        return userRepo.findById(userId).orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다: " + userId)).isOnline();
     }
 
-    // 매너 점수 조회 
     public int getMannerScore(Long userId) {
-        User user = userRepo.findById(userId)
-            .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다: " + userId));
-        return user.getMannerScore(); // 매너 점수 반환
+        return userRepo.findById(userId).orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다: " + userId)).getMannerScore();
     }
 
-    // 매너 점수 업데이트
     public void updateMannerScore(Long userId, int scoreDelta) {
-        User user = userRepo.findById(userId)
-            .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다: " + userId));
-        
-        int currentScore = user.getMannerScore();  // 현재 매너 점수
-        int newScore = currentScore + scoreDelta;  // 점수 변경 (양수나 음수로 추가하거나 차감)
-
-        // 점수는 0점 이상으로 유지하도록 설정
-        user.setMannerScore(Math.max(newScore, 0));  // 최소값 0 설정
-        
-        userRepo.save(user);  // 업데이트된 매너 점수 저장
+        User user = userRepo.findById(userId).orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다: " + userId));
+        user.setMannerScore(Math.max(user.getMannerScore() + scoreDelta, 0));
+        userRepo.save(user);
     }
-    
-	// 유저 프로필 업데이트
-	@Transactional
+
+    @Transactional
     public User updateUserProfile(String nickname, String password, String phone, String region, Long themeId, MultipartFile avatarFile) throws IOException {
-        String username = SecurityContextHolder.getContext().getAuthentication().getName();
-        Optional<User> userOptional = userRepo.findByUsername(username);
+        User user = SecurityUserUtil.getCurrentLoggedInUser();
+        if (user == null || user.getId() == null) throw new IllegalArgumentException("로그인된 사용자 정보를 찾을 수 없습니다.");
 
-        if (userOptional.isEmpty()) {
-            throw new IllegalArgumentException("User not found with username: " + username);
-        }
+        if (nickname != null && !nickname.isEmpty()) user.setNickname(nickname);
+        if (password != null && !password.isEmpty()) user.setPassword(passwordEncoder.encode(password));
+        if (phone != null && !phone.isEmpty()) user.setPhone(phone);
+        if (region != null && !region.isEmpty()) user.setRegion(region);
+        if (themeId != null) user.setTheme(themeRepo.findById(themeId).orElse(null));
 
-        User user = userOptional.get();
-
-        // 닉네임 업데이트 (중복 체크는 프론트엔드에서 이미 처리됨)
-        if (nickname != null && !nickname.isEmpty()) {
-            user.setNickname(nickname);
-        }
-
-        // 비밀번호 업데이트
-        if (password != null && !password.isEmpty()) {
-            user.setPassword(passwordEncoder.encode(password));
-        }
-
-        // 전화번호 업데이트
-        if (phone != null && !phone.isEmpty()) {
-            user.setPhone(phone);
-        }
-
-        // 지역 업데이트
-        if (region != null && !region.isEmpty()) {
-            user.setRegion(region);
-        }
-
-        // 관심 상품 업데이트
-        if (themeId != null) {
-            user.setTheme(themeRepo.findById(themeId).orElse(null));
-        }
-
-        // 아바타 이미지 업데이트
         if (avatarFile != null && !avatarFile.isEmpty()) {
             File directory = new File(UPLOAD_DIR);
-            if (!directory.exists()) {
-                directory.mkdirs();
-            }
+            if (!directory.exists()) directory.mkdirs();
 
-            String originalFilename = avatarFile.getOriginalFilename();
-            String fileExtension = originalFilename != null ? originalFilename.substring(originalFilename.lastIndexOf(".")) : "";
-            String newFileName = UUID.randomUUID() + fileExtension;
-            String filePath = UPLOAD_DIR + File.separator + newFileName;
-
-            File destFile = new File(filePath);
+            String ext = Optional.ofNullable(avatarFile.getOriginalFilename())
+                    .map(name -> name.substring(name.lastIndexOf(".")))
+                    .orElse("");
+            String newFileName = UUID.randomUUID() + ext;
+            File destFile = new File(UPLOAD_DIR + File.separator + newFileName);
             avatarFile.transferTo(destFile);
-
             user.setAvatar(newFileName);
         }
 
         return userRepo.save(user);
     }
-	
-	public static String normalizePath(String path) {
-	    if (path != null && path.startsWith("/")) {
-	        return path.substring(1);
-	    }
-	    return path;
-	}
 
-    // 사진 업데이트
-	@Transactional
-	public User updateAvatar(UpdateAvatarRequestDto requestDto) throws IOException {
-	    String username = SecurityContextHolder.getContext().getAuthentication().getName();
-	    Optional<User> userOptional = userRepo.findByUsername(username);
-	    if (userOptional.isEmpty()) {
-	        throw new IllegalArgumentException("User not found with username: " + username);
-	    }
-	    User user = userOptional.get();
-	    MultipartFile avatarFile = requestDto.getAvatarFile();
-	    if (avatarFile != null && !avatarFile.isEmpty()) {
-	        File directory = new File(UPLOAD_DIR);
-	        if (!directory.exists()) {
-	            directory.mkdirs();
-	        }
-	        String originalFilename = avatarFile.getOriginalFilename();
-	        String fileExtension = originalFilename != null ? originalFilename.substring(originalFilename.lastIndexOf(".")) : "";
-	        String newFileName = UUID.randomUUID() + fileExtension;
-	        String filePath = UPLOAD_DIR + File.separator + newFileName;
-	        File destFile = new File(filePath);
-	        avatarFile.transferTo(destFile);
-	        user.setAvatar(normalizePath(newFileName)); // 정규화 적용
-	        userRepo.save(user);
-	    }
-	    return user;
-	}
-	
-	@Transactional
-	public User getCurrentUserProfileAsUser() {
-	    String username = SecurityContextHolder.getContext().getAuthentication().getName();
-	    log.info("getCurrentUserProfileAsUser: username={}", username);
-	    return userRepo.findByUsernameWithTheme(username)
-	            .orElseThrow(() -> new IllegalArgumentException("User not found with username: " + username));
-	}
-    
-    // 현재 사용자 프로필 가져오기
+    public static String normalizePath(String path) {
+        return path != null && path.startsWith("/") ? path.substring(1) : path;
+    }
+
     @Transactional
+    public User updateAvatar(UpdateAvatarRequestDto requestDto) throws IOException {
+        User user = SecurityUserUtil.getCurrentLoggedInUser();
+        if (user == null || user.getId() == null) throw new IllegalArgumentException("로그인된 사용자 정보를 찾을 수 없습니다.");
+
+        MultipartFile avatarFile = requestDto.getAvatarFile();
+        if (avatarFile != null && !avatarFile.isEmpty()) {
+            File directory = new File(UPLOAD_DIR);
+            if (!directory.exists()) directory.mkdirs();
+
+            String ext = Optional.ofNullable(avatarFile.getOriginalFilename())
+                    .map(name -> name.substring(name.lastIndexOf(".")))
+                    .orElse("");
+            String newFileName = UUID.randomUUID() + ext;
+            File destFile = new File(UPLOAD_DIR + File.separator + newFileName);
+            avatarFile.transferTo(destFile);
+            user.setAvatar(normalizePath(newFileName));
+            userRepo.save(user);
+        }
+        return user;
+    }
+
+    @Transactional
+    public User getCurrentUserProfileAsUser() {
+        User user = SecurityUserUtil.getCurrentLoggedInUser();
+        if (user == null || user.getId() == null) throw new IllegalArgumentException("로그인된 사용자 정보를 찾을 수 없습니다.");
+        log.info("getCurrentUserProfileAsUser: user ID={}", user.getId());
+        return user;
+    }
+
+    @Transactional // 이 메서드 자체는 @Transactional이므로, 트랜잭션 범위 내에서 동작합니다.
     public UserProfileDto getCurrentUserProfile() {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        if (auth == null || !auth.isAuthenticated()) {
-            log.error("No authenticated user found for getCurrentUserProfile");
-            throw new IllegalStateException("No authenticated user found");
+        User user = SecurityUserUtil.getCurrentLoggedInUser(); // SecurityUserUtil 사용
+        if (user == null || user.getId() == null) {
+            log.error("getCurrentUserProfile: 인증된 사용자를 찾을 수 없습니다.");
+            throw new IllegalStateException("인증된 사용자를 찾을 수 없습니다.");
         }
 
-        String username = auth.getName();
-        log.info("getCurrentUserProfile: username={}", username);
-        if (username == null || username.isEmpty()) {
-            log.error("Username is null or empty in getCurrentUserProfile");
-            throw new IllegalStateException("Username is null or empty");
-        }
+        log.info("getCurrentUserProfile: user ID={}", user.getId());
 
-        User user = userRepo.findByUsername(username)
-                    .orElseThrow(() -> new IllegalArgumentException("User not found with username: " + username));
+        // LazyInitializationException을 해결하기 위해 현재 트랜잭션 내에서 User 엔티티를 다시 로드
+        // 로드된 managedUser는 현재 트랜잭션의 영속성 컨텍스트에 의해 관리
+        User managedUser = userRepo.findById(user.getId())
+                                   .orElseThrow(() -> new IllegalArgumentException("User not found by ID: " + user.getId()));
 
         UserProfileDto dto = new UserProfileDto();
-        dto.setId(user.getId());
-        dto.setUsername(user.getUsername());
-        dto.setNickname(user.getNickname());
-        dto.setPhone(user.getPhone());
-        dto.setRegion(user.getRegion());
-        dto.setAvatar(user.getAvatar());
-        dto.setMannerScore(user.getMannerScore());
-        if (user.getTheme() != null) {
-            dto.setThemeId(user.getTheme().getId());
-            dto.setTheme(user.getTheme().getTheme());
-        }
-        dto.setJjamPoints(calculateUserJjamPoints(user)); // 잼 포인트 계산 후 dto에 설정
-        if (user.getSocialType() != null) {
-            dto.setSocialType(user.getSocialType().name()); // Enum을 String으로 변환
+        dto.setId(managedUser.getId()); // 관리되는 User 엔티티(managedUser) 사용
+        dto.setUsername(managedUser.getUsername());
+        dto.setNickname(managedUser.getNickname());
+        dto.setPhone(managedUser.getPhone());
+        dto.setRegion(managedUser.getRegion());
+        dto.setAvatar(managedUser.getAvatar());
+        dto.setMannerScore(managedUser.getMannerScore());
+
+        // Theme 정보에 안전하게 접근 (이제 트랜잭션 내에서 초기화됨)
+        if (managedUser.getTheme() != null) {
+            dto.setThemeId(managedUser.getTheme().getId());
+            dto.setTheme(managedUser.getTheme().getTheme()); // Theme가 이제 트랜잭션 내에서 초기화
         } else {
-            dto.setSocialType(null); // 또는 null 처리 (필요에 따라)
+            dto.setThemeId(null);
+            dto.setTheme(null); // 기본값 설정
         }
+        
+        dto.setJjamPoints(calculateUserJjamPoints(managedUser)); // 관리되는 User 엔티티(managedUser) 사용
+        dto.setSocialType(managedUser.getSocialType() != null ? managedUser.getSocialType().name() : null);
+        
         return dto;
     }
-   
-	// 사용자의 JJAM 포인트 총합 계산 메서드 추가
+
     public int calculateUserJjamPoints(User user) {
-        List<UserJjam> userJjams = userJjamRepo.findByUser(user);
-        return userJjams.stream()
+        return userJjamRepo.findByUser(user).stream()
                 .mapToInt(UserJjam::getTransactionAmount)
                 .sum();
     }
-    
+
     public User findById(Long id) {
         return userRepo.findById(id).orElse(null);
     }
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -418,23 +304,26 @@ public class UserService implements UserDetailsService {
         
         // 유저네임과 닉네임을 "탈퇴회원_UUID" 형식으로 변경
 >>>>>>> 7e55b2a (탈퇴회원_UUID로 변경)
+=======
+
+    @Transactional
+    public void withdrawCurrentUser(HttpServletRequest request, HttpServletResponse response) {
+        User user = SecurityUserUtil.getCurrentLoggedInUser();
+        if (user == null || user.getId() == null) throw new IllegalArgumentException("로그인된 사용자 정보를 찾을 수 없습니다.");
+
+>>>>>>> a103d41 (구글 로그인 시 챗봇 사용불가 홈페이지 깨짐 현상 수정, 구글 로그인 시 홈제외 모든 페이지 깨짐 현상)
         String uuid = UUID.randomUUID().toString();
 <<<<<<< HEAD
 
-        // 유저네임, 닉네임, 이메일을 "탈퇴회원_UUID" 형식으로 변경 (이메일은 중복 방지)
         user.setUsername("탈퇴회원_" + uuid);
         user.setNickname("탈퇴회원_" + uuid);
-        user.setEmail("deleted_" + uuid + "@example.com"); // 고유한 더미 이메일
-
-        // 개인 정보 삭제
+        user.setEmail("deleted_" + uuid + "@example.com");
         user.setPassword(null);
         user.setPhone(null);
         user.setRegion(null);
         if (user.getAvatar() != null) {
             File file = new File(UPLOAD_DIR + File.separator + user.getAvatar());
-            if (file.exists()) {
-                file.delete();
-            }
+            if (file.exists()) file.delete();
             user.setAvatar(null);
         }
         user.setTheme(null);
@@ -443,6 +332,7 @@ public class UserService implements UserDetailsService {
         user.setOnline(false);
         user.setSnsLogin(false);
 
+<<<<<<< HEAD
         // 사용자 정보 저장
 =======
         user.setUsername("탈퇴회원_" + uuid); // 유저네임 변경
@@ -492,10 +382,12 @@ public class UserService implements UserDetailsService {
         // 사용자 정보 저장 (Product, Review, Chat은 유지)
 <<<<<<< HEAD
 >>>>>>> bededd5 (탈퇴한 회원 -> 탈퇴회원으로 변경)
+=======
+>>>>>>> a103d41 (구글 로그인 시 챗봇 사용불가 홈페이지 깨짐 현상 수정, 구글 로그인 시 홈제외 모든 페이지 깨짐 현상)
         userRepo.save(user);
 
-        // 현재 사용자 로그아웃 처리
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+<<<<<<< HEAD
         if (auth != null) {
             new SecurityContextLogoutHandler().logout(request, response, auth);
         }
@@ -516,4 +408,8 @@ public class UserService implements UserDetailsService {
     }
 >>>>>>> fe7f247 (게시물, 리뷰, 채팅만 남겨놓음 탈퇴코드 controller, service에 추가)
 
+=======
+        if (auth != null) new SecurityContextLogoutHandler().logout(request, response, auth);
+    }
+>>>>>>> a103d41 (구글 로그인 시 챗봇 사용불가 홈페이지 깨짐 현상 수정, 구글 로그인 시 홈제외 모든 페이지 깨짐 현상)
 }

@@ -18,13 +18,13 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 
-import com.splusz.villigo.config.CurrentUser;
 import com.splusz.villigo.domain.Alarm;
 import com.splusz.villigo.domain.User;
 import com.splusz.villigo.dto.AlarmListDto;
 import com.splusz.villigo.service.AlarmService;
 import com.splusz.villigo.service.ChatService;
 import com.splusz.villigo.service.ReservationService;
+import com.splusz.villigo.util.SecurityUserUtil;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -41,9 +41,18 @@ public class AlarmController {
 
 	// 모든 알람들을 PagedModel로 리턴
 	@GetMapping("/alarm/list")
-	public ResponseEntity<List<Object>> getAlarmListAll(@CurrentUser User user,
+	public ResponseEntity<List<Object>> getAlarmListAll(@AuthenticationPrincipal Object principal, // Object로 변경
 			@RequestParam(name="p", defaultValue = "0") int pageNo) {
-		log.info("getAlarmList(user={})", user);
+		
+		User user = SecurityUserUtil.getUserFromPrincipal(principal); // 헬퍼 메서드 사용
+		
+		// 인증되지 않았거나 유효한 User 객체를 얻지 못한 경우
+		if (user == null || user.getId() == null) {
+			log.warn("getAlarmListAll: 인증되지 않은 사용자 또는 User 객체/ID를 가져올 수 없습니다. 401 Unauthorized 반환.");
+			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build(); 
+		}
+
+		log.info("getAlarmListAll(user ID={})", user.getId());
 		long userId = user.getId();
 		Page<Alarm> alarms = alarmService.read(
 				userId, pageNo, Sort.by("createdTime").descending());
@@ -58,9 +67,18 @@ public class AlarmController {
 	
 	// 읽지 않은 알람들을 PagedModel로 리턴
 	@GetMapping("/alarm/list/preforward")
-	public ResponseEntity<List<Object>> getAlarmList(@CurrentUser User user,
+	public ResponseEntity<List<Object>> getAlarmList(@AuthenticationPrincipal Object principal, // Object로 변경
 			@RequestParam(name="p", defaultValue = "0") int pageNo) {
-		log.info("getAlarmList(Unread)(user={})", user);
+		
+		User user = SecurityUserUtil.getUserFromPrincipal(principal); // 헬퍼 메서드 사용
+
+		// 인증되지 않았거나 유효한 User 객체를 얻지 못한 경우
+		if (user == null || user.getId() == null) {
+			log.warn("getAlarmList (Unread): 인증되지 않은 사용자 또는 User 객체/ID를 가져올 수 없습니다. 401 Unauthorized 반환.");
+			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build(); 
+		}
+
+		log.info("getAlarmList (Unread)(user ID={})", user.getId());
 		long userId = user.getId();
 		Page<Alarm> alarms = alarmService.readAlarmStatusFalse(
 				userId, pageNo, Sort.by("createdTime").descending());

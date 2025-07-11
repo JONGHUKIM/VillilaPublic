@@ -252,29 +252,54 @@ document.addEventListener('DOMContentLoaded', function () {
 
             // 기존 input[type=file]에 들어있는 거는 무시하고
             formData.delete("images");
-
+			
             // selectedFiles에 있는 파일만 새로 추가
             selectedFiles.forEach(file => {
                 formData.append("images", file);
             });
 
-            fetch(form.action, {
-                method: "POST",
-                body: formData
-            })
-                .then(response => {
-                    if (response.redirected) {
-                        window.location.href = response.url;
-                    } else {
-                        return response.json().then(data => {
-                            throw new Error(data.message || '등록 실패');
-                        });
-                    }
-                })
-                .catch(error => {
-                    console.error('에러 발생:', error);
-                    alert('서버와 통신 중 문제가 발생했습니다: ' + error.message);
-                });
+			fetch(form.action, {
+			    method: "POST",
+			    body: formData,
+			    redirect: 'follow'
+			})
+			.then(response => {
+			    if (response.redirected) {
+			        return; // 리다이렉션이 처리되었으므로 추가 로직 없이 종료
+			    }
+
+			    // 그 외의 경우 (200 OK 등) 또는 리다이렉트가 아닌 최종 응답 처리
+			    if (response.ok) {
+			        const contentType = response.headers.get("content-type");
+			        if (contentType && contentType.includes("application/json")) {
+			            return response.json();
+			        } else {
+			            // JSON이 아닌 응답 (예: 본문 없는 200 OK)
+			            return response.text().then(() => ({ success: true, message: "등록 완료" }));
+			        }
+			    } else {
+			        // 서버에서 에러 응답 (4xx, 5xx)
+			        const contentType = response.headers.get("content-type");
+			        if (contentType && contentType.includes("application/json")) {
+			            return response.json().then(errorData => {
+			                throw new Error(errorData.message || `서버 오류: ${response.status}`);
+			            });
+			        } else {
+			            return response.text().then(errorText => {
+			                throw new Error(errorText || `서버 오류: ${response.status}`);
+			            });
+			        }
+			    }
+			})
+			.then(data => {
+			    // 리다이렉트되지 않고 이 블록으로 왔다면 (성공적인 JSON 또는 텍스트 응답)
+			    alert(data.message || '상품이 성공적으로 등록되었습니다.');
+			})
+			.catch(error => {
+			    console.error('에러 발생:', error);
+			    // 이 alert는 실제 'Failed to fetch' 에러가 발생했을 때만 나타남
+			    alert('서버와 통신 중 문제가 발생했습니다: ' + error.message);
+			});
         });
     }
 });

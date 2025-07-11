@@ -49,6 +49,17 @@ public class CustomOAuth2User implements OAuth2User {
         return delegate.getName();
     }
     
+    // 실제 사용자의 닉네임을 반환
+    public String getDisplayUsername() {
+        if (user != null && user.getNickname() != null && !user.getNickname().isEmpty()) {
+            return user.getNickname(); // 닉네임이 있다면 닉네임 반환
+        }
+        if (user != null && user.getUsername() != null && !user.getUsername().isEmpty()) {
+            return user.getUsername(); // 닉네임이 없다면 username 반환
+        }
+        return getName(); // 둘 다 없으면 OAuth2 기본 ID 반환 (폴백)
+    }
+    
 	public boolean isProfileComplete() {
 		// User 객체가 null이 아니고, 해당 User 객체의 isProfileComplete()가 true
 		return user != null && user.isProfileComplete(); 

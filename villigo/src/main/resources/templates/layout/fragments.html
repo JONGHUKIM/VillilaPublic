@@ -264,10 +264,22 @@
 
     <!-- AI 챗봇 창 -->
     <div id="chatbotWindow" class="chatbot-container">
-        <div class="chatbot-header">
-            <span id="authenticatedUser" sec:authentication="name">Guest</span>님 안녕하세요!
-            <button onclick="toggleChatbot()">X</button>
-        </div>
+		<div class="chatbot-header">
+		    <span id="authenticatedUser">
+		        <th:block sec:authorize="isAuthenticated()">
+		            <th:block th:with="principalObj=${#authentication.principal}">
+		                <span th:if="${principalObj instanceof T(com.splusz.villigo.config.CustomOAuth2User)}"
+		                      th:text="${principalObj.displayUsername}"></span>
+		                <span th:if="${principalObj instanceof T(com.splusz.villigo.domain.User)}"
+		                      th:text="${principalObj.nickname}"></span>
+		                </th:block>
+		        </th:block>
+		        <th:block sec:authorize="isAnonymous()">
+		            Guest
+		        </th:block>
+		    </span>님 안녕하세요!
+		    <button onclick="toggleChatbot()">X</button>
+		</div>
         <div class="chatbot-messages" id="chatbotMessages">
             <p>🤖 인공지능 빌리챗입니다. <br> 무엇을 도와드릴까요?</p>
         </div>

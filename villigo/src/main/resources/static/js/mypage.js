@@ -44,19 +44,26 @@ document.addEventListener("DOMContentLoaded", () => {
             
 
             const profileImage = document.getElementById('profileImage');
-            if (data.avatar) {
-                let cleanAvatar = data.avatar.startsWith('/') ? data.avatar.slice(1) : data.avatar;
-                profileImage.outerHTML = `<img id="profileImage" src="/images/avatar/${cleanAvatar}" alt="프로필 사진">`;
-            } else {
-                profileImage.outerHTML = `<span id="profileImage" class="emoji-frog">🐸</span>`;
-            }
+			if (data.avatar) {
+			    let cleanAvatar = data.avatar.startsWith('/') ? data.avatar.slice(1) : data.avatar;
+			    // JS에서도 /member/images/ 경로를 사용하도록 수정
+			    profileImage.outerHTML = `<img id="profileImage" src="/member/images/${cleanAvatar}" alt="프로필 사진">`;
+			} else {
+			    profileImage.outerHTML = `<span id="profileImage" class="emoji-frog">🐸</span>`;
+			}
 
             loadReviews();
         })
-        .catch(error => {
-            console.error('Error fetching user profile:', error);
-            loadReviews();
-        });
+		.catch(error => {
+		    console.error('Error fetching user profile:', error);
+		    // 에러 발생 시에도 리뷰 로드 및 기본 UI 표시
+		    loadReviews();
+		    // 프로필 정보 로드 실패 시에도 아바타 기본값으로 설정
+		    const profileImageElement = document.getElementById('profileImage');
+		    if (profileImageElement) {
+		        profileImageElement.outerHTML = `<span id="profileImage" class="emoji-frog">🐸</span>`;
+		    }
+		});
 
     let currentMannerScore = 36;
 

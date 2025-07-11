@@ -165,13 +165,13 @@
 
             <!--  하트(찜하기) & 예약 신청 버튼 -->
             <!--  글 작성자 모드 (수정 버튼만 보임) -->
-            <div class="bottom-buttons" th:if="${#authentication.name eq user.username}">
-                <a th:href="@{'/post/modify/car?id=' + ${product.id}}"><button class="owner-btn">수정하기</button></a>
-                <button class="owner-btn" id="deleteCarBtn" th:data-id="${product.id}">삭제하기</button>
-            </div>
+            <div class="bottom-buttons" th:if="${#authentication.principal.id eq user.id}">
+			    <a th:href="@{'/post/modify/car?id=' + ${product.id}}"><button class="owner-btn">수정하기</button></a>
+			    <button class="owner-btn" id="deleteCarBtn" th:data-id="${product.id}">삭제하기</button>
+			</div>
 
 			<!-- 일반 유저 모드 (하트 + 예약 버튼, 탈퇴한 사용자면 비활성화) -->
-            <div class="bottom-buttons" th:unless="${#authentication.name eq user.username}">
+            <div class="bottom-buttons" th:unless="${#authentication.principal.id eq user.id}">
                 <button class="heart-btn" 
                         th:attr="data-product-id=${product.id}, disabled=${user.username.startsWith('탈퇴회원_')}"
                         th:onclick="'toggleHeart(' + ${product.id} + ')'"

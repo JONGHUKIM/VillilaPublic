@@ -7,14 +7,14 @@
     <main class="container-global">
         <div class="profile-container">
             <div class="profile-left">
-                <div class="profile-img">
-                    <th:block th:if="${#authentication.principal.avatar != null}">
-                       <img id="profileImage" th:src="@{|/images/avatar/${#strings.replace(#authentication.principal.avatar, '^/', '')}|}" />
-                    </th:block>
-                    <th:block th:unless="${#authentication.principal.avatar != null}">
-                        <span id="profileImage" class="emoji-frog">🐸</span>
-                    </th:block>
-                </div>
+				<div class="profile-img">
+				    <th:block th:if="${user.avatar != null}">
+				       <img id="profileImage" th:src="@{|/member/images/${#strings.replace(user.avatar, '^/', '')}|}" />
+				    </th:block>
+				    <th:block th:unless="${user.avatar != null}">
+				        <span id="profileImage" class="emoji-frog">🐸</span>
+				    </th:block>
+				</div>
                 <div class="profile-info">
                     <div class="nickname" id="nickname"></div>
                     <div class="store-meta">

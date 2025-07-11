@@ -1,77 +1,80 @@
 package com.splusz.villigo.service;
 
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import com.splusz.villigo.domain.Bag;
-import com.splusz.villigo.domain.Brand;
-import com.splusz.villigo.domain.Color;
-import com.splusz.villigo.domain.Product;
-import com.splusz.villigo.domain.RentalCategory;
-import com.splusz.villigo.domain.User;
+import com.splusz.villigo.domain.*;
 import com.splusz.villigo.dto.BagCreateDto;
 import com.splusz.villigo.dto.BagUpdateDto;
-import com.splusz.villigo.dto.ProductUpdateDto;
-import com.splusz.villigo.repository.BagRepository;
-import com.splusz.villigo.repository.BrandRepository;
-import com.splusz.villigo.repository.ColorRepository;
-import com.splusz.villigo.repository.ProductRepository;
-import com.splusz.villigo.repository.RentalCategoryRepository;
-import com.splusz.villigo.repository.UserRepository;
+import com.splusz.villigo.repository.*;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @Slf4j
 @RequiredArgsConstructor
 public class BagService {
-    
-    private final ProductRepository prodRepo;
-    private final BagRepository bagRepo;
-    private final BrandRepository brandRepo;
-    private final ColorRepository colorRepo;
-    private final UserRepository userRepo;
-    private final RentalCategoryRepository rentalCateRepo;
 
-    public Product create(BagCreateDto dto, String username, Long rentalCategoryNumber) {
+    private final ProductRepository productRepository;
+    private final BagRepository bagRepository;
+    private final BrandRepository brandRepository;
+    private final ColorRepository colorRepository;
+    private final RentalCategoryRepository rentalCategoryRepository;
 
-       Brand brand = brandRepo.findById(dto.getBrandId()).orElseThrow();
-       Color color = colorRepo.findById(dto.getColorId()).orElseThrow();
-       User user = userRepo.findByUsername(username).orElseThrow();
-       RentalCategory rentalCategory = rentalCateRepo.findById(rentalCategoryNumber).orElseThrow();
+    /**
+     * 가방 등록
+     */
+    @Transactional
+    public Product create(BagCreateDto dto, User user, Long rentalCategoryId) {
+        Brand brand = brandRepository.findById(dto.getBrandId())
+                .orElseThrow(() -> new IllegalArgumentException("유효하지 않은 브랜드 ID"));
+        Color color = colorRepository.findById(dto.getColorId())
+                .orElseThrow(() -> new IllegalArgumentException("유효하지 않은 색상 ID"));
+        RentalCategory rentalCategory = rentalCategoryRepository.findById(rentalCategoryId)
+                .orElseThrow(() -> new IllegalArgumentException("유효하지 않은 카테고리 ID"));
 
-       Product pEntity = Product.builder()
-           .rentalCategory(rentalCategory)
-           .user(user)
-           .productName(dto.getProductName())
-           .brand(brand)
-           .color(color)
-           .detail(dto.getDetail())
-           .fee(dto.getFee())
-           .postName(dto.getPostName())
-           .build();
+        Product product = Product.builder()
+                .rentalCategory(rentalCategory)
+                .user(user)
+                .productName(dto.getProductName())
+                .brand(brand)
+                .color(color)
+                .detail(dto.getDetail())
+                .fee(dto.getFee())
+                .postName(dto.getPostName())
+                .build();
 
-       Product product = prodRepo.save(pEntity);
-        return product;
+        return productRepository.save(product);
     }
 
+    /**
+     * 제품 ID로 가방 정보 조회
+     */
+    @Transactional(readOnly = true)
     public Bag readByProductId(Long productId) {
-        Bag bag = bagRepo.findById(productId).orElseThrow();
-        return bag;
+        return bagRepository.findById(productId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 제품 ID의 가방을 찾을 수 없습니다."));
     }
 
+    /**
+     * 제품 정보 수정
+     */
+    @Transactional
     public Product update(Long productId, BagUpdateDto dto) {
-        Product entity = prodRepo.findById(productId).orElseThrow();
-        log.info(dto.getDetail());
-        log.info(dto.getPostName());
-        entity.update(dto);
-        prodRepo.save(entity);
+        Product product = productRepository.findById(productId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 제품을 찾을 수 없습니다."));
 
-        return entity;
+        log.info("가방 수정 detail={}, postName={}", dto.getDetail(), dto.getPostName());
+        product.update(dto); // 엔티티 내부에서 업데이트 처리
+        return productRepository.save(product);
     }
 
+    /**
+     * 제품 ID로 가방 삭제
+     */
+    @Transactional
     public void deleteByProductId(Long productId) {
-        bagRepo.deleteById(productId);
+        bagRepository.deleteById(productId);
     }
 }
