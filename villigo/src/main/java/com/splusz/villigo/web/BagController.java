@@ -103,15 +103,16 @@ public class BagController {
         }
 
         addServ.create(product, addDto);
-        URI location = ServletUriComponentsBuilder.fromCurrentRequest()
-                .path("/details/bag")
+        
+        URI location = ServletUriComponentsBuilder.fromCurrentContextPath()
+                .path("/post/details/bag")
                 .queryParam("id", product.getId())
                 .build()
                 .toUri();
 
-		HttpHeaders headers = new HttpHeaders();
-		headers.setLocation(location);
-		return new ResponseEntity<>(headers, HttpStatus.SEE_OTHER);
+        HttpHeaders headers = new HttpHeaders();
+        headers.setLocation(location);
+        return new ResponseEntity<>(headers, HttpStatus.SEE_OTHER);
     }
 
     @GetMapping("/details/bag")
@@ -142,7 +143,7 @@ public class BagController {
         if (!activeReservations.isEmpty()) {
             return ResponseEntity.status(HttpStatus.CONFLICT).body("해당 제품에 있는 예약을 처리 후 삭제가 가능합니다.");
         } else {
-            log.info("car delete(productId={})", productId);
+            log.info("bag delete(productId={})", productId);
             rentalImgServ.deleteByProductId(productId);
             prodServ.deleteProduct(productId);
             return ResponseEntity.ok("삭제 완료");
@@ -200,8 +201,8 @@ public class BagController {
         }
 
         // 상세 페이지로 리다이렉트
-        URI location = ServletUriComponentsBuilder.fromCurrentRequest()
-                .path("/details/bag") // URL 경로 확인
+        URI location = ServletUriComponentsBuilder.fromCurrentContextPath()
+                .path("/post/details/bag")
                 .queryParam("id", productId)
                 .build()
                 .toUri();

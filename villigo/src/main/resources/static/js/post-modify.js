@@ -277,41 +277,27 @@ function initializeFormValidation() {
 		})
 		.then(response => {
 		    if (response.redirected) {
-		        return; // 리다이렉션이 처리되었으므로 추가 로직 없이 종료
+		        // 서버가 HTTP 303 리다이렉트로 응답한 경우
+		        window.location.href = response.url;
+		        return;
 		    }
 
-		    // 최종 응답이 리다이렉션이 아니거나 (예: 200 OK)
-		    // 'redirect: follow'가 최종 응답을 처리했을 때
 		    if (response.ok) {
-		        const contentType = response.headers.get("content-type");
-		        if (contentType && contentType.includes("application/json")) {
-		            return response.json();
-		        } else {
-		            // JSON이 아닌 응답 (예: 본문 없는 200 OK)
-		            return response.text().then(() => ({ success: true, message: "등록 완료" }));
-		        }
+		        return response.json();
 		    } else {
-		        // 서버에서 에러 응답 (4xx, 5xx)
-		        const contentType = response.headers.get("content-type");
-		        if (contentType && contentType.includes("application/json")) {
-		            return response.json().then(errorData => {
-		                throw new Error(errorData.message || `서버 오류: ${response.status}`);
-		            });
-		        } else {
-		            return response.text().then(errorText => {
-		                throw new Error(errorText || `서버 오류: ${response.status}`);
-		            });
-		        }
+		        throw new Error("서버 오류 발생");
 		    }
 		})
 		.then(data => {
-		    // 이 블록은 리다이렉트가 발생하지 않고 JSON/텍스트 응답이 성공적으로 왔을 때만 실행
-		    // 대부분의 경우 'redirect: follow' 때문에 이 블록은 실행되지 않고 페이지가 바로 이동
-		    alert(data.message || '상품이 성공적으로 등록되었습니다.');
+		    // JSON 안에 redirectUrl 필드가 있다면 이동
+		    if (data && data.redirectUrl) {
+		        window.location.href = data.redirectUrl;
+		    }
 		})
 		.catch(error => {
-		    console.error('에러 발생:', error);
-		    alert('서버와 통신 중 문제가 발생했습니다: ' + error.message);
+		    alert("에러 발생: " + error.message);
 		});
+
+
     });
 }

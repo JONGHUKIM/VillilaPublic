@@ -103,15 +103,17 @@ public class CarController {
         }
 
         addServ.create(product, addDto);
-        URI location = ServletUriComponentsBuilder.fromCurrentRequest()
-                .path("/details/bag")
+        
+        // BagController와 동일한 방식으로 리다이렉트
+        URI location = ServletUriComponentsBuilder.fromCurrentContextPath()
+                .path("/post/details/car")
                 .queryParam("id", product.getId())
                 .build()
                 .toUri();
 
-		HttpHeaders headers = new HttpHeaders();
-		headers.setLocation(location);
-		return new ResponseEntity<>(headers, HttpStatus.SEE_OTHER);
+        HttpHeaders headers = new HttpHeaders();
+        headers.setLocation(location);
+        return new ResponseEntity<>(headers, HttpStatus.SEE_OTHER);
     }
 
     @GetMapping("/details/car")
@@ -166,10 +168,10 @@ public class CarController {
 
     @PostMapping(path = "/update/car", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<?> update(@RequestParam(name = "id") Long productId,
-                                     @RequestParam(name = "existingImageIds", required = false) List<Long> existingImageIds,
-                                     @ModelAttribute CarUpdateDto carDto, // CarUpdateDto 사용
-                                     @ModelAttribute RentalImageCreateDto imgDto,
-                                     @ModelAttribute AddressUpdateDto addDto) throws IOException {
+                         @RequestParam(name = "existingImageIds", required = false) List<Long> existingImageIds,
+                         @ModelAttribute CarUpdateDto carDto,
+                         @ModelAttribute RentalImageCreateDto imgDto,
+                         @ModelAttribute AddressUpdateDto addDto) throws IOException {
         log.info("car update(productId={})", productId);
         log.info("car update(existingImageIds={})", existingImageIds);
         log.info("car update(carUpdateDto={})", carDto);
@@ -187,7 +189,7 @@ public class CarController {
                 .filter(imageId -> !safeExistingImageIds.contains(imageId))
                 .collect(Collectors.toList());
 
-        Product updatedProduct = carServ.update(productId, carDto); // carServ.update 사용
+        Product updatedProduct = carServ.update(productId, carDto);
         Address updatedAddress = addServ.update(productId, addDto);
 
         if (!imageIdsForDelete.isEmpty()) {
@@ -198,9 +200,9 @@ public class CarController {
             rentalImgServ.create(productId, imgDto);
         }
 
-        // 상세 페이지로 리다이렉트
-        URI location = ServletUriComponentsBuilder.fromCurrentRequest()
-                .path("/details/car") // URL 경로 확인
+        // BagController와 동일한 방식으로 리다이렉트
+        URI location = ServletUriComponentsBuilder.fromCurrentContextPath()
+                .path("/post/details/car")
                 .queryParam("id", productId)
                 .build()
                 .toUri();
