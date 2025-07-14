@@ -67,7 +67,10 @@ public class ChatController {
 
     @MessageMapping("/chat.sendMessage")
     public void sendMessage(@Payload ChatMessageDto chatMessageDto) {
+    	long startTime = System.currentTimeMillis(); // 처리 시작 시간 기록
+    	
         try {
+        	
             LocalDateTime createdTime = chatMessageDto.getCreatedAt() != null
                 ? chatMessageDto.getCreatedAt()
                 : LocalDateTime.now();
@@ -83,10 +86,19 @@ public class ChatController {
                     chatMessageDto.getChatRoomId(), chatMessageDto.getSenderId(), chatMessageDto.getContent());
                 return;
             }
-
+            
+            long t1 = System.currentTimeMillis();
             ChatMessage savedMessage = chatService.saveMessage(chatMessageDto);
-            Hibernate.initialize(savedMessage.getSender());
+            long t2 = System.currentTimeMillis();
+            log.info("DB 저장 시간: {} ms", (t2 - t1));
+
+            long t3 = System.currentTimeMillis();
             ChatMessageDto responseDto = chatService.convertToDto(savedMessage, chatMessageDto.getSenderId());
+            long t4 = System.currentTimeMillis();
+            log.info("브로드캐스트 시간: {} ms", (t4 - t3));
+
+            Hibernate.initialize(savedMessage.getSender());
+            
             if (responseDto.getSenderName() == null) {
                 responseDto.setSenderName("알 수 없는 사용자");
                 log.warn("senderName이 null입니다. senderId={}", savedMessage.getSender().getId());
@@ -136,6 +148,10 @@ public class ChatController {
                 "/topic/chat." + chatMessageDto.getChatRoomId(),
                 errorResponse
             );
+        }finally {
+            long endTime = System.currentTimeMillis(); // 처리 종료 시간
+            long duration = endTime - startTime;
+            log.info("메시지 처리 시간: {} ms", duration);  // 최종 처리 시간 출력
         }
     }
 
