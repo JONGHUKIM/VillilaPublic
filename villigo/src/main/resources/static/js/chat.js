@@ -221,98 +221,133 @@ document.addEventListener("DOMContentLoaded", function () {
         return date.toLocaleTimeString("ko-KR", { hour: "2-digit", minute: "2-digit", hour12: false });
     }
 
-	function sendImageGroup(files) {
-		const currentChatRoom = chatRoomsCache.find(room => room.id === chatRoomId);
-		    if (currentChatRoom && currentChatRoom.otherUserNickName && currentChatRoom.otherUserNickName.startsWith("탈퇴회원_")) {
-		        alert("탈퇴한 회원에게는 메시지를 보낼 수 없습니다.");
-		        // 이미지 미리보기 제거 (만약 있다면)
-		        previewMessages.forEach((previewElement, file) => {
-		            previewElement.remove();
-		            URL.revokeObjectURL(file);
-		        });
-		        previewMessages.clear();
-		        return; // 이미지 전송 중단
-		    }
-	    const formData = new FormData();
-	    files.forEach(file => formData.append("files", file));
-	    formData.append("roomId", chatRoomId);
-	    formData.append("senderId", senderId);
-
-	    fetch("/api/chat/upload/multiple", {
-	        method: "POST",
-	        body: formData
-	    })
-	        .then(res => {
-	            if (!res.ok) {
-	                if (res.status === 413) {
-	                    throw new Error("파일 크기가 너무 큽니다. 최대 50MB까지 업로드 가능합니다.");
-	                }
-	                throw new Error(`이미지 업로드 실패: ${res.statusText}`);
-	            }
-	            return res.json();
-	        })
-	        .then(imageUrls => {
-	            const chatMessage = {
-	                chatRoomId,
-	                senderId,
-	                messageType: "IMAGE_GROUP",
-	                content: JSON.stringify(imageUrls),
-	                createdAt: new Date().toISOString()
-	            };
-	            // stompClient와 연결 상태 확인
-	            if (!stompClient || !isConnected) {
-	                console.error("WebSocket이 연결되지 않았습니다. 연결을 시도합니다...");
-	                return connectWebSocket().then(() => {
-	                    stompClient.publish({
-	                        destination: "/app/chat.sendMessage",
-	                        body: JSON.stringify(chatMessage)
-	                    });
-	                }).catch(err => {
-	                    console.error("WebSocket 연결 실패:", err);
-	                    alert("WebSocket 연결에 실패했습니다. 메시지를 전송할 수 없습니다.");
-	                });
-	            } else {
-	                stompClient.publish({
-	                    destination: "/app/chat.sendMessage",
-	                    body: JSON.stringify(chatMessage)
-	                });
-	            }
-	        })
-	        .catch(err => {
-	            console.error("이미지 그룹 전송 실패:", err);
-	            alert(`이미지 전송에 실패했습니다: ${err.message}`);
+	async function sendImageGroup(files) {
+	    const currentChatRoom = chatRoomsCache.find(room => room.id === chatRoomId);
+	    if (currentChatRoom && currentChatRoom.otherUserNickName && currentChatRoom.otherUserNickName.startsWith("탈퇴회원_")) {
+	        alert("탈퇴한 회원에게는 메시지를 보낼 수 없습니다.");
+	        previewMessages.forEach((previewElement, file) => {
+	            previewElement.remove();
+	            URL.revokeObjectURL(file);
 	        });
+	        previewMessages.clear();
+	        return;
+	    }
+
+	    const s3Keys = []; // 업로드된 파일들의 S3 Key를 저장할 배열
+	    try {
+	        for (const file of files) {
+	            // --- S3에 저장될 최종 키(경로 포함)를 프론트엔드에서 구성 ---
+	            // 예: chat_images/{chatRoomId}/UUID.확장자
+	            const uniqueFileNamePart = generateUniqueIdWithExtension(file.name); // 아래에 정의할 헬퍼 함수
+	            const targetS3Key = `chat_images/${chatRoomId}/${uniqueFileNamePart}`; // <--- S3 키에 폴더 구조 적용!
+
+	            // 1. 서버에 Pre-signed PUT URL 요청 (filename 파라미터로 targetS3Key 전달)
+	            const presignedUrlResponse = await fetch(`/api/files/upload-url?filename=${encodeURIComponent(targetS3Key)}&contentType=${encodeURIComponent(file.type)}`, {
+	                method: "POST",
+	                headers: { 'Content-Type': 'application/json' }
+	            });
+
+	            if (!presignedUrlResponse.ok) {
+	                const errorJson = await presignedUrlResponse.json();
+	                throw new Error(`Pre-signed URL 발급 실패 (${presignedUrlResponse.status}): ${errorJson.message || presignedUrlResponse.statusText}`);
+	            }
+	            const responseData = await presignedUrlResponse.json();
+	            const presignedUrl = responseData.presignedUrl;
+	            // const s3Key = responseData.s3Key; // 백엔드에서 s3Key를 보내주므로 이미 targetS3Key와 동일
+
+	            // 2. 발급받은 Pre-signed URL로 S3에 파일 직접 PUT 요청
+	            const s3UploadResponse = await fetch(presignedUrl, {
+	                method: "PUT",
+	                body: file,
+	                headers: {
+	                    "Content-Type": file.type // S3에 올바른 Content-Type 전송
+	                }
+	            });
+
+	            if (!s3UploadResponse.ok) {
+	                throw new Error(`S3 업로드 실패 (${s3UploadResponse.status}): ${s3UploadResponse.statusText}`);
+	            }
+	            
+	            s3Keys.push(targetS3Key); // <--- 업로드 성공한 파일의 최종 S3 Key를 수집
+	        }
+	    } catch (err) {
+	        console.error("이미지 S3 업로드 실패:", err);
+	        alert(`이미지 업로드 중 오류 발생: ${err.message}`);
+	        previewMessages.forEach((previewElement, file) => {
+	            previewElement.remove();
+	            URL.revokeObjectURL(file);
+	        });
+	        previewMessages.clear();
+	        return; 
+	    }
+
+	    const chatMessage = {
+	        chatRoomId,
+	        senderId,
+	        messageType: "IMAGE_GROUP",
+	        content: JSON.stringify(s3Keys), // S3 Key 배열을 JSON 문자열로 전송
+	        createdAt: new Date().toISOString()
+	    };
+
+	    // WebSocket을 통해 메시지 전송
+	    if (!stompClient || !isConnected) {
+	        console.warn("WebSocket이 연결되지 않았습니다. 연결을 시도합니다...");
+	        try {
+	            await connectWebSocket();
+	            stompClient.publish({
+	                destination: "/app/chat.sendMessage",
+	                body: JSON.stringify(chatMessage)
+	            });
+	        } catch (err) {
+	            console.error("WebSocket 연결 실패:", err);
+	            alert("WebSocket 연결에 실패했습니다. 메시지를 전송할 수 없습니다.");
+	        }
+	    } else {
+	        stompClient.publish({
+	            destination: "/app/chat.sendMessage",
+	            body: JSON.stringify(chatMessage)
+	        });
+	    }
+
+	    // 미리보기 제거
+	    previewMessages.forEach((previewElement, file) => {
+	        previewElement.remove();
+	        URL.revokeObjectURL(file);
+	    });
+	    previewMessages.clear();
 	}
 
-    function scrollToBottom(force = false) {
-        const threshold = 100;
-        const atBottom = chatMessages.scrollTop + chatMessages.clientHeight >= chatMessages.scrollHeight - threshold;
-        if (atBottom || force) {
-            requestAnimationFrame(() => {
-                chatMessages.scrollTop = chatMessages.scrollHeight;
-            });
-        }
-    }
+	function scrollToBottom(force = false) {
+	    const threshold = 100;
+	    const atBottom = chatMessages.scrollTop + chatMessages.clientHeight >= chatMessages.scrollHeight - threshold;
+	    if (atBottom || force) {
+	        requestAnimationFrame(() => {
+	            chatMessages.scrollTop = chatMessages.scrollHeight;
+	        });
+	    }
+	}
 
-    function sendAllMessages() {
-        const messageContent = messageInput.value.trim();
+	function sendAllMessages() {
+	    const messageContent = messageInput.value.trim();
 
-        if (previewMessages.size > 0) {
-            const files = Array.from(previewMessages.keys());
-            sendImageGroup(files);
-            previewMessages.forEach((previewElement, file) => {
-                previewElement.remove();
-                URL.revokeObjectURL(file);
-            });
-            previewMessages.clear();
-        }
+	    if (previewMessages.size > 0) {
+	        const files = Array.from(previewMessages.keys());
+	        
+	        // 파일이 1개이고 텍스트 메시지는 없을 경우 sendImage 호출 (단일 이미지 전용)
+	        if (files.length === 1 && messageContent === "") {
+	            sendImage(files[0]); // 단일 파일 전송 함수 호출
+	        } else {
+	            sendImageGroup(files); // 여러 파일 또는 텍스트+파일 그룹 전송 함수 호출
+	        }
+	        // previewMessages clear는 sendImage/sendImageGroup 내에서 finally 블록에서 처리됨
+	    }
 
-        if (messageContent !== "") {
-            sendMessage();
-        }
+	    if (messageContent !== "") {
+	        sendMessage();
+	    }
 
-        scrollToBottom();
-    }
+	    scrollToBottom();
+	}
 
 	function connectWebSocket() {
 	    // SockJS를 사용하여 WebSocket 연결 설정
@@ -1052,16 +1087,15 @@ document.addEventListener("DOMContentLoaded", function () {
 	            }
 
 				let avatarContent;
-				if (!chat.otherUserAvatar || chat.otherUserAvatar.trim() === "") {
+				// chat.otherUserAvatarImageUrl 필드가 백엔드 ChatRoomDto에 추가되고, S3 Pre-signed URL이 담겨 온다고 가정
+				if (!chat.otherUserAvatarImageUrl || chat.otherUserAvatarImageUrl.trim() === "") { // 변경
 				    avatarContent = `<div class="chat-avatar emoji profile-link" data-user-id="${chat.otherUserId}">🐸</div>`;
 				} else {
-				    const avatarPath = `/images/avatar/${chat.otherUserAvatar}`;
 				    avatarContent = `
-				        <img src="${avatarPath}" class="chat-avatar profile-link" data-user-id="${chat.otherUserId}" alt="상대방 이미지"
+				        <img src="${chat.otherUserAvatarImageUrl}" class="chat-avatar profile-link" data-user-id="${chat.otherUserId}" alt="상대방 이미지"
 				             onerror="this.outerHTML='<div class=\\'chat-avatar emoji profile-link\\' data-user-id=\\'${chat.otherUserId}\\'>🐸</div>'">
-				    `;
+				    `; // 변경: chat.otherUserAvatar -> chat.otherUserAvatarImageUrl
 				}
-
 
 	            chatItem.innerHTML = `
 	                <input type="checkbox" class="chat-select-checkbox">
@@ -1415,72 +1449,103 @@ document.addEventListener("DOMContentLoaded", function () {
         fileInput.value = "";
     });
 
-	function sendImage(file) {
-		
-		const currentChatRoom = chatRoomsCache.find(room => room.id === chatRoomId);
-			    if (currentChatRoom && currentChatRoom.otherUserNickName && currentChatRoom.otherUserNickName.startsWith("탈퇴회원_")) {
-			        alert("탈퇴한 회원에게는 메시지를 보낼 수 없습니다.");
-			        // 단일 이미지 미리보기가 있다면 제거
-			        if (previewMessages.size > 0) { // 단일 이미지도 previewMessages에 들어갈 수 있으므로 확인
-			            previewMessages.forEach((previewElement, file) => {
-			                previewElement.remove();
-			                URL.revokeObjectURL(file);
-			            });
-			            previewMessages.clear();
-			        }
-			        return; // 이미지 전송 중단
-			    }
-				
+	async function sendImage(file) { // async 키워드 추가
+	    const currentChatRoom = chatRoomsCache.find(room => room.id === chatRoomId);
+	    if (currentChatRoom && currentChatRoom.otherUserNickName && currentChatRoom.otherUserNickName.startsWith("탈퇴회원_")) {
+	        alert("탈퇴한 회원에게는 메시지를 보낼 수 없습니다.");
+	        previewMessages.forEach((previewElement, file) => {
+	            previewElement.remove();
+	            URL.revokeObjectURL(file);
+	        });
+	        previewMessages.clear();
+	        return;
+	    }
+	            
 	    if (!file) return;
-	    const formData = new FormData();
-	    formData.append("file", file);
-	    formData.append("roomId", chatRoomId);
-	    formData.append("senderId", senderId);
 
-	    fetch("/api/chat/upload", {
-	        method: "POST",
-	        body: formData
-	    })
-	        .then(response => {
-	            if (!response.ok) {
-	                if (response.status === 413) {
-	                    throw new Error("파일 크기가 너무 큽니다. 최대 50MB까지 업로드 가능합니다.");
-	                }
-	                throw new Error(`파일 업로드 실패: ${response.statusText}`);
+	    try {
+	        // --- S3에 저장될 최종 키(경로 포함)를 프론트엔드에서 구성 ---
+	        const uniqueFileNamePart = generateUniqueIdWithExtension(file.name); // 아래에 정의할 헬퍼 함수
+	        const targetS3Key = `chat_images/${chatRoomId}/${uniqueFileNamePart}`; // <--- S3 키에 폴더 구조 적용!
+
+	        // 1. 서버에 Pre-signed PUT URL 요청 (filename 파라미터로 targetS3Key 전달)
+	        const presignedUrlResponse = await fetch(`/api/files/upload-url?filename=${encodeURIComponent(targetS3Key)}&contentType=${encodeURIComponent(file.type)}`, {
+	            method: "POST",
+	            headers: { 'Content-Type': 'application/json' }
+	        });
+
+	        if (!presignedUrlResponse.ok) {
+	            const errorJson = await presignedUrlResponse.json();
+	            throw new Error(`Pre-signed URL 발급 실패 (${presignedUrlResponse.status}): ${errorJson.message || presignedUrlResponse.statusText}`);
+	        }
+	        const responseData = await presignedUrlResponse.json();
+	        const presignedUrl = responseData.presignedUrl;
+	        // const s3Key = responseData.s3Key; // 백엔드에서 s3Key를 보내주므로 이미 targetS3Key와 동일
+
+	        // 2. 발급받은 Pre-signed URL로 S3에 파일 직접 PUT 요청
+	        const s3UploadResponse = await fetch(presignedUrl, {
+	            method: "PUT",
+	            body: file,
+	            headers: {
+	                "Content-Type": file.type // S3에 올바른 Content-Type 전송
 	            }
-	            return response.text();
-	        })
-	        .then(imageUrl => {
-	            const chatMessage = {
-	                chatRoomId: chatRoomId,
-	                senderId: senderId,
-	                messageType: "IMAGE",
-	                content: imageUrl
-	            };
-	            if (isConnected && stompClient) {
+	        });
+
+	        if (!s3UploadResponse.ok) {
+	            throw new Error(`S3 업로드 실패 (${s3UploadResponse.status}): ${s3UploadResponse.statusText}`);
+	        }
+	        
+	        // 3. S3 키를 포함한 메시지 전송
+	        const chatMessage = {
+	            chatRoomId: chatRoomId,
+	            senderId: senderId,
+	            messageType: "IMAGE", // 단일 이미지이므로 IMAGE 타입
+	            content: targetS3Key, // <--- S3 Key를 content에 담아 보냄
+	            createdAt: new Date().toISOString()
+	        };
+
+	        // WebSocket을 통해 메시지 전송
+	        if (isConnected && stompClient) {
+	            stompClient.publish({
+	                destination: "/app/chat.sendMessage",
+	                body: JSON.stringify(chatMessage)
+	            });
+	            scrollToBottom();
+	        } else {
+	            console.warn("WebSocket이 연결되어 있지 않습니다. 연결을 시도합니다...");
+	            try {
+	                await connectWebSocket();
 	                stompClient.publish({
 	                    destination: "/app/chat.sendMessage",
 	                    body: JSON.stringify(chatMessage)
 	                });
 	                scrollToBottom();
-	            } else {
-	                console.warn("WebSocket이 연결되어 있지 않습니다. 연결을 시도합니다...");
-	                connectWebSocket().then(() => {
-	                    stompClient.publish({
-	                        destination: "/app/chat.sendMessage",
-	                        body: JSON.stringify(chatMessage)
-	                    });
-	                    scrollToBottom();
-	                }).catch(err => {
-	                    console.error("WebSocket 연결 실패:", err);
-	                    alert("WebSocket 연결에 실패했습니다. 메시지를 전송할 수 없습니다.");
-	                });
+	            } catch (err) {
+	                console.error("WebSocket 연결 실패:", err);
+	                alert("WebSocket 연결에 실패했습니다. 메시지를 전송할 수 없습니다.");
 	            }
-	        })
-	        .catch(error => {
-	            console.error("파일 업로드 실패:", error);
-	            alert(`파일 업로드에 실패했습니다: ${file.name} - ${error.message}`);
+	        }
+	    } catch (error) {
+	        console.error("단일 이미지 전송 실패:", error);
+	        alert(`이미지 전송에 실패했습니다: ${file.name} - ${error.message}`);
+	    } finally {
+	        // 미리보기 제거
+	        previewMessages.forEach((previewElement, file) => {
+	            previewElement.remove();
+	            URL.revokeObjectURL(file);
 	        });
+	        previewMessages.clear();
+	    }
+	}
+	
+	// --- S3 객체 키의 고유 파일명 부분을 생성하는 헬퍼 함수 ---
+	function generateUniqueIdWithExtension(originalFileName) {
+	    const dotIndex = originalFileName.lastIndexOf('.');
+	    let extension = '';
+	    if (dotIndex > 0 && dotIndex < originalFileName.length - 1) {
+	        extension = originalFileName.substring(dotIndex);
+	    }
+	    return `${crypto.randomUUID()}${extension}`; // crypto.randomUUID()는 브라우저에서 UUID v4를 생성
 	}
 	
 	let chatRoomCreationLock = new Map();

@@ -32,11 +32,12 @@ import com.splusz.villigo.repository.ThemeRepository;
 import com.splusz.villigo.repository.UserJjamRepository;
 import com.splusz.villigo.repository.UserRepository;
 import com.splusz.villigo.storage.FileStorageException;
+import com.splusz.villigo.storage.FileStorageService;
 import com.splusz.villigo.util.SecurityUserUtil;
+import org.springframework.transaction.annotation.Transactional;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -51,6 +52,7 @@ public class UserService implements UserDetailsService {
     private final CustomAuthenticationSuccessHandler successHandler;
     private final UserJjamRepository userJjamRepo;
     private final S3FileStorageService s3FileStorageService;
+    private final FileStorageService fileStorageService;
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
@@ -193,27 +195,32 @@ public class UserService implements UserDetailsService {
         if (avatarFile != null && !avatarFile.isEmpty()) {
             String oldAvatarS3Key = user.getAvatar(); // 기존 아바타 S3 키 가져오기
 
-            // S3에 새 아바타 업로드 (user ID를 포함하여 S3 키 생성)
-            // S3FileStorageService의 uploadFile 메서드가 고유 파일명 생성 및 S3 경로 반환
-            String newAvatarS3Key = s3FileStorageService.uploadFile(
+            // S3에 저장될 최종 키(경로 + 파일명) 생성: avatars/{userId}/UUID.확장자
+            String uniqueFileNamePart = S3FileStorageService.createUniqueFileName(avatarFile.getOriginalFilename()); // S3FileStorageService의 static 헬퍼 사용
+            String newAvatarS3Key = "avatars/" + user.getId() + "/" + uniqueFileNamePart;
+
+            // S3에 새 아바타 업로드 (uploadFile은 이제 targetS3Key를 직접 받음)
+            s3FileStorageService.uploadFile(
                 avatarFile.getInputStream(),
-                "avatars/" + user.getId() + "/" + avatarFile.getOriginalFilename(), // S3 key에 사용자 ID 포함 (중요!)
+                newAvatarS3Key, // <--- 최종 S3 키 전달
                 avatarFile.getContentType()
             );
             user.setAvatar(newAvatarS3Key); // User 엔티티의 avatar 컬럼 업데이트
 
             // 기존 아바타 파일 S3에서 삭제 (선택 사항이지만 비용 절감 위해 권장)
             if (StringUtils.hasText(oldAvatarS3Key)) { // 기존 아바타가 있었다면
+                // TODO: oldAvatarS3Key가 이 사용자의 것인지 추가 검증 (보안 강화)
                 try {
                     s3FileStorageService.deleteFile(oldAvatarS3Key);
-                    log.info("기존 아바타가 S3에서 삭제됨: {}", oldAvatarS3Key);
+                    log.info("Old avatar deleted from S3: {}", oldAvatarS3Key);
                 } catch (FileStorageException e) {
-                	log.warn("S3에서 기존 아바타 삭제 실패: {}. 오류: {}", oldAvatarS3Key, e.getMessage());
+                    log.warn("Failed to delete old avatar from S3: {}. Error: {}", oldAvatarS3Key, e.getMessage());
                     // 삭제 실패해도 프로필 업데이트는 계속 진행 (치명적 오류 아님)
                 }
             }
         }
-        return userRepo.save(user);
+
+        return userRepo.save(user); // 변경된 User 엔티티 저장 (아바타 S3 키 포함)
     }
 
     @Transactional
@@ -225,21 +232,24 @@ public class UserService implements UserDetailsService {
         if (avatarFile != null && !avatarFile.isEmpty()) {
             String oldAvatarS3Key = user.getAvatar(); // 기존 아바타 S3 키 가져오기
 
-            // S3에 새 아바타 업로드 (user ID를 포함하여 S3 키 생성)
-            String newAvatarS3Key = s3FileStorageService.uploadFile(
+            String uniqueFileNamePart = S3FileStorageService.createUniqueFileName(avatarFile.getOriginalFilename()); // static 메서드 호출
+            String newAvatarS3Key = "avatars/" + user.getId() + "/" + uniqueFileNamePart;
+
+            s3FileStorageService.uploadFile(
                 avatarFile.getInputStream(),
-                "avatars/" + user.getId() + "/" + avatarFile.getOriginalFilename(), // S3 key에 사용자 ID 포함 (중요!)
+                newAvatarS3Key, // <--- 최종 S3 키 전달
                 avatarFile.getContentType()
             );
             user.setAvatar(newAvatarS3Key); // User 엔티티의 avatar 컬럼 업데이트
 
             // 기존 아바타 파일 S3에서 삭제
             if (StringUtils.hasText(oldAvatarS3Key)) {
+                // TODO: oldAvatarS3Key가 이 사용자의 것인지 추가 검증 (보안 강화)
                 try {
                     s3FileStorageService.deleteFile(oldAvatarS3Key);
-                    log.info("기존 아바타가 S3에서 삭제됨 (updateAvatar): {}", oldAvatarS3Key);
+                    log.info("Old avatar deleted from S3 (updateAvatar): {}", oldAvatarS3Key);
                 } catch (FileStorageException e) {
-                    log.warn("S3에서 기존 아바타 삭제 실패 (updateAvatar): {}. 오류: {}", oldAvatarS3Key, e.getMessage());
+                    log.warn("Failed to delete old avatar from S3 (updateAvatar): {}. Error: {}", oldAvatarS3Key, e.getMessage());
                 }
             }
             userRepo.save(user); // 변경된 User 엔티티 저장
@@ -350,16 +360,17 @@ public class UserService implements UserDetailsService {
         user.setPassword(null);
         user.setPhone(null);
         user.setRegion(null);
+        
         if (StringUtils.hasText(user.getAvatar())) { // 아바타가 존재했다면
             try {
                 s3FileStorageService.deleteFile(user.getAvatar()); // <--- S3에서 아바타 파일 삭제
                 log.info("회원 탈퇴 중 S3에서 아바타 삭제됨: {}", user.getAvatar());
             } catch (FileStorageException e) {
             	log.warn("회원 탈퇴 중 S3에서 아바타 삭제 실패: {}. 오류: {}", user.getAvatar(), e.getMessage());
-                // 삭제 실패해도 회원 탈퇴는 계속 진행 (치명적 오류 아님)
             }
             user.setAvatar(null); // DB에서 아바타 컬럼을 null로 설정
         }
+        
         user.setTheme(null);
         user.setMarketingConsent(false);
         user.setMannerScore(0);
@@ -445,5 +456,60 @@ public class UserService implements UserDetailsService {
 =======
         if (auth != null) new SecurityContextLogoutHandler().logout(request, response, auth);
     }
+<<<<<<< HEAD
 >>>>>>> a103d41 (구글 로그인 시 챗봇 사용불가 홈페이지 깨짐 현상 수정, 구글 로그인 시 홈제외 모든 페이지 깨짐 현상)
+=======
+    
+    public UserProfileDto getUserProfileDto(User user) throws FileStorageException {
+        if (user == null) {
+            return UserProfileDto.builder()
+                        .id(0L)
+                        .username("unknown")
+                        .nickname("알 수 없음")
+                        .avatarImageUrl("/images/default-avatar.png")
+                        .jjamPoints(0)
+                        .mannerScore(36)
+                        .build();
+        }
+
+        String avatarImageUrl;
+        try {
+            if (StringUtils.hasText(user.getAvatar())) { // user.getAvatar()가 S3 키를 가지고 있다면
+                // FileStorageService를 통해 public URL 또는 presigned URL 생성
+                // 여기서는 download presigned URL을 사용하고, 유효 기간은 5분으로 설정합니다.
+                avatarImageUrl = fileStorageService.generateDownloadPresignedUrl(user.getAvatar(), Duration.ofMinutes(5));
+            } else {
+                avatarImageUrl = "/images/default-avatar.png"; // 아바타가 없으면 기본 이미지
+            }
+        } catch (FileStorageException e) {
+            log.error("사용자 아바타 URL 생성 중 오류 발생 (User ID: {}): {}", user.getId(), e.getMessage());
+            avatarImageUrl = "/images/default-avatar.png";
+        }
+
+        // Theme 객체에서 getName() 대신 getTheme()을 호출합니다.
+        // UserProfileDto의 'theme' 필드는 테마 이름을 나타내는 String 타입이므로,
+        // Theme 엔티티의 'theme' 필드(아마도 String 타입)를 사용합니다.
+        String themeName = null;
+        if (user.getTheme() != null) {
+            // Theme 엔티티에 테마 이름을 저장하는 필드가 'theme'라고 가정
+            // 만약 'name'이나 'title'이라면 user.getTheme().getName() 또는 user.getTheme().getTitle() 사용
+            themeName = user.getTheme().getTheme(); // Theme 엔티티에 getName()이 없으므로 getTheme() 사용
+        }
+
+        return UserProfileDto.builder()
+                .id(user.getId())
+                .username(user.getUsername())
+                .nickname(user.getNickname())
+                .phone(user.getPhone())
+                .region(user.getRegion())
+                .avatar(user.getAvatar())
+                .avatarImageUrl(avatarImageUrl)
+                .themeId(user.getTheme() != null ? user.getTheme().getId() : null)
+                .theme(themeName) // 수정된 themeName 변수 사용
+                .jjamPoints(calculateUserJjamPoints(user)) // score 대신 calculateUserJjamPoints() 호출
+                .mannerScore(user.getMannerScore())
+                .socialType(user.getSocialType() != null ? user.getSocialType().name() : null)
+                .build();
+    }
+>>>>>>> 87dc779 (채팅 S3로 전환, 유저 상세보기 수정)
 }

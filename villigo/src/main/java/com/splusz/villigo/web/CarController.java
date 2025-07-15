@@ -35,12 +35,14 @@ import com.splusz.villigo.dto.AddressUpdateDto;
 import com.splusz.villigo.dto.CarCreateDto;
 import com.splusz.villigo.dto.CarUpdateDto;
 import com.splusz.villigo.dto.RentalImageCreateDto;
+import com.splusz.villigo.dto.UserProfileDto;
 import com.splusz.villigo.service.AddressService;
 import com.splusz.villigo.service.CarService;
 import com.splusz.villigo.service.ProductService;
 import com.splusz.villigo.service.RentalImageService;
 import com.splusz.villigo.service.ReservationService;
 import com.splusz.villigo.service.UserService;
+import com.splusz.villigo.storage.FileStorageException;
 import com.splusz.villigo.util.SecurityUserUtil;
 
 import lombok.RequiredArgsConstructor;
@@ -117,24 +119,64 @@ public class CarController {
     }
 
     @GetMapping("/details/car")
-    public void detail(@RequestParam(name = "id") Long productId, Model model) {
-        log.info("datail car(productId={})", productId);
+    public String detail(@RequestParam(name = "id") Long productId, Model model) {
+        log.info("detail car(productId={})", productId);
+        
+        // Product 정보 조회 (중복 선언 제거)
         Product product = prodServ.readById(productId);
+        if (product == null) {
+            log.warn("상품을 찾을 수 없습니다: productId={}", productId);
+            return "error/404";
+        }
         log.info("product={}", product);
-        User user = userServ.read(product.getUser().getId());
-        log.info("user={}", user);
+        
+        // 상품 소유자 User 엔티티 조회
+        User productOwnerEntity = product.getUser();
+        if (productOwnerEntity == null) {
+            log.error("상품에 연결된 사용자 정보를 찾을 수 없습니다: productId={}", productId);
+            return "error/500";
+        }
+
+        // Car 정보 조회
         Car car = carServ.readByProductId(productId);
         log.info("car={}", car);
+        
+        // User 엔티티를 UserProfileDto로 변환하여 아바타 URL 포함
+        UserProfileDto productOwnerProfile = null;
+        try {
+            productOwnerProfile = userServ.getUserProfileDto(productOwnerEntity);
+        } catch (FileStorageException e) {
+            log.error("상품 소유자의 아바타 URL 생성 실패 (FileStorageException): {}", e.getMessage(), e);
+            productOwnerProfile = UserProfileDto.builder()
+                .id(productOwnerEntity.getId())
+                .nickname(productOwnerEntity.getNickname())
+                .avatarImageUrl("/images/default-avatar.png")
+                .build();
+        } catch (Exception e) {
+            log.error("상품 소유자 프로필 조회 중 알 수 없는 오류: {}", e.getMessage(), e);
+            productOwnerProfile = UserProfileDto.builder()
+                .id(productOwnerEntity.getId())
+                .nickname(productOwnerEntity.getNickname())
+                .avatarImageUrl("/images/default-avatar.png")
+                .build();
+        }
+
+        // 나머지 정보들 조회
         Address address = addServ.readByProductId(productId);
         log.info("address={}", address);
         List<RentalImage> rentalImages = rentalImgServ.readByProductId(productId);
         log.info("rentalImages={}", rentalImages);
 
+        // 모델에 추가
         model.addAttribute("product", product);
-        model.addAttribute("user", user);
+        model.addAttribute("user", productOwnerProfile); // UserProfileDto를 "user" 이름으로 모델에 추가!
         model.addAttribute("car", car);
         model.addAttribute("address", address);
         model.addAttribute("rentalImages", rentalImages);
+        
+        log.info("model user (UserProfileDto)={}", productOwnerProfile);
+        
+        return "post/details/car";
     }
 
     @DeleteMapping("/delete/car")

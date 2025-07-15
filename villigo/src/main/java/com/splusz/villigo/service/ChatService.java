@@ -1,5 +1,6 @@
 package com.splusz.villigo.service;
 
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.Collections;
@@ -15,11 +16,14 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.splusz.villigo.config.WebSocketEventListener;
 import com.splusz.villigo.domain.ChatMessage;
 import com.splusz.villigo.domain.ChatMessageReadBy;
 import com.splusz.villigo.domain.ChatMessageReadById;
+import com.splusz.villigo.domain.ChatMessageType;
 import com.splusz.villigo.domain.ChatRoom;
 import com.splusz.villigo.domain.ChatRoomParticipant;
 import com.splusz.villigo.domain.ChatRoomReservation;
@@ -35,33 +39,28 @@ import com.splusz.villigo.repository.ChatRoomParticipantRepository;
 import com.splusz.villigo.repository.ChatRoomRepository;
 import com.splusz.villigo.repository.ChatRoomReservationRepository;
 import com.splusz.villigo.repository.UserRepository;
+import com.splusz.villigo.storage.FileStorageException;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import com.fasterxml.jackson.core.JsonProcessingException;
 
 @Service
 @RequiredArgsConstructor
 @Slf4j
 public class ChatService {
 
-	@Autowired
 	private final ChatMessageRepository chatMessageRepo;
-	@Autowired
     private final ChatMessageReadByRepository chatMessageReadByRepo;
-	@Autowired
     private final ChatRoomRepository chatRoomRepo;
-	@Autowired
     private final ChatRoomReservationRepository chatRoomReservationRepo;
-	@Autowired
     private final ReservationService reservationService;
-	@Autowired
     private final UserService userService;
-	@Autowired
     private final UserRepository userRepo;
-	@Autowired
-	private final ChatRoomParticipantRepository chatRoomParticipantRepo;
-	@Autowired
+    private final ChatRoomParticipantRepository chatRoomParticipantRepo;
     private final SimpMessagingTemplate messagingTemplate;
+    private final S3FileStorageService s3FileStorageService; // <--- S3FileStorageService 주입!
+    private final ObjectMapper objectMapper; // JSON 처리
 
     @Transactional(readOnly = true)
     public ChatRoom getChatRoom(Long roomId) {
@@ -229,7 +228,7 @@ public class ChatService {
         return chatRoom;
     }
 
-	@Transactional
+    @Transactional
     public ChatMessage saveMessage(ChatMessageDto messageDto) {
         ChatRoom chatRoom = chatRoomRepo.findById(messageDto.getChatRoomId())
             .orElseThrow(() -> new IllegalArgumentException("채팅방을 찾을 수 없습니다: " + messageDto.getChatRoomId()));
@@ -254,13 +253,12 @@ public class ChatService {
 
         Long receiverId = getReceiverId(chatRoom, sender.getId());
 
-        // 수신자 참가자 정보 조회 or 생성
         ChatRoomParticipant receiverParticipant = chatRoomParticipantRepo
             .findByRoomIdAndUserId(chatRoom.getId(), receiverId)
             .orElseGet(() -> {
                 User receiver = userRepo.findById(receiverId)
                     .orElseThrow(() -> new IllegalArgumentException("수신자를 찾을 수 없습니다."));
-                ChatRoomParticipant newParticipant = new ChatRoomParticipant(chatRoom, receiver); 
+                ChatRoomParticipant newParticipant = new ChatRoomParticipant(chatRoom, receiver);
                 chatRoomParticipantRepo.save(newParticipant);
                 log.info(" 수신자 {}가 채팅방 {}에 새로 참여됨", receiverId, chatRoom.getId());
                 return newParticipant;
@@ -305,12 +303,21 @@ public class ChatService {
             log.warn("유효하지 않은 메시지 타입: {}", messageDto.getMessageType());
             throw new IllegalArgumentException("유효하지 않은 메시지 타입: " + messageDto.getMessageType());
         }
+        
+        // 프론트엔드에서 S3에 직접 업로드 후 S3 Key(들)을 content에 담아 보냈다고 가정
+        // 프론트엔드에서 S3에 직접 업로드 후 S3 Key(들)을 'content'에 담아 보냈다고 가정
+        if (messageDto.getMessageType() == ChatMessageType.IMAGE || messageDto.getMessageType() == ChatMessageType.IMAGE_GROUP) {
+            message.setContent(messageDto.getContent()); // S3 Key(들)을 그대로 저장
+            log.info("S3 이미지 메시지 저장: chatRoom={} | sender={} | S3 Key(s)={}",
+                    chatRoom.getId(), sender.getId(), messageDto.getContent());
+        } else {
+            message.setContent(messageDto.getContent());
+        }
 
-        message.setContent(messageDto.getContent());
         message.setCreatedTime(messageDto.getCreatedAt() != null ? messageDto.getCreatedAt() : LocalDateTime.now());
         ChatMessage savedMessage = chatMessageRepo.save(message);
         log.info("채팅 메시지 저장: 채팅방={} | 보낸 사람={} | 내용={}",
-                chatRoom.getId(), sender.getId(), message.getContent());
+            chatRoom.getId(), sender.getId(), message.getContent());
 
         for (User user : chatRoom.getParticipantsAsUsers()) {
             ChatMessageReadBy readBy = new ChatMessageReadBy(savedMessage, user);
@@ -323,78 +330,23 @@ public class ChatService {
     }
 
 
-	@Transactional(readOnly = true)
-	public List<ChatRoomDto> getUserChatRooms(Long userId) {
-	    List<ChatRoom> chatRooms = chatRoomParticipantRepo.findActiveChatRoomsByUserId(userId);
-	    return chatRooms.stream().map(chatRoom -> {
-	        List<ChatMessage> messages = chatMessageRepo.findByChatRoom_IdOrderByCreatedTimeDesc(chatRoom.getId());
-	        ChatMessage lastMessageEntity = messages.isEmpty() ? null : messages.get(0);
-	        chatRoom.setLastMessage(lastMessageEntity != null ? lastMessageEntity.getContent() : null);
-	        chatRoom.setLastMessageTime(lastMessageEntity != null ? lastMessageEntity.getCreatedTime() : null);
+    @Transactional(readOnly = true)
+    public List<ChatRoomDto> getUserChatRooms(Long userId) {
+        List<ChatRoom> chatRooms = chatRoomParticipantRepo.findActiveChatRoomsByUserId(userId);
+        return chatRooms.stream()
+            .map(chatRoom -> convertToChatRoomDto(chatRoom, userId)) // convertToChatRoomDto 메서드 재사용
+            .collect(Collectors.toList());
+    }
 
-	        chatRoom.setUnreadCount(chatMessageRepo.countUnreadMessages(chatRoom.getId(), userId));
-
-	        Long otherUserId = chatRoom.getParticipantsAsUsers().stream()
-	            .map(User::getId)
-	            .filter(id -> !id.equals(userId))
-	            .findFirst()
-	            .orElse(null);
-
-	        String otherUserNickName = "알 수 없는 사용자";
-	        String otherUserAvatar = null;
-	        boolean otherUserIsOnline = false;
-	        if (otherUserId != null) {
-	            User otherUser = userRepo.findById(otherUserId).orElse(null);
-	            if (otherUser != null) {
-	                String nickname = otherUser.getNickname();
-	                String username = otherUser.getUsername();
-	                if (nickname != null && !nickname.trim().isEmpty()) {
-	                    otherUserNickName = nickname;
-	                } else if (username != null && !username.trim().isEmpty()) {
-	                    otherUserNickName = username;
-	                    log.info("사용자 ID {}의 nickname이 비어 있어 username을 사용합니다: {}", otherUserId, username);
-	                } else {
-	                    log.warn("사용자 ID {}의 nickname과 username이 모두 비어 있습니다. 기본 이름으로 설정합니다.", otherUserId);
-	                    otherUserNickName = "사용자_" + otherUserId;
-	                }
-	                otherUserAvatar = otherUser.getAvatar();
-	                otherUserIsOnline = WebSocketEventListener.isUserOnline(otherUserId);
-	            } else {
-	                log.error("사용자 ID {}를 찾을 수 없습니다. 데이터베이스 상태를 확인하세요.", otherUserId);
-	            }
-	        }
-
-	        return ChatRoomDto.builder()
-	            .id(chatRoom.getId())
-	            .name(chatRoom.getName())
-	            .status(chatRoom.getStatus())
-	            .lastMessage(chatRoom.getLastMessage())
-	            .lastMessageTime(chatRoom.getLastMessageTime())
-	            .unreadCount(chatRoom.getUnreadCount())
-	            .otherUserId(otherUserId)
-	            .otherUserNickName(otherUserNickName)
-	            .otherUserAvatar(otherUserAvatar)
-	            .otherUserIsOnline(otherUserIsOnline)
-	            .build();
-	    }).collect(Collectors.toList());
-	}
 
     @Transactional(readOnly = true)
     public List<ChatMessageDto> getChatMessages(Long chatRoomId, Long currentUserId) {
         List<ChatMessage> messages = chatMessageRepo.findByChatRoom_IdOrderByCreatedTimeAsc(chatRoomId);
-
-        if (messages.isEmpty()) {
-            log.warn("채팅방 {}에 저장된 메시지가 없음", chatRoomId);
-        } else {
-            log.info("채팅방 {}의 메시지 개수: {}개", chatRoomId, messages.size());
-        }
-
         return messages.stream().map(message -> convertToDto(message, currentUserId))
             .collect(Collectors.toList());
     }
 
     public ChatMessageDto convertToDto(ChatMessage message, Long currentUserId) {
-        // senderName을 직접 조회
         String senderName = userRepo.findById(message.getSenderId())
             .map(user -> {
                 String nickname = user.getNickname();
@@ -415,7 +367,6 @@ public class ChatService {
             });
 
         Long chatRoomId = message.getChatRoomId();
-        // ChatRoom 객체를 직접 초기화하지 않고, participant 정보를 쿼리로 조회
         List<Long> participantIds = chatRoomParticipantRepo.findParticipantIdsByChatRoomId(chatRoomId);
 
         Long otherParticipantId = participantIds.stream()
@@ -445,7 +396,6 @@ public class ChatService {
                 });
         }
 
-        // readBy 정보를 쿼리로 조회
         Map<Long, Boolean> readByMap = chatMessageReadByRepo.findByChatMessageId(message.getId())
             .stream()
             .collect(Collectors.toMap(
@@ -454,6 +404,36 @@ public class ChatService {
                 (oldValue, newValue) -> oldValue
             ));
 
+        String contentToDisplay = message.getContent();
+        
+        // 이미지 메시지 CONTENT 변환 시작
+        if (message.getMessageType() == ChatMessageType.IMAGE || message.getMessageType() == ChatMessageType.IMAGE_GROUP) {
+            try {
+                if (message.getMessageType() == ChatMessageType.IMAGE_GROUP) {
+                    List<String> s3Keys = objectMapper.readValue(message.getContent(), List.class);
+                    List<String> presignedUrls = s3Keys.stream()
+                        .map(key -> {
+                            try {
+                                return s3FileStorageService.generateDownloadPresignedUrl(key, Duration.ofMinutes(5));
+                            } catch (FileStorageException e) {
+                                log.error("Failed to generate presigned URL for group image {}: {}", key, e.getMessage());
+                                return "/images/error-image.png";
+                            }
+                        })
+                        .collect(Collectors.toList());
+                    contentToDisplay = objectMapper.writeValueAsString(presignedUrls);
+                } else { // 단일 이미지
+                    contentToDisplay = s3FileStorageService.generateDownloadPresignedUrl(message.getContent(), Duration.ofMinutes(5));
+                }
+            } catch (FileStorageException e) {
+                log.error("Failed to generate presigned URL for chat image {}: {}", message.getContent(), e.getMessage());
+                contentToDisplay = "/images/error-image.png";
+            } catch (JsonProcessingException e) {
+                log.error("Failed to parse IMAGE_GROUP content for chat message {}: {}", message.getId(), e.getMessage());
+                contentToDisplay = "{\"error\": \"Invalid image group content\"}";
+            }
+        }
+
         return new ChatMessageDto(
             message.getId(),
             message.getChatRoomId(),
@@ -461,7 +441,7 @@ public class ChatService {
             senderName,
             otherParticipantName,
             message.getMessageType(),
-            message.getContent(),
+            contentToDisplay, // 변환된 content 사용
             message.getCreatedTime(),
             readByMap
         );
@@ -628,21 +608,41 @@ public class ChatService {
         dto.setUnreadCount(unreadCount);
 
         ChatRoomParticipant otherParticipant = chatRoom.getParticipants() != null
-            ? chatRoom.getParticipants().stream()
-                .filter(p -> p != null && p.getUser() != null && !p.getUser().getId().equals(currentUserId))
-                .findFirst()
-                .orElse(null)
-            : null;
-        if (otherParticipant != null) {
-            User otherUser = otherParticipant.getUser();
-            dto.setOtherUserId(otherUser.getId());
-            dto.setOtherUserNickName(otherUser.getNickname() != null ? otherUser.getNickname() : "알 수 없는 사용자");
-            dto.setOtherUserAvatar(otherUser.getAvatar());
-            dto.setOtherUserIsOnline(userService.isUserOnline(otherUser.getId()));
-        }
+                ? chatRoom.getParticipants().stream()
+                    .filter(p -> p != null && p.getUser() != null && !p.getUser().getId().equals(currentUserId))
+                    .findFirst()
+                    .orElse(null)
+                : null;
+            if (otherParticipant != null) {
+                User otherUser = otherParticipant.getUser();
+                dto.setOtherUserId(otherUser.getId());
+                dto.setOtherUserNickName(otherUser.getNickname() != null ? otherUser.getNickname() : otherUser.getUsername());
+                if (dto.getOtherUserNickName() == null || dto.getOtherUserNickName().trim().isEmpty()) {
+                    dto.setOtherUserNickName("사용자_" + otherUser.getId());
+                } else if (dto.getOtherUserNickName().startsWith("탈퇴회원_")) {
+                    dto.setOtherUserNickName("탈퇴회원");
+                }
 
-        return dto;
-    }
+                String otherUserAvatarS3Key = otherUser.getAvatar(); // User 엔티티에서 S3 Key 가져옴
+                if (StringUtils.hasText(otherUserAvatarS3Key)) { // S3 Key가 존재하면
+                    try {
+                        // S3 Pre-signed URL 생성 (5분 유효)
+                        String presignedUrl = s3FileStorageService.generateDownloadPresignedUrl(otherUserAvatarS3Key, Duration.ofMinutes(5));
+                        dto.setOtherUserAvatarImageUrl(presignedUrl); // <--- 이 부분에 Pre-signed URL 설정
+                    } catch (FileStorageException e) {
+                        log.error("Failed to generate presigned URL for other user avatar {}: {}", otherUserAvatarS3Key, e.getMessage());
+                        dto.setOtherUserAvatarImageUrl("/images/default-avatar.png"); // 오류 시 기본 이미지 URL (클라이언트에서 처리할 경로)
+                    }
+                } else {
+                    // 아바타 S3 Key가 없는 경우 (아바타 미설정)
+                    dto.setOtherUserAvatarImageUrl("/images/default-avatar.png"); // 기본 이미지 URL 설정 (클라이언트에서 처리할 경로)
+                }
+
+                dto.setOtherUserIsOnline(WebSocketEventListener.isUserOnline(otherUser.getId()));
+            }
+
+            return dto;
+        }
 
     @Transactional
     public void markAllMessagesAsRead(Long chatRoomId, Long userId) {

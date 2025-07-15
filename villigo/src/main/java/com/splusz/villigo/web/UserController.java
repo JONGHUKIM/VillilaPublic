@@ -274,18 +274,17 @@ public class UserController {
     ) {
         log.info("GET /member/details?postId={}, userId={}", postId, userId);
 
-        User user = null;
-
+        User userEntity = null; // User 엔티티
         if (postId != null) {
             Product product = productService.getProductById(postId);
             if (product == null) {
                 log.warn("Product not found for postId={}", postId);
                 return "error/404";
             }
-            user = product.getUser();
+            userEntity = product.getUser();
         } else if (userId != null) {
-            user = userService.findById(userId);
-            if (user == null) {
+            userEntity = userService.findById(userId); // User 엔티티 조회
+            if (userEntity == null) {
                 log.warn("User not found for userId={}", userId);
                 return "error/404";
             }
@@ -294,21 +293,44 @@ public class UserController {
             return "error/404";
         }
 
-        Long resolvedUserId = user.getId();
+        Long resolvedUserId = userEntity.getId();
         List<PostSummaryDto> products = productService.getUserProducts(resolvedUserId);
         List<ReviewDto> reviews = reviewService.getReviewsForUser(resolvedUserId);
 
+        // UserProfileDto를 얻고, 그 정보를 UserDetailsDto에 매핑
+        UserProfileDto userProfileDto;
+        try {
+            userProfileDto = userService.getUserProfileDto(userEntity); // <--- UserProfileDto로 변환 (avatarImageUrl 포함)
+        } catch (FileStorageException e) {
+            log.error("유저 상세 페이지 아바타 URL 생성 실패 (FileStorageException): {}", e.getMessage(), e);
+            userProfileDto = UserProfileDto.builder() // 오류 시 기본값 설정
+                .id(userEntity.getId())
+                .nickname(userEntity.getNickname())
+                .avatarImageUrl("/images/default-avatar.png")
+                .build();
+        } catch (Exception e) {
+            log.error("유저 상세 페이지 프로필 조회 중 알 수 없는 오류: {}", e.getMessage(), e);
+             userProfileDto = UserProfileDto.builder() // 다른 예외 시 기본값 설정
+                .id(userEntity.getId())
+                .nickname(userEntity.getNickname())
+                .avatarImageUrl("/images/default-avatar.png")
+                .build();
+        }
+
+
         UserDetailsDto userDetailsDto = new UserDetailsDto();
-        userDetailsDto.setId(user.getId());
-        userDetailsDto.setNickname(user.getNickname());
-        userDetailsDto.setRegion(user.getRegion());
-        userDetailsDto.setAvatar(user.getAvatar());
-        userDetailsDto.setInterestCategory(user.getTheme() != null ? user.getTheme().getTheme() : "자동차");
+        userDetailsDto.setId(userProfileDto.getId()); // UserProfileDto에서 ID 가져오기
+        userDetailsDto.setNickname(userProfileDto.getNickname());
+        userDetailsDto.setRegion(userProfileDto.getRegion());
+        userDetailsDto.setAvatar(userProfileDto.getAvatar()); // S3 Key 설정
+        userDetailsDto.setAvatarImageUrl(userProfileDto.getAvatarImageUrl()); // <--- UserProfileDto의 Pre-signed URL 설정
+        userDetailsDto.setInterestCategory(userProfileDto.getTheme() != null ? userProfileDto.getTheme() : "자동차"); // Theme 필드 사용
+
         userDetailsDto.setPosts(products);
         userDetailsDto.setReviews(reviews);
-        userDetailsDto.setMannerScore(userService.getMannerScore(user.getId()));
+        userDetailsDto.setMannerScore(userService.getMannerScore(userEntity.getId())); // User 엔티티 ID 사용
 
-        model.addAttribute("user", userDetailsDto);
+        model.addAttribute("user", userDetailsDto); // UserDetailsDto를 모델에 추가
         model.addAttribute("posts", products);
         model.addAttribute("reviews", reviews);
         return "member/details";

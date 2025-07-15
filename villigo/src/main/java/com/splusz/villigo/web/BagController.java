@@ -34,12 +34,14 @@ import com.splusz.villigo.dto.AddressUpdateDto;
 import com.splusz.villigo.dto.BagCreateDto;
 import com.splusz.villigo.dto.BagUpdateDto;
 import com.splusz.villigo.dto.RentalImageCreateDto;
+import com.splusz.villigo.dto.UserProfileDto;
 import com.splusz.villigo.service.AddressService;
 import com.splusz.villigo.service.BagService;
 import com.splusz.villigo.service.ProductService;
 import com.splusz.villigo.service.RentalImageService;
 import com.splusz.villigo.service.ReservationService;
 import com.splusz.villigo.service.UserService;
+import com.splusz.villigo.storage.FileStorageException;
 import com.splusz.villigo.util.SecurityUserUtil;
 
 import lombok.RequiredArgsConstructor;
@@ -116,22 +118,62 @@ public class BagController {
     }
 
     @GetMapping("/details/bag")
-    public void detail(@RequestParam(name = "id") Long productId, Model model) {
+    public String detail(@RequestParam("id") Long productId, Model model) {
 
         log.info("bag detail(productId={})", productId);
-        Product product = prodServ.readById(productId);
+        
+        // Product 정보 조회 (중복 선언 제거)
+        Product product = prodServ.readById(productId); // ProductService.getProductById 대신 readById 사용 (기존에 섞여 있던 부분 통일)
+        if (product == null) {
+            log.warn("상품을 찾을 수 없습니다: productId={}", productId);
+            return "error/404"; // 상품이 없는 경우 404 페이지로 처리
+        }
         log.info("bag detail(product={})", product);
-        User user = userServ.read(product.getUser().getId());
-        log.info("bag detail(user={})", user);
+        
+        // 상품 소유자 User 엔티티 조회 (기존 User user = userServ.read() 제거)
+        User productOwnerEntity = product.getUser(); // Product 엔티티에 User 정보가 포함되어 있음
+        if (productOwnerEntity == null) {
+            log.error("상품에 연결된 사용자 정보를 찾을 수 없습니다: productId={}", productId);
+            return "error/500"; // 심각한 오류로 500 페이지 처리
+        }
+
+        // User 엔티티를 UserProfileDto로 변환하여 아바타 URL 포함
+        UserProfileDto productOwnerProfile = null;
+        try {
+            productOwnerProfile = userServ.getUserProfileDto(productOwnerEntity); // <--- User 엔티티를 DTO로 변환
+        } catch (FileStorageException e) {
+            log.error("상품 소유자의 아바타 URL 생성 실패 (FileStorageException): {}", e.getMessage(), e);
+            // 오류 발생 시 기본값으로 DTO 생성
+            productOwnerProfile = UserProfileDto.builder()
+                .id(productOwnerEntity.getId())
+                .nickname(productOwnerEntity.getNickname())
+                .avatarImageUrl("/images/default-avatar.png") // 오류 시 기본 이미지 경로
+                .build();
+        } catch (Exception e) {
+            log.error("상품 소유자 프로필 조회 중 알 수 없는 오류: {}", e.getMessage(), e);
+            // 다른 예외 처리 시에도 기본값으로 DTO 생성
+            productOwnerProfile = UserProfileDto.builder()
+                .id(productOwnerEntity.getId())
+                .nickname(productOwnerEntity.getNickname())
+                .avatarImageUrl("/images/default-avatar.png") // 오류 시 기본 이미지 경로
+                .build();
+        }
+        
+        // 나머지 정보들 조회
         Address address = addServ.readByProductId(productId);
         log.info("bag detail(address={})", address);
         List<RentalImage> rentalImages = rentalImgServ.readByProductId(productId);
         log.info("bag detail(rentalImages={})", rentalImages);
 
+        // 모델에 추가
         model.addAttribute("product", product);
-        model.addAttribute("user", user);
+        model.addAttribute("user", productOwnerProfile); // <--- UserProfileDto를 "user" 이름으로 모델에 추가!
         model.addAttribute("address", address);
         model.addAttribute("rentalImages", rentalImages);
+        
+        log.info("bag detail(userProfileDto)={}", productOwnerProfile); // 로깅 메시지 명확화
+        
+        return "post/details/bag";
     }
 
     @DeleteMapping("/delete/bag")
