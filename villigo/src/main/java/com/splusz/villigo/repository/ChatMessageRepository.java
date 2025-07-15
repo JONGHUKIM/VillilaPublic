@@ -9,6 +9,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import com.splusz.villigo.domain.ChatMessage;
+import com.splusz.villigo.domain.ChatMessageType;
 
 public interface ChatMessageRepository extends JpaRepository<ChatMessage, Long> {
     
@@ -59,5 +60,8 @@ public interface ChatMessageRepository extends JpaRepository<ChatMessage, Long> 
     );
 
     ChatMessage findTopByChatRoom_IdOrderByCreatedTimeDesc(Long chatRoomId);
+
+    List<ChatMessage> findByMessageTypeIn(List<ChatMessageType> messageTypes);
+  
     
 }

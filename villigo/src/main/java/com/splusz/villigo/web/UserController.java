@@ -23,6 +23,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -400,6 +401,7 @@ public class UserController {
         }
     }
     
+<<<<<<< HEAD
 >>>>>>> 49abed9 (서버에서 JSON응답처리, JS에서 리다이렉트 처리)
 =======
     
@@ -425,4 +427,33 @@ public class UserController {
     }
     
 >>>>>>> fe7f247 (게시물, 리뷰, 채팅만 남겨놓음 탈퇴코드 controller, service에 추가)
+=======
+    // --- 임시: 사용자에게 ADMIN 역할 부여 API ---
+    // 이 엔드포인트는 매우 조심해서 사용해야 합니다! 테스트 후 반드시 제거/주석 처리하세요.
+    @PutMapping("/temp-add-admin-role/{userId}") // PUT 또는 POST 사용
+    public ResponseEntity<String> tempAddAdminRole(@PathVariable Long userId) {
+        log.warn("🚨 임시 ADMIN 역할 부여 API 호출됨: userId={}", userId);
+        try {
+            userService.addAdminRoleToUser(userId);
+            return ResponseEntity.ok("사용자 " + userId + "에게 ADMIN 역할이 부여되었습니다.");
+        } catch (Exception e) {
+            log.error("ADMIN 역할 부여 실패: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("ADMIN 역할 부여 실패: " + e.getMessage());
+        }
+    }
+
+    // --- 임시: 사용자에게서 ADMIN 역할 제거 API ---
+    @PutMapping("/temp-remove-admin-role/{userId}") // PUT 또는 POST 사용
+    public ResponseEntity<String> tempRemoveAdminRole(@PathVariable Long userId) {
+        log.warn("🚨 임시 ADMIN 역할 제거 API 호출됨: userId={}", userId);
+        try {
+            userService.removeAdminRoleFromUser(userId);
+            return ResponseEntity.ok("사용자 " + userId + "에게서 ADMIN 역할이 제거되었습니다.");
+        } catch (Exception e) {
+            log.error("ADMIN 역할 제거 실패: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("ADMIN 역할 제거 실패: " + e.getMessage());
+        }
+    }
+    
+>>>>>>> 30a18af (데이터 레벨을 위한 마이그레이션 (UserService, Controller에 있는 임시 코드는 삭제예정))
 }
