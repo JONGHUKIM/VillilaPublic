@@ -6,7 +6,7 @@ buildscript {
 
 plugins {
     id 'java'
-    id 'org.springframework.boot' version '3.4.5'
+    id 'org.springframework.boot' version '3.4.7'
     id 'io.spring.dependency-management' version '1.1.7'
     id 'eclipse'
 }
@@ -32,6 +32,8 @@ repositories {
 
 ext {
     set('springAiVersion', "1.0.0-M6")
+    // AWS SDK v2 BOM 버전 추가
+    set('awsSdkVersion', '2.26.15') // 가장 최신 안정화 버전을 확인하여 사용
 }
 
 dependencies {
@@ -67,6 +69,11 @@ dependencies {
     // Spring Boot Actuator 및 Prometheus Micrometer 의존성 추가
     implementation 'org.springframework.boot:spring-boot-starter-actuator'
     runtimeOnly 'io.micrometer:micrometer-registry-prometheus'
+    
+    // AWS SDK for Java v2 S3 의존성 추가
+   implementation platform("software.amazon.awssdk:bom:${awsSdkVersion}") // BOM을 사용하여 일관된 버전 관리
+   implementation 'software.amazon.awssdk:s3'
+   implementation 'software.amazon.awssdk:url-connection-client' // HTTP 클라이언트로 권장
     
 }
 

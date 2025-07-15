@@ -3,6 +3,7 @@ package com.splusz.villigo.web;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.Duration;
 import java.util.List;
 import java.util.Optional;
 
@@ -39,8 +40,10 @@ import com.splusz.villigo.dto.UserProfileDto;
 import com.splusz.villigo.dto.UserSignUpDto;
 import com.splusz.villigo.service.ProductService;
 import com.splusz.villigo.service.ReviewService;
+import com.splusz.villigo.service.S3FileStorageService;
 import com.splusz.villigo.service.ThemeService;
 import com.splusz.villigo.service.UserService;
+import com.splusz.villigo.storage.FileStorageException;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -58,6 +61,7 @@ public class UserController {
 	private final ThemeService themeService;
 	private final ProductService productService;
     private final ReviewService reviewService;
+    private final S3FileStorageService s3FileStorageService;
 	
     @GetMapping("/signin")
     public String signIn() {
@@ -312,32 +316,27 @@ public class UserController {
 
     
     // 이미지 제공 엔드포인트
-    @GetMapping("/images/{image}")
-    public ResponseEntity<Resource> getImage(@PathVariable(name = "image") String image) {
-        log.info("GET /member/images/{}", image);
+    @GetMapping("/images/{imageS3Key:.+}") // {image} 대신 {imageS3Key} 사용, 파일 경로에 .이 포함될 수 있으므로 :.+ 패턴 사용
+    public ResponseEntity<Void> getImage(@PathVariable(name = "imageS3Key") String imageS3Key) { // Resource 대신 Void 반환 (리다이렉트만 할 것이므로)
+        log.info("GET /member/images/{}", imageS3Key);
         try {
-            // 이미지 파일 경로 (예: /uploads/ 디렉토리에 저장됨)
-            Path filePath = Paths.get("/home/ubuntu/images/avatar").resolve(image).normalize();
-            Resource resource = new UrlResource(filePath.toUri());
+            // S3FileStorageService를 통해 Pre-signed URL 생성 (5분 유효)
+            // 주의: 여기서 직접 DB에서 user.getAvatar() 값을 가져오지 않으므로,
+            // imageS3Key가 유효한 사용자의 아바타인지 확인하는 로직을 추가하는 것이 보안상 좋음.
+            // 예: UserDetailsService를 통해 S3Key를 사용자로 찾아 그 사용자가 이 파일의 소유자인지 확인
+            String presignedUrl = s3FileStorageService.generateDownloadPresignedUrl(imageS3Key, Duration.ofMinutes(5));
 
-            if (resource.exists() && resource.isReadable()) {
-                String contentType = "image/jpeg"; // 기본값
-                if (image.endsWith(".png")) {
-                    contentType = "image/png";
-                } else if (image.endsWith(".gif")) {
-                    contentType = "image/gif";
-                }
-
-                return ResponseEntity.ok()
-                        .contentType(MediaType.parseMediaType(contentType))
-                        .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + resource.getFilename() + "\"")
-                        .body(resource);
-            } else {
-                return ResponseEntity.notFound().build();
-            }
+            // 클라이언트를 Pre-signed URL로 리다이렉트
+            return ResponseEntity.status(HttpStatus.FOUND) // 302 Found (임시 리다이렉트)
+                                 .header(HttpHeaders.LOCATION, presignedUrl)
+                                 .build();
+        } catch (FileStorageException e) {
+        	log.error("이미지 {}에 대한 Pre-signed URL 생성 오류: {}", imageS3Key, e.getMessage(), e);
+            // 파일을 찾을 수 없거나 접근 권한이 없는 경우 (404 Not Found)
+            return ResponseEntity.notFound().build();
         } catch (Exception e) {
-            log.error("Error loading image: {}", e.getMessage(), e);
-            return ResponseEntity.badRequest().build();
+        	log.error("이미지 리다이렉션 중 {}에 대한 오류: {}", imageS3Key, e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
 <<<<<<< HEAD
@@ -361,13 +360,20 @@ public class UserController {
         try {
 <<<<<<< HEAD
             userService.withdrawCurrentUser(request, response);
+<<<<<<< HEAD
             return ResponseEntity.ok("탈퇴 성공"); // 리다이렉트 없음
 =======
             userService.withdrawCurrentUser(request, response); // 사용자 탈퇴 서비스 호출
             return ResponseEntity.ok("Account withdrawn successfully"); // 성공 응답
 >>>>>>> 05dfe10 (회원 탈퇴 후 로그아웃 -> 홈으로 리다이렉트 코드 추가)
+=======
+            return ResponseEntity.ok("탈퇴 성공");
+        } catch (FileStorageException e) { // S3 삭제 실패 예외 추가
+        	log.error("계정 탈퇴 중 오류 발생 (S3 삭제 실패): {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("탈퇴 중 S3 파일 삭제 오류 발생");
+>>>>>>> 496eb16 (로컬 -> S3로 변경 user avatar 이미지 경로 변경)
         } catch (Exception e) {
-            log.error("Error during account withdrawal: {}", e.getMessage(), e);
+        	log.error("계정 탈퇴 중 오류 발생: {}", e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("탈퇴 중 오류 발생");
         }
     }

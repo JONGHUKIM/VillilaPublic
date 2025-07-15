@@ -92,26 +92,20 @@
                     	<p class="user-location" th:text="${user.region != null ? user.region : '활동 지역 미설정'}">활동지역</p>
                 	</div>
                 	<!-- 탈퇴한 회원은 아바타 링크 제거 -->
-                	<th:block th:if="${user.username.startsWith('탈퇴회원_')}">
-                    	<th:block th:if="${user.avatar != null}">
-                        	<img id="profileImage"
-                             	th:src="@{/member/images/{avatar}(avatar=${user.avatar})}"
-                             	alt="프로필 이미지"
+					<th:block th:if="${user.username.startsWith('탈퇴회원_')}">
+                    	<th:block th:if="${user.avatarImageUrl != null}"> <img id="profileImage"
+                             	th:src="${user.avatarImageUrl}" alt="프로필 이미지"
                              	class="disabled" />
                     	</th:block>
-                    	<th:block th:unless="${user.avatar != null}">
-                        	<span id="profileImage" class="emoji-frog disabled">🐸</span>
+                    	<th:block th:unless="${user.avatarImageUrl != null}"> <span id="profileImage" class="emoji-frog disabled">🐸</span>
                     	</th:block>
                 	</th:block>
                 	<th:block th:unless="${user.username.startsWith('탈퇴회원_')}">
                     	<a th:href="@{/member/details(userId=${user.id})}">
-                       	 	<th:block th:if="${user.avatar != null}">
-                            	<img id="profileImage"
-                                 	th:src="@{/member/images/{avatar}(avatar=${user.avatar})}"
-                                	 alt="프로필 이미지" />
+                       	 	<th:block th:if="${user.avatarImageUrl != null}"> <img id="profileImage"
+                                 	th:src="${user.avatarImageUrl}" alt="프로필 이미지" />
                         	</th:block>
-                        	<th:block th:unless="${user.avatar != null}">
-                            	<span id="profileImage" class="emoji-frog">🐸</span>
+                        	<th:block th:unless="${user.avatarImageUrl != null}"> <span id="profileImage" class="emoji-frog">🐸</span>
                         	</th:block>
                     	</a>
                 	</th:block>

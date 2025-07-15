@@ -10,6 +10,7 @@ public class UserProfileDto {
     private String phone;
     private String region;
     private String avatar;
+    private String avatarImageUrl;
     private Long themeId;
     private String theme;
     private int jjamPoints;

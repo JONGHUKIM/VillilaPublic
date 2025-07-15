@@ -8,15 +8,10 @@
   <div class="signup-form-container">
     <form th:action="@{/member/modify}" method="post" enctype="multipart/form-data">
         <!-- 프로필 이미지 영역 -->
-        <div class="profile-image-wrapper">
-			<!-- 이미지 있으면 -->
-			<th:block th:if="${user != null and user.avatar != null}">
-			    <img id="avatarPreview" th:src="@{|/images/avatar/${user.avatar}|}" alt="프로필 이미지">
-			</th:block>
+		<div class="profile-image-wrapper">
+			<th:block th:if="${user != null and user.avatarImageUrl != null}"> <img id="avatarPreview" th:src="${user.avatarImageUrl}" alt="프로필 이미지"> </th:block>
 			
-			<!-- 이미지 없으면 -->
-			<th:block th:unless="${user != null and user.avatar != null}">
-			    <span id="avatarPreview" class="emoji-frog">🐸</span>
+			<th:block th:unless="${user != null and user.avatarImageUrl != null}"> <span id="avatarPreview" class="emoji-frog">🐸</span>
 			</th:block>
             <label for="profileImage" class="edit-icon">이미지 수정 ✏️</label>
             <input type="file" id="profileImage" name="profileImage" accept="image/*" onchange="previewAvatar(this)" hidden="hidden">

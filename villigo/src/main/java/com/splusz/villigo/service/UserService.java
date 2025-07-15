@@ -1,15 +1,7 @@
 package com.splusz.villigo.service;
 
-import com.splusz.villigo.domain.*;
-import com.splusz.villigo.dto.ReviewDto;
-import com.splusz.villigo.repository.*;
-import com.splusz.villigo.util.SecurityUserUtil;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-
-import java.io.File;
 import java.io.IOException;
-import java.util.List;
+import java.time.Duration;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -22,19 +14,32 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.splusz.villigo.config.CustomAuthenticationSuccessHandler;
 import com.splusz.villigo.config.CustomOAuth2User;
+import com.splusz.villigo.domain.SocialType;
+import com.splusz.villigo.domain.Theme;
+import com.splusz.villigo.domain.User;
+import com.splusz.villigo.domain.UserJjam;
+import com.splusz.villigo.domain.UserRole;
 import com.splusz.villigo.dto.SocialUserSignUpDto;
 import com.splusz.villigo.dto.UpdateAvatarRequestDto;
 import com.splusz.villigo.dto.UserProfileDto;
 import com.splusz.villigo.dto.UserSignUpDto;
+import com.splusz.villigo.repository.ThemeRepository;
+import com.splusz.villigo.repository.UserJjamRepository;
+import com.splusz.villigo.repository.UserRepository;
+import com.splusz.villigo.storage.FileStorageException;
+import com.splusz.villigo.util.SecurityUserUtil;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -45,8 +50,7 @@ public class UserService implements UserDetailsService {
     private final PasswordEncoder passwordEncoder;
     private final CustomAuthenticationSuccessHandler successHandler;
     private final UserJjamRepository userJjamRepo;
-
-    private static final String UPLOAD_DIR = "/home/ubuntu/images/avatar";
+    private final S3FileStorageService s3FileStorageService;
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
@@ -176,7 +180,7 @@ public class UserService implements UserDetailsService {
     }
 
     @Transactional
-    public User updateUserProfile(String nickname, String password, String phone, String region, Long themeId, MultipartFile avatarFile) throws IOException {
+    public User updateUserProfile(String nickname, String password, String phone, String region, Long themeId, MultipartFile avatarFile) throws FileStorageException, IOException { // 예외 추가
         User user = SecurityUserUtil.getCurrentLoggedInUser();
         if (user == null || user.getId() == null) throw new IllegalArgumentException("로그인된 사용자 정보를 찾을 수 없습니다.");
 
@@ -187,43 +191,58 @@ public class UserService implements UserDetailsService {
         if (themeId != null) user.setTheme(themeRepo.findById(themeId).orElse(null));
 
         if (avatarFile != null && !avatarFile.isEmpty()) {
-            File directory = new File(UPLOAD_DIR);
-            if (!directory.exists()) directory.mkdirs();
+            String oldAvatarS3Key = user.getAvatar(); // 기존 아바타 S3 키 가져오기
 
-            String ext = Optional.ofNullable(avatarFile.getOriginalFilename())
-                    .map(name -> name.substring(name.lastIndexOf(".")))
-                    .orElse("");
-            String newFileName = UUID.randomUUID() + ext;
-            File destFile = new File(UPLOAD_DIR + File.separator + newFileName);
-            avatarFile.transferTo(destFile);
-            user.setAvatar(newFileName);
+            // S3에 새 아바타 업로드 (user ID를 포함하여 S3 키 생성)
+            // S3FileStorageService의 uploadFile 메서드가 고유 파일명 생성 및 S3 경로 반환
+            String newAvatarS3Key = s3FileStorageService.uploadFile(
+                avatarFile.getInputStream(),
+                "avatars/" + user.getId() + "/" + avatarFile.getOriginalFilename(), // S3 key에 사용자 ID 포함 (중요!)
+                avatarFile.getContentType()
+            );
+            user.setAvatar(newAvatarS3Key); // User 엔티티의 avatar 컬럼 업데이트
+
+            // 기존 아바타 파일 S3에서 삭제 (선택 사항이지만 비용 절감 위해 권장)
+            if (StringUtils.hasText(oldAvatarS3Key)) { // 기존 아바타가 있었다면
+                try {
+                    s3FileStorageService.deleteFile(oldAvatarS3Key);
+                    log.info("기존 아바타가 S3에서 삭제됨: {}", oldAvatarS3Key);
+                } catch (FileStorageException e) {
+                	log.warn("S3에서 기존 아바타 삭제 실패: {}. 오류: {}", oldAvatarS3Key, e.getMessage());
+                    // 삭제 실패해도 프로필 업데이트는 계속 진행 (치명적 오류 아님)
+                }
+            }
         }
-
         return userRepo.save(user);
     }
 
-    public static String normalizePath(String path) {
-        return path != null && path.startsWith("/") ? path.substring(1) : path;
-    }
-
     @Transactional
-    public User updateAvatar(UpdateAvatarRequestDto requestDto) throws IOException {
+    public User updateAvatar(UpdateAvatarRequestDto requestDto) throws FileStorageException, IOException { // 예외 추가
         User user = SecurityUserUtil.getCurrentLoggedInUser();
         if (user == null || user.getId() == null) throw new IllegalArgumentException("로그인된 사용자 정보를 찾을 수 없습니다.");
 
         MultipartFile avatarFile = requestDto.getAvatarFile();
         if (avatarFile != null && !avatarFile.isEmpty()) {
-            File directory = new File(UPLOAD_DIR);
-            if (!directory.exists()) directory.mkdirs();
+            String oldAvatarS3Key = user.getAvatar(); // 기존 아바타 S3 키 가져오기
 
-            String ext = Optional.ofNullable(avatarFile.getOriginalFilename())
-                    .map(name -> name.substring(name.lastIndexOf(".")))
-                    .orElse("");
-            String newFileName = UUID.randomUUID() + ext;
-            File destFile = new File(UPLOAD_DIR + File.separator + newFileName);
-            avatarFile.transferTo(destFile);
-            user.setAvatar(normalizePath(newFileName));
-            userRepo.save(user);
+            // S3에 새 아바타 업로드 (user ID를 포함하여 S3 키 생성)
+            String newAvatarS3Key = s3FileStorageService.uploadFile(
+                avatarFile.getInputStream(),
+                "avatars/" + user.getId() + "/" + avatarFile.getOriginalFilename(), // S3 key에 사용자 ID 포함 (중요!)
+                avatarFile.getContentType()
+            );
+            user.setAvatar(newAvatarS3Key); // User 엔티티의 avatar 컬럼 업데이트
+
+            // 기존 아바타 파일 S3에서 삭제
+            if (StringUtils.hasText(oldAvatarS3Key)) {
+                try {
+                    s3FileStorageService.deleteFile(oldAvatarS3Key);
+                    log.info("기존 아바타가 S3에서 삭제됨 (updateAvatar): {}", oldAvatarS3Key);
+                } catch (FileStorageException e) {
+                    log.warn("S3에서 기존 아바타 삭제 실패 (updateAvatar): {}. 오류: {}", oldAvatarS3Key, e.getMessage());
+                }
+            }
+            userRepo.save(user); // 변경된 User 엔티티 저장
         }
         return user;
     }
@@ -236,40 +255,50 @@ public class UserService implements UserDetailsService {
         return user;
     }
 
-    @Transactional // 이 메서드 자체는 @Transactional이므로, 트랜잭션 범위 내에서 동작합니다.
-    public UserProfileDto getCurrentUserProfile() {
-        User user = SecurityUserUtil.getCurrentLoggedInUser(); // SecurityUserUtil 사용
+    @Transactional
+    public UserProfileDto getCurrentUserProfile() throws FileStorageException { // FileStorageException 예외 추가
+        User user = SecurityUserUtil.getCurrentLoggedInUser();
         if (user == null || user.getId() == null) {
             log.error("getCurrentUserProfile: 인증된 사용자를 찾을 수 없습니다.");
             throw new IllegalStateException("인증된 사용자를 찾을 수 없습니다.");
         }
 
-        log.info("getCurrentUserProfile: user ID={}", user.getId());
-
-        // LazyInitializationException을 해결하기 위해 현재 트랜잭션 내에서 User 엔티티를 다시 로드
-        // 로드된 managedUser는 현재 트랜잭션의 영속성 컨텍스트에 의해 관리
         User managedUser = userRepo.findById(user.getId())
                                    .orElseThrow(() -> new IllegalArgumentException("User not found by ID: " + user.getId()));
 
         UserProfileDto dto = new UserProfileDto();
-        dto.setId(managedUser.getId()); // 관리되는 User 엔티티(managedUser) 사용
+        dto.setId(managedUser.getId());
         dto.setUsername(managedUser.getUsername());
         dto.setNickname(managedUser.getNickname());
         dto.setPhone(managedUser.getPhone());
         dto.setRegion(managedUser.getRegion());
-        dto.setAvatar(managedUser.getAvatar());
-        dto.setMannerScore(managedUser.getMannerScore());
+        dto.setAvatar(managedUser.getAvatar()); // S3 Key는 그대로 avatar 필드에 설정
+
+        if (StringUtils.hasText(managedUser.getAvatar())) { // 아바타 S3 Key가 있다면
+            try {
+                // 5분 유효한 Pre-signed URL 생성
+                String presignedUrl = s3FileStorageService.generateDownloadPresignedUrl(managedUser.getAvatar(), Duration.ofMinutes(5));
+                dto.setAvatarImageUrl(presignedUrl); // DTO의 avatarImageUrl 필드에 설정
+            } catch (FileStorageException e) {
+                log.error("Error generating presigned URL for avatar {}: {}", managedUser.getAvatar(), e.getMessage());
+                // 오류 발생 시 기본 이미지 URL 또는 null로 설정
+                dto.setAvatarImageUrl("/images/default-avatar.png"); // TODO: 실제 기본 이미지 URL로 변경
+            }
+        } else {
+            // 아바타 S3 Key가 없는 경우 (아바타 미설정)
+            dto.setAvatarImageUrl("/images/default-avatar.png"); // TODO: 실제 기본 이미지 URL로 변경
+        }
 
         // Theme 정보에 안전하게 접근 (이제 트랜잭션 내에서 초기화됨)
         if (managedUser.getTheme() != null) {
             dto.setThemeId(managedUser.getTheme().getId());
-            dto.setTheme(managedUser.getTheme().getTheme()); // Theme가 이제 트랜잭션 내에서 초기화
+            dto.setTheme(managedUser.getTheme().getTheme());
         } else {
             dto.setThemeId(null);
-            dto.setTheme(null); // 기본값 설정
+            dto.setTheme(null);
         }
-        
-        dto.setJjamPoints(calculateUserJjamPoints(managedUser)); // 관리되는 User 엔티티(managedUser) 사용
+
+        dto.setJjamPoints(calculateUserJjamPoints(managedUser));
         dto.setSocialType(managedUser.getSocialType() != null ? managedUser.getSocialType().name() : null);
         
         return dto;
@@ -321,10 +350,15 @@ public class UserService implements UserDetailsService {
         user.setPassword(null);
         user.setPhone(null);
         user.setRegion(null);
-        if (user.getAvatar() != null) {
-            File file = new File(UPLOAD_DIR + File.separator + user.getAvatar());
-            if (file.exists()) file.delete();
-            user.setAvatar(null);
+        if (StringUtils.hasText(user.getAvatar())) { // 아바타가 존재했다면
+            try {
+                s3FileStorageService.deleteFile(user.getAvatar()); // <--- S3에서 아바타 파일 삭제
+                log.info("회원 탈퇴 중 S3에서 아바타 삭제됨: {}", user.getAvatar());
+            } catch (FileStorageException e) {
+            	log.warn("회원 탈퇴 중 S3에서 아바타 삭제 실패: {}. 오류: {}", user.getAvatar(), e.getMessage());
+                // 삭제 실패해도 회원 탈퇴는 계속 진행 (치명적 오류 아님)
+            }
+            user.setAvatar(null); // DB에서 아바타 컬럼을 null로 설정
         }
         user.setTheme(null);
         user.setMarketingConsent(false);

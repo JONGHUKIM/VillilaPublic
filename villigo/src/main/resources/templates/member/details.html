@@ -11,11 +11,8 @@
     <div class="profile-container">
       <div class="profile-left">
         <div class="profile-img">
-            <th:block th:if="${user.avatar != null}">
-			  <img th:src="@{/member/images/{avatar}(avatar=${user.avatar})}" id="profileImage" />
-			</th:block>
-			<th:block th:unless="${user.avatar != null}">
-			  <span id="profileImage" class="emoji-frog">🐸</span>
+            <th:block th:if="${user.avatarImageUrl != null}"> <img th:src="${user.avatarImageUrl}" id="profileImage" alt="프로필 이미지" /> </th:block>
+			<th:block th:unless="${user.avatarImageUrl != null}"> <span id="profileImage" class="emoji-frog">🐸</span>
 			</th:block>
         </div>
         <div class="profile-info">
@@ -74,11 +71,8 @@
         <div class="review-user-info">
           <div class="review-user-img">
           <a th:href="@{/member/details(userId=${review.userId})}">
-             <th:block th:if="${review.userImage != null}">
-               <img th:src="@{/member/images/{avatar}(avatar=${review.userImage})}" alt="리뷰어 프로필">
-             </th:block>
-             <th:block th:unless="${review.userImage != null}">
-               <span class="emoji-frog">🐸</span>
+             <th:block th:if="${review.userImageUrl != null}"> <img th:src="${review.userImageUrl}" alt="리뷰어 프로필"> </th:block>
+             <th:block th:unless="${review.userImageUrl != null}"> <span class="emoji-frog">🐸</span>
              </th:block>
             </a>
           </div>

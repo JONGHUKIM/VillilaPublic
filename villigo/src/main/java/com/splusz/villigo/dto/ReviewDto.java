@@ -19,6 +19,7 @@ public class ReviewDto {
     private Long userId;
     private String userName;
     private String userImage;
+    private String userImageUrl;
     private int score; // 후기 별점 점수
     private int mannerScore; // 추가된 필드
 
