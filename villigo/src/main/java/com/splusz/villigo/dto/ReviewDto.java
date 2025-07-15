@@ -1,11 +1,14 @@
 package com.splusz.villigo.dto;
 
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
 @NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class ReviewDto {
 
     // 후기 등록용

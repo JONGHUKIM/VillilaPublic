@@ -3,13 +3,17 @@ package com.splusz.villigo.service;
 import com.splusz.villigo.domain.*;
 import com.splusz.villigo.dto.ReviewDto;
 import com.splusz.villigo.repository.*;
+import com.splusz.villigo.storage.FileStorageException;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
+import java.time.Duration;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
 @Service
 @RequiredArgsConstructor
@@ -20,6 +24,7 @@ public class ReviewService {
     private final UserRepository userRepository;
     private final ReviewKeywordRepository reviewKeywordRepository;
     private final ReservationRepository reservationRepository;
+    private final S3FileStorageService s3FileStorageService;
 
     // 후기 작성 및 매너 점수 업데이트
     @Transactional
@@ -84,16 +89,39 @@ public class ReviewService {
         log.info("조회된 리뷰 개수: {}", reviews.size());
 
         return reviews.stream()
-            .map(review -> ReviewDto.builder()
-                .userId(review.getWriter().getId())
-                .userName(review.getWriter().getNickname())
-                .userImage(review.getWriter().getAvatar())
-                .score(review.getKeyword().getScore())
-                .content(review.getContent())
-                .keywordId(review.getKeyword().getId())
-                .targetId(review.getTarget().getId())
-                .reservationId(review.getReservation().getId())
-                .build())
+            .map(review -> {
+                User writer = review.getWriter(); // 리뷰 작성자 User 엔티티
+                
+                // --- 리뷰 작성자의 아바타 URL (Pre-signed URL) 생성 및 설정 ---
+                String writerAvatarS3Key = writer.getAvatar(); // 작성자 User 엔티티에서 S3 Key 가져옴
+                String userImageUrl = null; // DTO에 설정할 최종 이미지 URL
+
+                if (StringUtils.hasText(writerAvatarS3Key)) { // S3 Key가 존재하면
+                    try {
+                        // S3 Pre-signed URL 생성 (5분 유효)
+                        userImageUrl = s3FileStorageService.generateDownloadPresignedUrl(writerAvatarS3Key, Duration.ofMinutes(5));
+                    } catch (FileStorageException e) {
+                        log.error("Failed to generate presigned URL for review writer avatar {}: {}", writerAvatarS3Key, e.getMessage());
+                        userImageUrl = "/images/default-avatar.png"; // 오류 시 기본 이미지 URL (클라이언트에서 처리할 경로)
+                    }
+                } else {
+                    // 아바타 S3 Key가 없는 경우 (아바타 미설정)
+                    userImageUrl = "/images/default-avatar.png"; // 기본 이미지 URL 설정 (클라이언트에서 처리할 경로)
+                }
+                // --- 아바타 URL 설정 끝 ---
+
+                return ReviewDto.builder()
+                    .userId(writer.getId()) // 리뷰 작성자 ID
+                    .userName(writer.getNickname() != null ? writer.getNickname() : writer.getUsername()) // 리뷰 작성자 닉네임 또는 유저네임
+                    .userImage(writerAvatarS3Key) // 기존 userImage 필드에 S3 Key 저장 (선택 사항, 필요 없다면 DTO에서 제거)
+                    .userImageUrl(userImageUrl) // <--- **이곳에 Pre-signed URL 설정!**
+                    .score(review.getKeyword().getScore())
+                    .content(review.getContent())
+                    .keywordId(review.getKeyword().getId())
+                    .targetId(review.getTarget().getId())
+                    .reservationId(review.getReservation().getId())
+                    .build();
+            })
             .toList();
     }
 } 

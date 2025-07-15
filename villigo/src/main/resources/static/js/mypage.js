@@ -44,12 +44,26 @@ document.addEventListener("DOMContentLoaded", () => {
             
 
             const profileImage = document.getElementById('profileImage');
-			if (data.avatar) {
-			    let cleanAvatar = data.avatar.startsWith('/') ? data.avatar.slice(1) : data.avatar;
-			    // JS에서도 /member/images/ 경로를 사용하도록 수정
-			    profileImage.outerHTML = `<img id="profileImage" src="/member/images/${cleanAvatar}" alt="프로필 사진">`;
-			} else {
-			    profileImage.outerHTML = `<span id="profileImage" class="emoji-frog">🐸</span>`;
+			if (data.avatarImageUrl) { // <--- 변경: data.avatar -> data.avatarImageUrl 사용
+			    // 이미 <img> 태그라면 src만 변경
+			    if (profileImageElement.tagName === 'IMG') {
+			        profileImageElement.src = data.avatarImageUrl;
+			    } else { // <span> (이모티콘) 이라면 <img> 태그로 교체
+			        const newImgElement = document.createElement('img');
+			        newImgElement.id = 'profileImage';
+			        newImgElement.src = data.avatarImageUrl;
+			        newImgElement.alt = "프로필 사진";
+			        profileImageElement.parentNode.replaceChild(newImgElement, profileImageElement);
+			    }
+			} else { // avatarImageUrl이 null 또는 비어있으면 기본 이모티콘 표시
+			    // 이미 <span> (이모티콘) 이라면 그대로 유지
+			    if (profileImageElement.tagName !== 'SPAN' || !profileImageElement.classList.contains('emoji-frog')) {
+			        const newSpanElement = document.createElement('span');
+			        newSpanElement.id = 'profileImage';
+			        newSpanElement.className = 'emoji-frog';
+			        newSpanElement.textContent = '🐸';
+			        profileImageElement.parentNode.replaceChild(newSpanElement, profileImageElement);
+			    }
 			}
 
             loadReviews();
@@ -172,28 +186,28 @@ document.addEventListener("DOMContentLoaded", () => {
                 const starCount = Math.max(0, score);
                 const userId = review.userId;
                 const userName = review.userName || '익명';
-                const userImage = review.userImage ? `/member/images/${review.userImage}` : `<img src="<span class='emoji-frog'>🐸</span>" />`;
+				const userImageUrl = review.userImageUrl; // <--- review.userImageUrl 사용
+				const avatarContent = userImageUrl ? `<img src="${userImageUrl}" alt="리뷰어 프로필">` : `<span class='emoji-frog'>🐸</span>`; // S3 URL이 있다면 img 태그, 없으면 이모티콘
                 const userProfileUrl = `/member/details?userId=${userId}`;
                 
-                const reviewElement = document.createElement("div");
-                reviewElement.classList.add("review-item");
-                reviewElement.innerHTML = `
-                    <div class="review-user-info">
-                        <div class="review-user-img">
-                            <a href="${userProfileUrl}">
-                                <img src="${userImage}" alt="리뷰어 프로필">
-                            </a>
-                        </div>
-                        <div class="review-user-meta">
-                             <a href="${userProfileUrl}" class="review-user-name">${userName}</a>
-                            <div class="review-score">
-                                ${'⭐️'.repeat(starCount)} (${score}점)
-                            </div>
-                        </div>
-                    </div>
-                    <div class="review-content">${review.content || '리뷰 내용 없음'}</div>
-                `;
-                reviewsContainer.appendChild(reviewElement);
+				const reviewElement = document.createElement("div");
+				                reviewElement.classList.add("review-item");
+				                reviewElement.innerHTML = `
+				                    <div class="review-user-info">
+				                        <div class="review-user-img">
+				                            <a href="${userProfileUrl}">
+				                                ${avatarContent} </a>
+				                        </div>
+				                        <div class="review-user-meta">
+				                             <a href="${userProfileUrl}" class="review-user-name">${userName}</a>
+				                            <div class="review-score">
+				                                ${'⭐️'.repeat(starCount)} (${score}점)
+				                            </div>
+				                        </div>
+				                    </div>
+				                    <div class="review-content">${review.content || '리뷰 내용 없음'}</div>
+				                `;
+				                reviewsContainer.appendChild(reviewElement);
             });
         }
     }
