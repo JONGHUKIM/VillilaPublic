@@ -89,39 +89,66 @@ public class ReviewService {
         log.info("조회된 리뷰 개수: {}", reviews.size());
 
         return reviews.stream()
+<<<<<<< HEAD
             .map(review -> {
                 User writer = review.getWriter(); // 리뷰 작성자 User 엔티티
                 
                 // --- 리뷰 작성자의 아바타 URL (Pre-signed URL) 생성 및 설정 ---
                 String writerAvatarS3Key = writer.getAvatar(); // 작성자 User 엔티티에서 S3 Key 가져옴
                 String userImageUrl = null; // DTO에 설정할 최종 이미지 URL
+=======
+                .map(review -> {
+                    User writer = review.getWriter(); // 리뷰 작성자 User 엔티티
+>>>>>>> 07f3b7f (탈퇴회원_ 으로 시작하면 탈퇴회원으로만 보여지게끔 수정, 탈퇴회원은 기본 이모지로 변경)
 
-                if (StringUtils.hasText(writerAvatarS3Key)) { // S3 Key가 존재하면
-                    try {
-                        // S3 Pre-signed URL 생성 (5분 유효)
-                        userImageUrl = s3FileStorageService.generateDownloadPresignedUrl(writerAvatarS3Key, Duration.ofMinutes(5));
-                    } catch (FileStorageException e) {
-                        log.error("Failed to generate presigned URL for review writer avatar {}: {}", writerAvatarS3Key, e.getMessage());
-                        userImageUrl = "/images/default-avatar.png"; // 오류 시 기본 이미지 URL (클라이언트에서 처리할 경로)
+                    String userNameForDisplay;
+                    String userImageUrlForDisplay;
+                    
+                    // 사용자가 탈퇴한 회원인지 확인 (username이 탈퇴회원_으로 시작하는지)
+                    if (writer.getUsername() != null && writer.getUsername().startsWith("탈퇴회원_")) {
+                        userNameForDisplay = "탈퇴회원"; // 이름은 "탈퇴회원"으로 고정
+                        userImageUrlForDisplay = "/images/default-avatar.png"; // 탈퇴회원은 기본 이모티콘/이미지
+                    } else {
+                        // 일반 회원인 경우 닉네임 또는 유저네임 사용
+                        userNameForDisplay = writer.getNickname() != null && !writer.getNickname().trim().isEmpty() ? writer.getNickname() : writer.getUsername();
+                        if (userNameForDisplay == null || userNameForDisplay.trim().isEmpty()) {
+                            userNameForDisplay = "사용자_" + writer.getId(); // 비어있으면 ID로 대체
+                        }
+
+                        // 아바타 S3 Key를 Pre-signed URL로 변환
+                        String writerAvatarS3Key = writer.getAvatar();
+                        if (StringUtils.hasText(writerAvatarS3Key)) {
+                            try {
+                                userImageUrlForDisplay = s3FileStorageService.generateDownloadPresignedUrl(writerAvatarS3Key, Duration.ofMinutes(5));
+                            } catch (FileStorageException e) {
+                            	log.error("리뷰 작성자 아바타 Pre-signed URL 생성 실패 (S3 Key: {}): {}", writerAvatarS3Key, e.getMessage(), e);
+                                userImageUrlForDisplay = "/images/default-avatar.png"; // 오류 시 기본 이미지
+                            }
+                        } else {
+                            userImageUrlForDisplay = "/images/default-avatar.png"; // 아바타 없는 경우 기본 이미지
+                        }
                     }
+<<<<<<< HEAD
                 } else {
                     // 아바타 S3 Key가 없는 경우 (아바타 미설정)
                     userImageUrl = "/images/default-avatar.png"; // 기본 이미지 URL 설정 (클라이언트에서 처리할 경로)
                 }
                 // --- 아바타 URL 설정 끝 ---
+=======
+>>>>>>> 07f3b7f (탈퇴회원_ 으로 시작하면 탈퇴회원으로만 보여지게끔 수정, 탈퇴회원은 기본 이모지로 변경)
 
-                return ReviewDto.builder()
-                    .userId(writer.getId()) // 리뷰 작성자 ID
-                    .userName(writer.getNickname() != null ? writer.getNickname() : writer.getUsername()) // 리뷰 작성자 닉네임 또는 유저네임
-                    .userImage(writerAvatarS3Key) // 기존 userImage 필드에 S3 Key 저장 (선택 사항, 필요 없다면 DTO에서 제거)
-                    .userImageUrl(userImageUrl) // <--- **이곳에 Pre-signed URL 설정!**
-                    .score(review.getKeyword().getScore())
-                    .content(review.getContent())
-                    .keywordId(review.getKeyword().getId())
-                    .targetId(review.getTarget().getId())
-                    .reservationId(review.getReservation().getId())
-                    .build();
-            })
-            .toList();
-    }
+                    return ReviewDto.builder()
+                        .userId(writer.getId())
+                        .userName(userNameForDisplay) // 수정된 이름 사용
+                        .userImage(writer.getAvatar()) // S3 Key 
+                        .userImageUrl(userImageUrlForDisplay) // 수정된 이미지 URL 사용
+                        .score(review.getKeyword().getScore())
+                        .content(review.getContent())
+                        .keywordId(review.getKeyword().getId())
+                        .targetId(review.getTarget().getId())
+                        .reservationId(review.getReservation().getId())
+                        .build();
+                })
+                .toList();
+        }
 } 
