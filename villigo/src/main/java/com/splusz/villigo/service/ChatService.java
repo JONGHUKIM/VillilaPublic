@@ -235,6 +235,17 @@ public class ChatService {
 
         User sender = userRepo.findById(messageDto.getSenderId())
             .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다: " + messageDto.getSenderId()));
+        
+        List<User> participants = chatRoom.getParticipantsAsUsers();
+        User receiverUser = participants.stream()
+            .filter(u -> !u.getId().equals(sender.getId()))
+            .findFirst()
+            .orElseThrow(() -> new IllegalArgumentException("상대방을 찾을 수 없습니다."));
+
+        if (receiverUser.getNickname() != null && receiverUser.getNickname().startsWith("탈퇴회원_")) {
+            log.warn("탈퇴한 회원에게 메시지를 전송하려 했습니다: sender={}, receiver={}", sender.getId(), receiverUser.getId());
+            throw new IllegalStateException("탈퇴한 회원에게는 메시지를 보낼 수 없습니다.");
+        }
 
         ChatRoomParticipant senderParticipant = chatRoomParticipantRepo
             .findByRoomIdAndUserId(chatRoom.getId(), sender.getId())
@@ -616,26 +627,26 @@ public class ChatService {
             if (otherParticipant != null) {
                 User otherUser = otherParticipant.getUser();
                 dto.setOtherUserId(otherUser.getId());
-                dto.setOtherUserNickName(otherUser.getNickname() != null ? otherUser.getNickname() : otherUser.getUsername());
-                if (dto.getOtherUserNickName() == null || dto.getOtherUserNickName().trim().isEmpty()) {
+                String rawOtherUserNickname = otherUser.getNickname();
+                if (rawOtherUserNickname != null && !rawOtherUserNickname.trim().isEmpty()) {
+                    dto.setOtherUserNickName(rawOtherUserNickname);
+                } else if (otherUser.getUsername() != null && !otherUser.getUsername().trim().isEmpty()) {
+                    dto.setOtherUserNickName(otherUser.getUsername());
+                } else {
                     dto.setOtherUserNickName("사용자_" + otherUser.getId());
-                } else if (dto.getOtherUserNickName().startsWith("탈퇴회원_")) {
-                    dto.setOtherUserNickName("탈퇴회원");
                 }
 
-                String otherUserAvatarS3Key = otherUser.getAvatar(); // User 엔티티에서 S3 Key 가져옴
-                if (StringUtils.hasText(otherUserAvatarS3Key)) { // S3 Key가 존재하면
+                String otherUserAvatarS3Key = otherUser.getAvatar();
+                if (StringUtils.hasText(otherUserAvatarS3Key)) {
                     try {
-                        // S3 Pre-signed URL 생성 (5분 유효)
                         String presignedUrl = s3FileStorageService.generateDownloadPresignedUrl(otherUserAvatarS3Key, Duration.ofMinutes(5));
-                        dto.setOtherUserAvatarImageUrl(presignedUrl); // <--- 이 부분에 Pre-signed URL 설정
+                        dto.setOtherUserAvatarImageUrl(presignedUrl);
                     } catch (FileStorageException e) {
                         log.error("Failed to generate presigned URL for other user avatar {}: {}", otherUserAvatarS3Key, e.getMessage());
-                        dto.setOtherUserAvatarImageUrl("/images/default-avatar.png"); // 오류 시 기본 이미지 URL (클라이언트에서 처리할 경로)
+                        dto.setOtherUserAvatarImageUrl(null);
                     }
                 } else {
-                    // 아바타 S3 Key가 없는 경우 (아바타 미설정)
-                    dto.setOtherUserAvatarImageUrl("/images/default-avatar.png"); // 기본 이미지 URL 설정 (클라이언트에서 처리할 경로)
+                    dto.setOtherUserAvatarImageUrl(null);
                 }
 
                 dto.setOtherUserIsOnline(WebSocketEventListener.isUserOnline(otherUser.getId()));
