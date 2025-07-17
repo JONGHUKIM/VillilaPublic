@@ -41,6 +41,7 @@ document.addEventListener("DOMContentLoaded", () => {
             document.getElementById('jjamPoints').textContent = data.jjamPoints || 0;
             document.getElementById('region').textContent = data.region || '지역 없음';
             document.getElementById('theme').textContent = '관심 상품: ' + (data.theme || '없음');
+<<<<<<< HEAD
             
 
             const profileImage = document.getElementById('profileImage');
@@ -63,6 +64,43 @@ document.addEventListener("DOMContentLoaded", () => {
 			        newSpanElement.className = 'emoji-frog';
 			        newSpanElement.textContent = '🐸';
 			        profileImageElement.parentNode.replaceChild(newSpanElement, profileImageElement);
+=======
+			
+			let currentProfileImageElement = document.getElementById('profileImage'); // 현재 DOM에 있는 엘리먼트를 가져옴
+
+			if (data.avatarImageUrl) { // avatarImageUrl이 유효하면 이미지 표시
+			    if (currentProfileImageElement && currentProfileImageElement.tagName === 'IMG') {
+			        // 이미 <img> 태그라면 src만 변경
+			        currentProfileImageElement.src = data.avatarImageUrl;
+			    } else {
+			        // <span> 이라면 <img> 태그로 교체
+			        const newImgElement = document.createElement('img');
+			        newImgElement.id = 'profileImage'; // ID 유지
+			        newImgElement.src = data.avatarImageUrl;
+			        newImgElement.alt = "프로필 사진";
+			        if (currentProfileImageElement) {
+			            currentProfileImageElement.parentNode.replaceChild(newImgElement, currentProfileImageElement);
+			        } else {
+			            // 만약 profileImageElement가 처음부터 없었다면 (예외적인 경우)
+			            document.querySelector('.profile-img').appendChild(newImgElement);
+			        }
+			    }
+			} else { // avatarImageUrl이 없으면 개구리 이모티콘 표시
+			    if (currentProfileImageElement && (currentProfileImageElement.tagName === 'SPAN' && currentProfileImageElement.classList.contains('emoji-frog'))) {
+			        // 이미 <span> 이모티콘이면 그대로 유지
+			    } else {
+			        // <img> 태그이거나 다른 태그라면 <span> (개구리 이모티콘)으로 교체
+			        const newSpanElement = document.createElement('span');
+			        newSpanElement.id = 'profileImage'; // ID 유지
+			        newSpanElement.className = 'emoji-frog';
+			        newSpanElement.textContent = '🐸';
+			        if (currentProfileImageElement) {
+			            currentProfileImageElement.parentNode.replaceChild(newSpanElement, currentProfileImageElement);
+			        } else {
+			            // 만약 profileImageElement가 처음부터 없었다면
+			            document.querySelector('.profile-img').appendChild(newSpanElement);
+			        }
+>>>>>>> 3f04705 (엘리먼트를 정확히 참조하기 위해 let currentProfileImageElement =)
 			    }
 			}
 
@@ -72,10 +110,30 @@ document.addEventListener("DOMContentLoaded", () => {
 		    console.error('Error fetching user profile:', error);
 		    // 에러 발생 시에도 리뷰 로드 및 기본 UI 표시
 		    loadReviews();
+<<<<<<< HEAD
 		    // 프로필 정보 로드 실패 시에도 아바타 기본값으로 설정
 		    const profileImageElement = document.getElementById('profileImage');
 		    if (profileImageElement) {
 		        profileImageElement.outerHTML = `<span id="profileImage" class="emoji-frog">🐸</span>`;
+=======
+		    // 에러 발생 시에도 아바타 기본값으로 설정
+		    let currentProfileImageElement = document.getElementById('profileImage'); // 여기서도 현재 엘리먼트 다시 가져오기
+		    if (currentProfileImageElement) {
+		        // 에러 시 무조건 개구리 이모티콘으로 표시
+		        if (currentProfileImageElement.tagName === 'IMG') {
+		            const newSpanElement = document.createElement('span');
+		            newSpanElement.id = 'profileImage';
+		            newSpanElement.className = 'emoji-frog';
+		            newSpanElement.textContent = '🐸';
+		            currentProfileImageElement.parentNode.replaceChild(newSpanElement, currentProfileImageElement);
+		        } else if (currentProfileImageElement.tagName !== 'SPAN' || !currentProfileImageElement.classList.contains('emoji-frog')) {
+		            const newSpanElement = document.createElement('span');
+		            newSpanElement.id = 'profileImage';
+		            newSpanElement.className = 'emoji-frog';
+		            newSpanElement.textContent = '🐸';
+		            currentProfileImageElement.parentNode.replaceChild(newSpanElement, currentProfileImageElement);
+		        }
+>>>>>>> 3f04705 (엘리먼트를 정확히 참조하기 위해 let currentProfileImageElement =)
 		    }
 		});
 
