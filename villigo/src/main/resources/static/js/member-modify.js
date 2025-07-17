@@ -75,6 +75,106 @@ document.addEventListener("DOMContentLoaded", function () {
   const nicknameInput = document.getElementById("nickname");
   const nicknameLabel = nicknameInput ? nicknameInput.parentElement : null;
   const form = document.querySelector("form");
+  
+  axios.get('/api/user/profile', { withCredentials: true })
+    .then(response => {
+        const data = response.data; // UserProfileDto
+        
+        // 폼 필드 채우기 (이미 HTML에 th:value로 설정되어 있지만, JS로도 업데이트할 수 있음)
+        document.getElementById('username').value = data.username || ''; // readonly 필드이므로, 초기값 설정
+        document.getElementById('nickname').value = data.nickname || '';
+        document.getElementById('phone').value = data.phone || '';
+        document.getElementById('region-text').textContent = data.region || '선택하세요';
+        document.getElementById('region-hidden').value = data.region || '';
+        document.getElementById('interest-text').textContent = data.theme || '선택하세요'; // Theme 이름
+        document.getElementById('theme-id-hidden').value = data.themeId || '';
+        
+        // --- 프로필 이미지 표시 로직 추가 (mypage.js와 동일) ---
+        let avatarPreviewElement = document.getElementById('avatarPreview'); // HTML에 id="avatarPreview"를 가진 엘리먼트 (img 또는 span)
+
+        // avatarPreviewElement가 없으면, HTML 초기 렌더링 시 아바타가 없어서 생성되지 않았을 수 있음
+        // 이 경우 .profile-image-wrapper 내부에 기본 span을 생성하여 참조를 만듭니다.
+        const profileImageWrapper = document.querySelector('.profile-image-wrapper');
+        if (!avatarPreviewElement && profileImageWrapper) {
+            const newSpan = document.createElement('span');
+            newSpan.id = 'avatarPreview';
+            newSpan.className = 'emoji-frog';
+            newSpan.textContent = '🐸';
+            profileImageWrapper.appendChild(newSpan);
+            avatarPreviewElement = newSpan; // 새로 생성된 span을 참조하도록 업데이트
+        }
+
+        if (data.avatarImageUrl) { // avatarImageUrl이 유효하면 이미지 표시
+            if (avatarPreviewElement && avatarPreviewElement.tagName === 'IMG') {
+                avatarPreviewElement.src = data.avatarImageUrl; // src만 변경
+            } else { // 현재 엘리먼트가 <span> 이라면 <img> 태그로 교체
+                const newImgElement = document.createElement('img');
+                newImgElement.id = 'avatarPreview';
+                newImgElement.src = data.avatarImageUrl;
+                newImgElement.alt = "프로필 사진";
+                if (avatarPreviewElement) {
+                    avatarPreviewElement.parentNode.replaceChild(newImgElement, avatarPreviewElement);
+                    avatarPreviewElement = newImgElement; // 교체 후 변수 참조 업데이트
+                } else {
+                    profileImageWrapper.appendChild(newImgElement);
+                    avatarPreviewElement = newImgElement;
+                }
+            }
+        } else { // avatarImageUrl이 없으면 개구리 이모티콘 표시
+            if (avatarPreviewElement && (avatarPreviewElement.tagName === 'SPAN' && avatarPreviewElement.classList.contains('emoji-frog'))) {
+                // 이미 <span> 이모티콘이면 그대로 유지
+            } else {
+                const newSpanElement = document.createElement('span');
+                newSpanElement.id = 'avatarPreview';
+                newSpanElement.className = 'emoji-frog';
+                newSpanElement.textContent = '🐸';
+                if (avatarPreviewElement) {
+                    avatarPreviewElement.parentNode.replaceChild(newSpanElement, avatarPreviewElement);
+                    avatarPreviewElement = newSpanElement;
+                } else {
+                    profileImageWrapper.appendChild(newSpanElement);
+                    avatarPreviewElement = newSpanElement;
+                }
+            }
+        }
+        // --- 프로필 이미지 표시 로직 추가 끝 ---
+
+        // 이 부분은 기존에 loadReviews()를 호출하던 곳이 아니므로, 필요한 경우 추가
+
+    })
+    .catch(error => {
+        console.error('사용자 프로필 정보 가져오기 실패:', error);
+        // 에러 발생 시에도 아바타 기본값으로 설정
+        let avatarPreviewElement = document.getElementById('avatarPreview'); // 여기서도 현재 엘리먼트 다시 가져오기
+        const profileImageWrapper = document.querySelector('.profile-image-wrapper');
+        if (!avatarPreviewElement && profileImageWrapper) { // 엘리먼트가 아예 없었다면 새로 생성
+            const newSpan = document.createElement('span');
+            newSpan.id = 'avatarPreview';
+            newSpan.className = 'emoji-frog';
+            newSpan.textContent = '🐸';
+            profileImageWrapper.appendChild(newSpan);
+            avatarPreviewElement = newSpan;
+        }
+
+        if (avatarPreviewElement) {
+            // 에러 시 무조건 개구리 이모티콘으로 표시
+            if (avatarPreviewElement.tagName === 'IMG') {
+                const newSpanElement = document.createElement('span');
+                newSpanElement.id = 'avatarPreview';
+                newSpanElement.className = 'emoji-frog';
+                newSpanElement.textContent = '🐸';
+                avatarPreviewElement.parentNode.replaceChild(newSpanElement, avatarPreviewElement);
+                // avatarPreviewElement = newSpanElement; // 교체 후 변수 참조 업데이트 필요 (이후 다른 로직에서 해당 변수를 사용한다면)
+            } else if (avatarPreviewElement.tagName !== 'SPAN' || !avatarPreviewElement.classList.contains('emoji-frog')) {
+                const newSpanElement = document.createElement('span');
+                newSpanElement.id = 'avatarPreview';
+                newSpanElement.className = 'emoji-frog';
+                newSpanElement.textContent = '🐸';
+                avatarPreviewElement.parentNode.replaceChild(newSpanElement, avatarPreviewElement);
+                // avatarPreviewElement = newSpanElement;
+            }
+        }
+    });
 
   // 지역 데이터
   const regions = [

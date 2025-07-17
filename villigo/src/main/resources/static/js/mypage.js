@@ -66,7 +66,18 @@ document.addEventListener("DOMContentLoaded", () => {
 			        profileImageElement.parentNode.replaceChild(newSpanElement, profileImageElement);
 =======
 			
-			let currentProfileImageElement = document.getElementById('profileImage'); // 현재 DOM에 있는 엘리먼트를 가져옴
+			let currentProfileImageElement = document.getElementById('profileImage');
+			const profileImgContainer = document.querySelector('.profile-img');
+
+			if (!currentProfileImageElement && profileImgContainer) {
+			    // 처음부터 profileImage 엘리먼트가 없다면 기본 span 삽입
+			    const newSpan = document.createElement('span');
+			    newSpan.id = 'profileImage';
+			    newSpan.className = 'emoji-frog';
+			    newSpan.textContent = '🐸';
+			    profileImgContainer.appendChild(newSpan);
+			    currentProfileImageElement = newSpan; // 새로 생성된 span을 참조하도록 업데이트
+			}
 
 			if (data.avatarImageUrl) { // avatarImageUrl이 유효하면 이미지 표시
 			    if (currentProfileImageElement && currentProfileImageElement.tagName === 'IMG') {
