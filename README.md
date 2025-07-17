@@ -91,7 +91,7 @@ Villila는 고가의 명품, 슈퍼카를<br>
 
 &nbsp;
 
- ### 오류 상황: 호스트가 예약 알림 메시지 클릭 시 Bad Request(400)
+ ### 오류 상황 1: 호스트가 예약 알림 메시지 클릭 시 Bad Request(400)
  - **오류 원인**
    - 예약 알림 메시지 클릭 시, 클라이언트측에서 서버로 `alarmId`를 넘겨야 하는데 `undefined`가 전달되고 있음
 
@@ -121,7 +121,7 @@ Villila는 고가의 명품, 슈퍼카를<br>
 <br>
 <br>
 
- ### 오류 상황: 채팅리스트가 계속 늘어나고 채팅방에 입장불가(405 Method Not Allowed), 온라인/오프라인 기능이 안됨
+ ### 오류 상황 2: 채팅리스트가 계속 늘어나고 채팅방에 입장불가(405 Method Not Allowed), 온라인/오프라인 기능이 안됨
 <br>
    
 <p>
@@ -179,7 +179,7 @@ Villila는 고가의 명품, 슈퍼카를<br>
    <br>
    <br>
 
-### 오류 상황: Google OAuth2 배포 환경(EC2 + Nginx)에 400 redirect_uri_mismatch 오류 발생 
+### 오류 상황 3: Google OAuth2 배포 환경(EC2 + Nginx)에 400 redirect_uri_mismatch 오류 발생 
 <br>
 
 <p>
@@ -247,8 +247,9 @@ server {
    배포 환경에서는 프록시 설정 실수 하나로 인증 실패가 발생할 수 있음을 명확히 체감 <br>
 
 <br>
+<br>
 
- ### 오류 상황: 배포 자동화 중 bind: address already in use 오류 발생
+ ### 오류 상황 4: 배포 자동화 중 bind: address already in use 오류 발생
 
 - **오류 원인**  
   - Docker 컨테이너가 80 포트를 사용하려 했으나, EC2 인스턴스에서 Nginx가 해당 포트를 이미 사용 중이어서 충돌 발생
@@ -260,6 +261,59 @@ server {
 - **느낀점** <br>
   인프라 레벨에서의 포트 충돌 이슈를 경험하며 배포 환경 전반의 자원 사용 현황을 고려한 설계의 중요성을 체감함 <br>
   특히 EC2에서의 Nginx 리버스 프록시 구성과 컨테이너 포트 매핑에 대한 이해가 깊어짐 <br>
+
+<br>
+<br>
+
+ ### 오류 상황 5: 채팅 이미지 전송 시 S3에 저장은 되었지만, 잘못된 경로로 저장되어 클라이언트에서 net::ERR_BLOCKED_BY_ORB 오류와 함께 이미지가 표시되지 않는 문제 발생
+<br>
+   
+<p>
+  <img src="error/트러블슈팅 이미지 4.png" width="350" alt="트러블슈팅 이미지 4"/>
+</p>
+
+<br>
+
+ - **오류 원인**
+   - S3 저장 경로 불일치로 인해 <img>가 존재하지 않는 chat_images/... 경로의 이미지를 요청하면서, S3가 HTML 오류 페이지(404/403)를 반환
+   - 브라우저가 예상한 이미지가 아닌 잘못된 Content-Type을 받아 net::ERR_BLOCKED_BY_ORB 오류 발생.
+
+ - **해결 방안**
+   - `FileController.java`의 `getUploadUrl` 메서드를 수정하여 <br>
+     프론트엔드가 전달한 `filename` 파라미터를 그대로 사용해 S3 객체 경로와 업로드 URL이 일치하도록 개선.
+
+     <br>
+     
+	```java
+    @PostMapping("/upload-url")
+    public ResponseEntity<Map<String, String>> getUploadUrl(
+        // @RequestParam("filename") 으로 받은 값을 그대로 S3 키로 사용
+        @RequestParam("filename") String targetS3Key, // 프론트엔드에서 보낸 경로 (예: "chat_images/123/UUID.png")
+        @RequestParam("contentType") String contentType) {
+
+        if (targetS3Key == null || targetS3Key.trim().isEmpty() || contentType == null || contentType.trim().isEmpty()) {
+            return ResponseEntity.badRequest().body(Map.of("message", "파일 이름(경로 포함)과 Content-Type은 필수입니다."));
+        }
+        try {
+            // 기존: String targetS3Key = "temp_uploads/" + S3FileStorageService.createUniqueFileName(originalFileName);
+            // 변경: 프론트엔드에서 보낸 'filename' 파라미터(targetS3Key)를 그대로 사용
+            
+            Map<String, String> presignedUrlData = s3FileStorageService.generateUploadPresignedUrl(targetS3Key, contentType, Duration.ofMinutes(5));
+            return ResponseEntity.ok(presignedUrlData);
+        } catch (FileStorageException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                                 .body(Map.of("message", "Pre-signed 업로드 URL 생성 실패: " + e.getMessage()));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                                 .body(Map.of("message", "업로드 URL 생성 중 알 수 없는 오류 발생: " + e.getMessage()));
+        }
+    }
+	```
+     <br>
+
+- **느낀점** <br>
+   프론트와 백엔드의 S3 경로 불일치로 이미지 로딩 실패, ORB 오류 발생함 <br>
+   브라우저 보안 특성과 Pre-signed URL 사용 시 경로 일관성 유지의 중요성 다시금 깨달음.
 
 
 &nbsp;
