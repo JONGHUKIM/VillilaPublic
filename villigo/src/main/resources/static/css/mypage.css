@@ -644,3 +644,16 @@ a > button.btn-chat:hover {
     border-radius: 6px;
     cursor: pointer;
 }
+
+.review-item .review-user-img span.emoji-frog { /* <--- 이 셀렉터를 사용하여 정확히 지정 */
+  width: 100%;   /* 부모(.review-user-img) 크기에 맞춰 100% */
+  height: 100%;  /* 부모(.review-user-img) 크기에 맞춰 100% */
+  display: flex; /* 이모지 중앙 정렬을 위해 */
+  justify-content: center; /* 이모지 수평 중앙 정렬 */
+  align-items: center;   /* 이모지 수직 중앙 정렬 */
+  font-size: 28px; /* 50px 이미지 안에 적절하게 들어갈 이모지 크기 (조정 가능) */
+  line-height: 1; /* 폰트의 기본 라인 하이트로 인한 간격 문제 방지 */
+  text-align: center; /* 텍스트 정렬 (flex와 함께 사용해도 됨) */
+  background-color: transparent; /* 배경색이 흰색이면 흰색 개구리 이모지가 보이지 않을 수 있으므로 투명 */
+}
+
