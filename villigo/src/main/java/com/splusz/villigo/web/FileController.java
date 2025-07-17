@@ -73,16 +73,15 @@ public class FileController {
     // 업로드 Pre-signed URL 발급 API
     @PostMapping("/upload-url")
     public ResponseEntity<Map<String, String>> getUploadUrl(
-        @RequestParam("filename") String originalFileName,
+        @RequestParam("filename") String targetS3Key,
         @RequestParam("contentType") String contentType) {
 
-        if (originalFileName == null || originalFileName.trim().isEmpty() || contentType == null || contentType.trim().isEmpty()) {
-            return ResponseEntity.badRequest().body(Map.of("message", "파일 이름과 Content-Type은 필수입니다."));
+        if (targetS3Key == null || targetS3Key.trim().isEmpty() || contentType == null || contentType.trim().isEmpty()) {
+            return ResponseEntity.badRequest().body(Map.of("message", "파일 이름(경로 포함)과 Content-Type은 필수입니다."));
         }
         try {
-            // S3에 저장될 최종 키(경로 포함)를 여기서 만듭니다. 예: temp_uploads/UUID.확장자
-            String targetS3Key = "temp_uploads/" + S3FileStorageService.createUniqueFileName(originalFileName); // <--- 이 부분 수정
-
+            // 프론트엔드에서 보낸 filename (이미 chat_images/채팅방ID/UUID.확장자 형태임)을 그대로 S3 키로 사용
+            // 여기서 다시 고유 파일명을 만들거나 temp_uploads/ 를 붙일 필요 없음
             Map<String, String> presignedUrlData = s3FileStorageService.generateUploadPresignedUrl(targetS3Key, contentType, Duration.ofMinutes(5));
             return ResponseEntity.ok(presignedUrlData);
         } catch (FileStorageException e) {
