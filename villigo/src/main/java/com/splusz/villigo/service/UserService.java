@@ -292,11 +292,11 @@ public class UserService implements UserDetailsService {
             } catch (FileStorageException e) {
                 log.error("Error generating presigned URL for avatar {}: {}", managedUser.getAvatar(), e.getMessage());
                 // 오류 발생 시 기본 이미지 URL 또는 null로 설정
-                dto.setAvatarImageUrl("/images/default-avatar.png"); // TODO: 실제 기본 이미지 URL로 변경
+                dto.setAvatarImageUrl(null);
             }
         } else {
             // 아바타 S3 Key가 없는 경우 (아바타 미설정)
-            dto.setAvatarImageUrl("/images/default-avatar.png"); // TODO: 실제 기본 이미지 URL로 변경
+            dto.setAvatarImageUrl(null);
         }
 
         // Theme 정보에 안전하게 접근 (이제 트랜잭션 내에서 초기화됨)
