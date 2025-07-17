@@ -521,6 +521,7 @@ public class UserService implements UserDetailsService {
 }
 >>>>>>> fb15446 (탈퇴회원은 ImageUrl null처리 탈퇴회원_UUID는 탈퇴회원으로 보이게 처리)
     
+<<<<<<< HEAD
     // --- 임시: 특정 사용자에게 ADMIN 역할 부여 메서드 ---
     @Transactional
     public void addAdminRoleToUser(Long userId) {
@@ -554,3 +555,37 @@ public class UserService implements UserDetailsService {
     }
 >>>>>>> 30a18af (데이터 레벨을 위한 마이그레이션 (UserService, Controller에 있는 임시 코드는 삭제예정))
 }
+=======
+//    // --- 임시: 특정 사용자에게 ADMIN 역할 부여 메서드 --- 추후 다시 사용예정
+//    @Transactional
+//    public void addAdminRoleToUser(Long userId) {
+//        // User user = SecurityUserUtil.getCurrentLoggedInUser(); // <--- 이 줄을 제거
+//        User user = userRepo.findById(userId) // <--- userId로 직접 사용자 조회
+//            .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다: " + userId));
+//        
+//        if (!user.getRoles().contains(UserRole.ADMIN)) {
+//            user.addRole(UserRole.ADMIN);
+//            userRepo.save(user);
+//            log.warn("🚨 사용자 {} (ID: {})에게 ADMIN 역할이 임시로 부여되었습니다. 마이그레이션 후 원래대로 되돌려주세요!", user.getUsername(), user.getId());
+//        } else {
+//            log.info("사용자 {} (ID: {})는 이미 ADMIN 역할을 가지고 있습니다.", user.getUsername(), user.getId());
+//        }
+//    }
+//
+//    // --- 임시: 특정 사용자에서 ADMIN 역할 제거 메서드 ---
+//    @Transactional
+//    public void removeAdminRoleFromUser(Long userId) {
+//        // User user = SecurityUserUtil.getCurrentLoggedInUser(); // <--- 이 줄을 제거
+//        User user = userRepo.findById(userId) // <--- userId로 직접 사용자 조회
+//            .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다: " + userId));
+//        
+//        if (user.getRoles().contains(UserRole.ADMIN)) {
+//            user.removeRole(UserRole.ADMIN);
+//            userRepo.save(user);
+//            log.warn("✅ 사용자 {} (ID: {})에게서 ADMIN 역할이 제거되었습니다.", user.getUsername(), user.getId());
+//        } else {
+//            log.info("사용자 {} (ID: {})는 ADMIN 역할을 가지고 있지 않습니다.", user.getUsername(), user.getId());
+//        }
+//    }
+//}
+>>>>>>> cd0c0b5 ({ 괄호 수정)
