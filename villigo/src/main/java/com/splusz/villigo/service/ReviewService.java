@@ -107,7 +107,7 @@ public class ReviewService {
                     // 사용자가 탈퇴한 회원인지 확인 (username이 탈퇴회원_으로 시작하는지)
                     if (writer.getUsername() != null && writer.getUsername().startsWith("탈퇴회원_")) {
                         userNameForDisplay = "탈퇴회원"; // 이름은 "탈퇴회원"으로 고정
-                        userImageUrlForDisplay = "/images/default-avatar.png"; // 탈퇴회원은 기본 이모티콘/이미지
+                        userImageUrlForDisplay = null; // <--- 탈퇴회원은 null로 반환 (프론트엔드에서 🐸 처리)
                     } else {
                         // 일반 회원인 경우 닉네임 또는 유저네임 사용
                         userNameForDisplay = writer.getNickname() != null && !writer.getNickname().trim().isEmpty() ? writer.getNickname() : writer.getUsername();
@@ -122,10 +122,10 @@ public class ReviewService {
                                 userImageUrlForDisplay = s3FileStorageService.generateDownloadPresignedUrl(writerAvatarS3Key, Duration.ofMinutes(5));
                             } catch (FileStorageException e) {
                             	log.error("리뷰 작성자 아바타 Pre-signed URL 생성 실패 (S3 Key: {}): {}", writerAvatarS3Key, e.getMessage(), e);
-                                userImageUrlForDisplay = "/images/default-avatar.png"; // 오류 시 기본 이미지
+                            	userImageUrlForDisplay = null; // 오류 시에도 null로 반환
                             }
                         } else {
-                            userImageUrlForDisplay = "/images/default-avatar.png"; // 아바타 없는 경우 기본 이미지
+                        	userImageUrlForDisplay = null; // 아바타 없는 경우 null로 반환
                         }
                     }
 <<<<<<< HEAD
@@ -141,7 +141,7 @@ public class ReviewService {
                         .userId(writer.getId())
                         .userName(userNameForDisplay) // 수정된 이름 사용
                         .userImage(writer.getAvatar()) // S3 Key 
-                        .userImageUrl(userImageUrlForDisplay) // 수정된 이미지 URL 사용
+                        .userImageUrl(userImageUrlForDisplay) // null 또는 Pre-signed URL
                         .score(review.getKeyword().getScore())
                         .content(review.getContent())
                         .keywordId(review.getKeyword().getId())

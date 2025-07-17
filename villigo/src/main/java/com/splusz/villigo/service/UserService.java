@@ -460,60 +460,66 @@ public class UserService implements UserDetailsService {
 >>>>>>> a103d41 (구글 로그인 시 챗봇 사용불가 홈페이지 깨짐 현상 수정, 구글 로그인 시 홈제외 모든 페이지 깨짐 현상)
 =======
     
+    @Transactional(readOnly = true)
     public UserProfileDto getUserProfileDto(User user) throws FileStorageException {
         if (user == null) {
             return UserProfileDto.builder()
-                        .id(0L)
-                        .username("unknown")
-                        .nickname("알 수 없음")
-                        .avatarImageUrl("/images/default-avatar.png")
-                        .jjamPoints(0)
-                        .mannerScore(36)
-                        .build();
+                .id(0L)
+                .username("unknown")
+                .nickname("알 수 없음")
+                .avatarImageUrl(null) // 탈퇴회원/없는 유저의 경우 null로 반환하도록 변경
+                .jjamPoints(0)
+                .mannerScore(36)
+                .build();
         }
 
         String avatarImageUrl;
-        try {
-            if (StringUtils.hasText(user.getAvatar())) { // user.getAvatar()가 S3 키를 가지고 있다면
-                // FileStorageService를 통해 public URL 또는 presigned URL 생성
-                // 여기서는 download presigned URL을 사용하고, 유효 기간은 5분으로 설정합니다.
-                avatarImageUrl = fileStorageService.generateDownloadPresignedUrl(user.getAvatar(), Duration.ofMinutes(5));
-            } else {
-                avatarImageUrl = "/images/default-avatar.png"; // 아바타가 없으면 기본 이미지
+        String displayedNickname;
+        
+        if (user.getUsername() != null && user.getUsername().startsWith("탈퇴회원_")) {
+            displayedNickname = "탈퇴회원";
+            avatarImageUrl = null; // 탈퇴회원은 S3 URL이 아닌 null로 반환 (프론트엔드에서 🐸 처리)
+        } else {
+            displayedNickname = user.getNickname() != null && !user.getNickname().trim().isEmpty() ? user.getNickname() : user.getUsername();
+            if (displayedNickname == null || displayedNickname.trim().isEmpty()) {
+                displayedNickname = "사용자_" + user.getId();
             }
-        } catch (FileStorageException e) {
-            log.error("사용자 아바타 URL 생성 중 오류 발생 (User ID: {}): {}", user.getId(), e.getMessage());
-            avatarImageUrl = "/images/default-avatar.png";
-        }
 
-        // Theme 객체에서 getName() 대신 getTheme()을 호출합니다.
-        // UserProfileDto의 'theme' 필드는 테마 이름을 나타내는 String 타입이므로,
-        // Theme 엔티티의 'theme' 필드(아마도 String 타입)를 사용합니다.
-        String themeName = null;
-        if (user.getTheme() != null) {
-            // Theme 엔티티에 테마 이름을 저장하는 필드가 'theme'라고 가정
-            // 만약 'name'이나 'title'이라면 user.getTheme().getName() 또는 user.getTheme().getTitle() 사용
-            themeName = user.getTheme().getTheme(); // Theme 엔티티에 getName()이 없으므로 getTheme() 사용
+            String userAvatarS3Key = user.getAvatar();
+            if (StringUtils.hasText(userAvatarS3Key)) {
+                try {
+                    avatarImageUrl = s3FileStorageService.generateDownloadPresignedUrl(userAvatarS3Key, Duration.ofMinutes(5));
+                } catch (FileStorageException e) {
+                    log.error("사용자 아바타 Pre-signed URL 생성 중 오류 발생 (사용자 ID: {}, S3 Key: {}): {}", user.getId(), userAvatarS3Key, e.getMessage(), e);
+                    avatarImageUrl = null; // 오류 시에도 null로 반환
+                }
+            } else {
+                avatarImageUrl = null; // 아바타 S3 Key가 없으면 null로 반환
+            }
         }
 
         return UserProfileDto.builder()
-                .id(user.getId())
-                .username(user.getUsername())
-                .nickname(user.getNickname())
-                .phone(user.getPhone())
-                .region(user.getRegion())
-                .avatar(user.getAvatar())
-                .avatarImageUrl(avatarImageUrl)
-                .themeId(user.getTheme() != null ? user.getTheme().getId() : null)
-                .theme(themeName) // 수정된 themeName 변수 사용
-                .jjamPoints(calculateUserJjamPoints(user)) // score 대신 calculateUserJjamPoints() 호출
-                .mannerScore(user.getMannerScore())
-                .socialType(user.getSocialType() != null ? user.getSocialType().name() : null)
-                .build();
+            .id(user.getId())
+            .username(user.getUsername())
+            .nickname(displayedNickname) // 표시될 닉네임 사용
+            .phone(user.getPhone())
+            .region(user.getRegion())
+            .avatar(user.getAvatar())
+            .avatarImageUrl(avatarImageUrl) //  null 또는 Pre-signed URL
+            .themeId(user.getTheme() != null ? user.getTheme().getId() : null)
+            .theme(user.getTheme() != null ? user.getTheme().getTheme() : null)
+            .jjamPoints(calculateUserJjamPoints(user))
+            .mannerScore(user.getMannerScore())
+            .socialType(user.getSocialType() != null ? user.getSocialType().name() : null)
+            .build();
     }
+<<<<<<< HEAD
 <<<<<<< HEAD
 >>>>>>> 87dc779 (채팅 S3로 전환, 유저 상세보기 수정)
 =======
+=======
+}
+>>>>>>> fb15446 (탈퇴회원은 ImageUrl null처리 탈퇴회원_UUID는 탈퇴회원으로 보이게 처리)
     
     // --- 임시: 특정 사용자에게 ADMIN 역할 부여 메서드 ---
     @Transactional
