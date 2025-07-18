@@ -403,6 +403,7 @@ public class UserController {
     
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 >>>>>>> 49abed9 (서버에서 JSON응답처리, JS에서 리다이렉트 처리)
 =======
 =======
@@ -434,6 +435,35 @@ public class UserController {
         }
     }
 >>>>>>> ac89f08 (Home S3 이미지 불러오기)
+=======
+//    // --- 임시: 사용자에게 ADMIN 역할 부여 API --- 추후 다시 사용예정
+//    // 이 엔드포인트는 매우 조심해서 사용해야 합니다! 테스트 후 반드시 제거/주석 처리하세요.
+//    @GetMapping("/temp-add-admin-role/{userId}") // <--- 이 부분을 GET으로 변경!
+//    public ResponseEntity<String> tempAddAdminRole(@PathVariable Long userId) {
+//        log.warn("🚨 임시 ADMIN 역할 부여 API 호출됨: userId={}", userId);
+//        try {
+//            userService.addAdminRoleToUser(userId); // 이 메서드 내에서 SecurityUserUtil.getCurrentLoggedInUser()가 실패할 것임.
+//                                                   // 하지만 아래 2번 방법을 사용하면 이 API 호출 자체가 ADMIN 부여 역할을 하게 됨.
+//            return ResponseEntity.ok("사용자 " + userId + "에게 ADMIN 역할이 부여되었습니다.");
+//        } catch (Exception e) {
+//            log.error("ADMIN 역할 부여 실패: {}", e.getMessage(), e);
+//            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("ADMIN 역할 부여 실패: " + e.getMessage());
+//        }
+//    }
+
+//    // --- 임시: 사용자에게서 ADMIN 역할 제거 API ---
+//    @GetMapping("/temp-remove-admin-role/{userId}") // <--- 이 부분을 GET으로 변경!
+//    public ResponseEntity<String> tempRemoveAdminRole(@PathVariable Long userId) {
+//        log.warn("🚨 임시 ADMIN 역할 제거 API 호출됨: userId={}", userId);
+//        try {
+//            userService.removeAdminRoleFromUser(userId);
+//            return ResponseEntity.ok("사용자 " + userId + "에게서 ADMIN 역할이 제거되었습니다.");
+//        } catch (Exception e) {
+//            log.error("ADMIN 역할 제거 실패: {}", e.getMessage(), e);
+//            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("ADMIN 역할 제거 실패: " + e.getMessage());
+//        }
+//    }
+>>>>>>> de87a9c (임시 역할 메서드 주석 처리)
     
  // 회원 탈퇴 엔드포인트
     @PostMapping("/withdraw")
