@@ -9,24 +9,25 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.splusz.villigo.service.RentalImageService;
 import com.splusz.villigo.service.S3FileStorageService;
 import com.splusz.villigo.storage.FileStorageException;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @RestController
 @RequestMapping("/api/images")
+@RequiredArgsConstructor
 public class RentalImageController {
 
     private final S3FileStorageService s3FileStorageService;
 
     @Value("${aws.s3.bucket}")
     private String bucketName;
-
-    public RentalImageController(S3FileStorageService s3FileStorageService) {
-        this.s3FileStorageService = s3FileStorageService;
-    }
+    
+    private final RentalImageService rentalImageService; 
 
     @GetMapping("/{imageName:.+}")
     public ResponseEntity<String> getRentalImage(@PathVariable String imageName) {
@@ -41,4 +42,18 @@ public class RentalImageController {
             return ResponseEntity.badRequest().body("이미지 로드 실패: " + e.getMessage());
         }
     }
+    
+    @GetMapping("/migrate-to-s3") // 새로운 엔드포인트 경로
+    public ResponseEntity<String> migrateProductImagesToS3() {
+        log.warn("🚨 상품 이미지 S3 마이그레이션 API 호출됨!");
+        try {
+            int migratedCount = rentalImageService.migrateLocalImagesToS3(); // RentalImageService의 새 메서드 호출
+            return ResponseEntity.ok("상품 이미지 S3 마이그레이션 완료. " + migratedCount + "개 처리됨.");
+        } catch (Exception e) {
+            log.error("상품 이미지 S3 마이gration 실패: {}", e.getMessage(), e);
+            return ResponseEntity.internalServerError().body("상품 이미지 S3 마이그레이션 실패: " + e.getMessage());
+        }
+    }
+    
+    
 }
