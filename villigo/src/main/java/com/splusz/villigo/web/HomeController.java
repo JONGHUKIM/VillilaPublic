@@ -131,38 +131,6 @@ public class HomeController {
         // null 체크 및 빈 리스트로 초기화
         bagBrands = bagBrands != null ? bagBrands : Collections.emptyList();
         carBrands = carBrands != null ? carBrands : Collections.emptyList();
-        
-        // 브랜드 이미지에 S3 pre-signed 다운로드 URL 적용
-        bagBrands.forEach(brand -> {
-            if (brand.getImagePath() != null) {
-                try {
-                    String presignedUrl = s3FileStorageService.generateDownloadPresignedUrl(
-                        brand.getImagePath(), 
-                        Duration.ofHours(1)
-                    );
-                    brand.setImagePath(presignedUrl);
-                } catch (FileStorageException e) {
-                    log.error("브랜드 이미지 URL 생성 실패: imagePath={}, error={}", 
-                            brand.getImagePath(), e.getMessage(), e);
-                    brand.setImagePath("/images/placeholder.png");
-                }
-            }
-        });
-        carBrands.forEach(brand -> {
-            if (brand.getImagePath() != null) {
-                try {
-                    String presignedUrl = s3FileStorageService.generateDownloadPresignedUrl(
-                        brand.getImagePath(), 
-                        Duration.ofHours(1)
-                    );
-                    brand.setImagePath(presignedUrl);
-                } catch (FileStorageException e) {
-                    log.error("브랜드 이미지 URL 생성 실패: imagePath={}, error={}", 
-                            brand.getImagePath(), e.getMessage(), e);
-                    brand.setImagePath("/images/placeholder.png");
-                }
-            }
-        });
 
         // JSON 직렬화
         String bagBrandsJson = objectMapper.writeValueAsString(bagBrands);
