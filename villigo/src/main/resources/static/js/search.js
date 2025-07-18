@@ -99,78 +99,78 @@ document.addEventListener('DOMContentLoaded', () => {
         filterMap.size = [6]; // 한 페이지당 6개씩
         console.log("필터 맵:", filterMap);
 
-        axios.post('/api/search', filterMap)
-            .then((response) => {
-                console.log("✅ 응답:", response.data);
-                console.log("📦 content:", response.data.content);
-                let html = '';
-                if (response.data.totalElements === 0 && currentPage === 0) {
-                    html = '<span>검색된 결과가 없습니다!</span>';
-					if (mapButtonSection) {
-					    mapButtonSection.classList.add('hidden');
-					}
-                    hasMoreData = false;
-                } else {
-					if (mapButtonSection) {
-					    mapButtonSection.classList.remove('hidden');
-					}
-                    if (response.data.content.length === 0) {
-                        hasMoreData = false; // 더 이상 데이터가 없음
-                        return;
-                    }
-                    response.data.content.forEach(product => {
-                        const displayFee = Math.round(product.fee * 1.05); // 5% 수수료 추가
-                        html += `
-                            <div class="result-item">
-                        `;
-                        switch (product.rentalCategoryId) {
-                            case 1:
-                                html += `
-                                <a href="/post/details/bag?id=${product.id}">
-                                `;
-                                break;
-                            case 2:
-                                html += `
-                                <a href="/post/details/car?id=${product.id}">
-                                `;
-                                break;
-                        }
-                        html += `
-                                    <img src="/images/rentals/${product.filePath}" alt="상품 이미지">
-                                </a>
-                        `;
-                        switch (product.rentalCategoryId) {
-                            case 1:
-                                html += `
-                                <a class="product-content" href="/post/details/bag?id=${product.id}">
-                                `;
-                                break;
-                            case 2:
-                                html += `
-                                <a class="product-content" href="/post/details/car?id=${product.id}">
-                                `;
-                                break;
-                        }
-                        html += `
-                                    <p><strong>${product.postName}</strong></p>
-                                    <p><strong>${product.fee} 원</strong></p>
-                                </a>
-                            </div>
-                        `;
-                    });
-                    latestSearchResults = latestSearchResults.concat(response.data.content);
-                }
-                searchResultDiv.insertAdjacentHTML('beforeend', html); // 기존 결과에 추가
-                isLoading = false; // 로드 완료
-                currentPage++; // 다음 페이지로 이동
-            })
-            .catch((error) => {
-                console.error("요청 실패:", error);
-                if (error.response) {
-                    console.log("서버 응답:", error.response.data);
-                }
-                isLoading = false;
-            });
+		axios.post('/api/search', filterMap)
+		    .then((response) => {
+		        console.log("✅ 응답:", response.data);
+		        console.log("📦 content:", response.data.content);
+		        let html = '';
+		        if (response.data.totalElements === 0 && currentPage === 0) {
+		            html = '<span>검색된 결과가 없습니다!</span>';
+		            if (mapButtonSection) {
+		                mapButtonSection.classList.add('hidden');
+		            }
+		            hasMoreData = false;
+		        } else {
+		            if (mapButtonSection) {
+		                mapButtonSection.classList.remove('hidden');
+		            }
+		            if (response.data.content.length === 0) {
+		                hasMoreData = false;
+		                return;
+		            }
+		            response.data.content.forEach(product => {
+		                const displayFee = Math.round(product.fee * 1.05); // 5% 수수료 추가
+		                html += `
+		                    <div class="result-item">
+		                `;
+		                switch (product.rentalCategoryId) {
+		                    case 1:
+		                        html += `
+		                        <a href="/post/details/bag?id=${product.id}">
+		                        `;
+		                        break;
+		                    case 2:
+		                        html += `
+		                        <a href="/post/details/car?id=${product.id}">
+		                        `;
+		                        break;
+		                }
+		                html += `
+		                            <img src="${product.filePath}" alt="상품 이미지"> <!-- S3 URL 사용 -->
+		                        </a>
+		                `;
+		                switch (product.rentalCategoryId) {
+		                    case 1:
+		                        html += `
+		                        <a class="product-content" href="/post/details/bag?id=${product.id}">
+		                        `;
+		                        break;
+		                    case 2:
+		                        html += `
+		                        <a class="product-content" href="/post/details/car?id=${product.id}">
+		                        `;
+		                        break;
+		                }
+		                html += `
+		                            <p><strong>${product.postName}</strong></p>
+		                            <p><strong>${displayFee} 원</strong></p>
+		                        </a>
+		                    </div>
+		                `;
+		            });
+		            latestSearchResults = latestSearchResults.concat(response.data.content);
+		        }
+		        searchResultDiv.insertAdjacentHTML('beforeend', html);
+		        isLoading = false;
+		        currentPage++;
+		    })
+		    .catch((error) => {
+		        console.error("요청 실패:", error);
+		        if (error.response) {
+		            console.log("서버 응답:", error.response.data);
+		        }
+		        isLoading = false;
+		    });
     };
 
     // 검색 버튼 / 엔터 키 이벤트

@@ -1,24 +1,22 @@
 package com.splusz.villigo.web;
 
+import java.time.Duration;
 import java.util.List;
 import java.util.Map;
 
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
-import org.springframework.util.MultiValueMap;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.splusz.villigo.domain.Brand;
-import com.splusz.villigo.domain.RentalCategory;
 import com.splusz.villigo.dto.SearchedProductDto;
 import com.splusz.villigo.dto.SelectBrandsByCategoryDto;
 import com.splusz.villigo.service.ProductService;
 import com.splusz.villigo.service.SearchService;
+import com.splusz.villigo.storage.FileStorageException;
+import com.splusz.villigo.storage.FileStorageService;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -31,23 +29,38 @@ public class SearchRestController {
 
     private final SearchService searServ;
     private final ProductService prodServ;
+    private final FileStorageService fileStorageService; // S3 서비스 주입
 
     @PostMapping("/search")
-    public ResponseEntity<Page<SearchedProductDto>> searching (@RequestBody Map<String, List<String>> filters) {
-
+    public ResponseEntity<Page<SearchedProductDto>> searching(@RequestBody Map<String, List<String>> filters) {
         log.info("filters={}", filters);
         Page<SearchedProductDto> searchedProducts = searServ.searchProduct(filters);
 
+        // S3 pre-signed URL 생성
+        searchedProducts.getContent().forEach(product -> {
+            if (product.getFilePath() != null) {
+                try {
+                    String presignedUrl = fileStorageService.generateDownloadPresignedUrl(
+                        product.getFilePath(), Duration.ofHours(1));
+                    product.setFilePath(presignedUrl); // filePath를 pre-signed URL로 업데이트
+                } catch (FileStorageException e) {
+                    log.error("S3 pre-signed URL 생성 실패: filePath={}, error={}", 
+                        product.getFilePath(), e.getMessage());
+                    product.setFilePath("/images/placeholder.jpg"); // 실패 시 플레이스홀더
+                }
+            }
+        });
+
         return ResponseEntity.ok(searchedProducts);
-    };
+    }
     
     @PostMapping("/brand")
     public ResponseEntity<List<SelectBrandsByCategoryDto>> selectBrandsByCategory(@RequestBody Map<String, Long> body) {
-    	log.info("selectBrandsByCategory(body={})", body);
+        log.info("selectBrandsByCategory(body={})", body);
 
-    	List<SelectBrandsByCategoryDto> selectedBrands = prodServ.readSelectBrandsByCategory(body.get("rentalCategoryId").longValue());
-    	log.info("selectedBrands={}", selectedBrands);
-    	
-    	return ResponseEntity.ok(selectedBrands);
+        List<SelectBrandsByCategoryDto> selectedBrands = prodServ.readSelectBrandsByCategory(body.get("rentalCategoryId").longValue());
+        log.info("selectedBrands={}", selectedBrands);
+        
+        return ResponseEntity.ok(selectedBrands);
     }
 }

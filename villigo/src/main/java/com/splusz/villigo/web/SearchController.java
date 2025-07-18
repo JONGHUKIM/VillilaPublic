@@ -1,5 +1,6 @@
 package com.splusz.villigo.web;
 
+import java.time.Duration;
 import java.util.List;
 import java.util.Map;
 
@@ -16,6 +17,8 @@ import com.splusz.villigo.domain.Color;
 import com.splusz.villigo.domain.RentalCategory;
 import com.splusz.villigo.service.ProductService;
 import com.splusz.villigo.service.SearchService;
+import com.splusz.villigo.storage.FileStorageService;
+import com.splusz.villigo.storage.FileStorageException;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -28,6 +31,7 @@ public class SearchController {
 
     private final ProductService prodServ;
     private final SearchService searchServ;
+    private final FileStorageService fileStorageService; // S3 서비스 주입
 
     @GetMapping
     public String search(Model model) {
