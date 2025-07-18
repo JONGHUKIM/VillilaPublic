@@ -14,6 +14,11 @@
   margin-bottom: 50px;
 }
 
+.product-card a {
+  text-decoration: none; /* 밑줄 제거 */
+  color: inherit;         /* 부모의 색상 상속 */
+}
+
 .notice-badge {
   background-color: #e6007e;
   color: white;
