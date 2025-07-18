@@ -1,10 +1,12 @@
 package com.splusz.villigo.web;
 
+import java.time.Duration;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -21,7 +23,9 @@ import com.splusz.villigo.domain.User;
 import com.splusz.villigo.dto.BrandReadDto;
 import com.splusz.villigo.dto.ProductImageMergeDto;
 import com.splusz.villigo.service.ProductService;
+import com.splusz.villigo.service.S3FileStorageService;
 import com.splusz.villigo.service.UserService;
+import com.splusz.villigo.storage.FileStorageException;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -34,6 +38,10 @@ public class HomeController {
 	private final UserService userService;
 	private final ProductService prodService;
 	private final ObjectMapper objectMapper;
+	private final S3FileStorageService s3FileStorageService;
+	
+	@Value("${aws.s3.bucket}")
+    private String bucketName;
 	
     @GetMapping({"/", "/home"}) // 두 경로를 하나의 메서드로 매핑
     public String home(Model model) throws JsonProcessingException {
@@ -91,6 +99,26 @@ public class HomeController {
             log.info("비로그인 사용자입니다. 기본 홈 상품을 보여줍니다.");
         }
         
+        // S3 pre-signed URL 생성
+        homeProducts.forEach((key, products) -> {
+            products.forEach(product -> {
+                if (product.getFilePath() != null) {
+                    try {
+                        String presignedUrl = s3FileStorageService.generateUploadPresignedUrl(
+                            product.getFilePath(), 
+                            "image/jpeg", // contentType은 상품에 따라 동적 설정 필요
+                            Duration.ofHours(1)
+                        );
+                        product.setFilePath(presignedUrl); // filePath를 URL로 대체
+                    } catch (FileStorageException e) {
+                        log.error("S3 pre-signed URL 생성 실패: filePath={}, error={}", 
+                                product.getFilePath(), e.getMessage(), e);
+                        product.setFilePath("/images/placeholder.jpg"); // 실패 시 플레이스홀더 이미지
+                    }
+                }
+            });
+        });
+        
         // homeProducts Map에 모든 예상되는 키가 있는지 확인하고, 없으면 빈 리스트로 초기화 (JS 오류 방지)
         homeProducts.putIfAbsent("recent", Collections.emptyList());
         homeProducts.putIfAbsent("theme", Collections.emptyList());
@@ -104,6 +132,40 @@ public class HomeController {
         // null 체크 및 빈 리스트로 초기화
         bagBrands = bagBrands != null ? bagBrands : Collections.emptyList();
         carBrands = carBrands != null ? carBrands : Collections.emptyList();
+        
+     // 브랜드 이미지에도 S3 URL 적용
+        bagBrands.forEach(brand -> {
+            if (brand.getImagePath() != null) {
+                try {
+                    String presignedUrl = s3FileStorageService.generateUploadPresignedUrl(
+                        brand.getImagePath(), 
+                        "image/png", // contentType 조정 필요
+                        Duration.ofHours(1)
+                    );
+                    brand.setImagePath(presignedUrl);
+                } catch (FileStorageException e) {
+                    log.error("브랜드 이미지 URL 생성 실패: imagePath={}, error={}", 
+                            brand.getImagePath(), e.getMessage(), e);
+                    brand.setImagePath("/images/placeholder.png");
+                }
+            }
+        });
+        carBrands.forEach(brand -> {
+            if (brand.getImagePath() != null) {
+                try {
+                    String presignedUrl = s3FileStorageService.generateUploadPresignedUrl(
+                        brand.getImagePath(), 
+                        "image/png", 
+                        Duration.ofHours(1)
+                    );
+                    brand.setImagePath(presignedUrl);
+                } catch (FileStorageException e) {
+                    log.error("브랜드 이미지 URL 생성 실패: imagePath={}, error={}", 
+                            brand.getImagePath(), e.getMessage(), e);
+                    brand.setImagePath("/images/placeholder.png");
+                }
+            }
+        });
 
         // JSON 직렬화
         String bagBrandsJson = objectMapper.writeValueAsString(bagBrands);

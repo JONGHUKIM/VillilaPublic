@@ -515,6 +515,7 @@ public class UserService implements UserDetailsService {
     }
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 >>>>>>> 87dc779 (채팅 S3로 전환, 유저 상세보기 수정)
 =======
 =======
@@ -523,6 +524,10 @@ public class UserService implements UserDetailsService {
     
 <<<<<<< HEAD
     // --- 임시: 특정 사용자에게 ADMIN 역할 부여 메서드 ---
+=======
+    
+    // --- 임시: 특정 사용자에게 ADMIN 역할 부여 메서드 --- 추후 다시 사용예정
+>>>>>>> ac89f08 (Home S3 이미지 불러오기)
     @Transactional
     public void addAdminRoleToUser(Long userId) {
         // User user = SecurityUserUtil.getCurrentLoggedInUser(); // <--- 이 줄을 제거
@@ -553,6 +558,7 @@ public class UserService implements UserDetailsService {
             log.info("사용자 {} (ID: {})는 ADMIN 역할을 가지고 있지 않습니다.", user.getUsername(), user.getId());
         }
     }
+<<<<<<< HEAD
 >>>>>>> 30a18af (데이터 레벨을 위한 마이그레이션 (UserService, Controller에 있는 임시 코드는 삭제예정))
 }
 =======
@@ -589,3 +595,6 @@ public class UserService implements UserDetailsService {
 //    }
 //}
 >>>>>>> cd0c0b5 ({ 괄호 수정)
+=======
+}
+>>>>>>> ac89f08 (Home S3 이미지 불러오기)

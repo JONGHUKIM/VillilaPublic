@@ -1,11 +1,9 @@
 package com.splusz.villigo.web;
 
-import java.io.IOException;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -26,14 +24,12 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import com.splusz.villigo.domain.Address;
 import com.splusz.villigo.domain.Brand;
 import com.splusz.villigo.domain.Product;
-import com.splusz.villigo.domain.RentalImage;
 import com.splusz.villigo.domain.Reservation;
 import com.splusz.villigo.domain.User;
 import com.splusz.villigo.dto.AddressCreateDto;
 import com.splusz.villigo.dto.AddressUpdateDto;
 import com.splusz.villigo.dto.BagCreateDto;
 import com.splusz.villigo.dto.BagUpdateDto;
-import com.splusz.villigo.dto.RentalImageCreateDto;
 import com.splusz.villigo.dto.RentalImageDto;
 import com.splusz.villigo.dto.UserProfileDto;
 import com.splusz.villigo.service.AddressService;

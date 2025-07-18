@@ -17,15 +17,15 @@ const bData = document.getElementById("brandData");
 const bagbrand = JSON.parse(bData.dataset.bagbrands);
 const carbrand = JSON.parse(bData.dataset.carbrands);
 const brandData = {
-    bag : bagbrand.map(brand => ({
+    bag: bagbrand.map(brand => ({
         id: brand.id,
         name: brand.name,
-        img: `/images/test/` + brand.imagePath,
+        img: brand.imagePath, // S3 pre-signed URL 사용
     })),
-    car : carbrand.map(brand => ({
+    car: carbrand.map(brand => ({
         id: brand.id,
         name: brand.name,
-        img: `/images/test/` + brand.imagePath,
+        img: brand.imagePath, // S3 pre-signed URL 사용
     }))
 };
 
@@ -273,7 +273,7 @@ function loadProducts(sectionId, products) {
         products.forEach(p => {
             const card = document.createElement('div');
             card.className = 'product-card grid-card';
-            const displayFee = applyServiceFee(p.fee); // 5% 수수료 추가
+            const displayFee = applyServiceFee(p.fee);
             card.innerHTML = `
                 <img src="${p.img}" alt="${p.name}">
                 <div class="mt-1">
@@ -308,7 +308,7 @@ function loadProducts(sectionId, products) {
                         break;
                 }
                 html += `
-                    <img src="/images/rentals/${p.filePath}" alt="${p.postName}"></a>
+                    <img src="${p.filePath}" alt="${p.postName}"> <!-- S3 URL 사용 -->
                     <div class="mt-1">
                         <div class="product-name">${p.postName}</div>
                         <div class="product-price">${displayFee.toLocaleString()} 원</div>
