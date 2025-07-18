@@ -20,12 +20,12 @@ const brandData = {
     bag: bagbrand.map(brand => ({
         id: brand.id,
         name: brand.name,
-        img: brand.imagePath, // S3 pre-signed URL 사용
+        img: `/images/test/${brand.imagePath}`,
     })),
     car: carbrand.map(brand => ({
         id: brand.id,
         name: brand.name,
-        img: brand.imagePath, // S3 pre-signed URL 사용
+        img: `/images/test/${brand.imagePath}`,
     }))
 };
 
