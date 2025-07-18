@@ -23,17 +23,15 @@
                         <label for="uploadImage" class="image-box">
                             <span>이미지 수정</span>
                         </label>
-                        <input type="file" id="uploadImage" name="images" accept="image/*" multiple onchange="previewImages()">
+                        <input type="file" id="uploadImage" name="images" accept="image/*" multiple>
                     </div>
 
                     <!-- 기존 미리보기 이미지 영역 -->
                     <div class="preview-container" id="imagePreview">
-                        <!-- TODO: 백엔드 연동 시 기존 이미지 표시 -->
-                        <!-- <img th:each="image : ${car.images}" th:src="@{${image}}" class="preview-image" alt="기존 이미지"> -->
                         <th:block th:each="image : ${rentalImages}">
-                            <div class="position-relative d-inline-block me-2">
+                            <div class="position-relative d-inline-block me-2 mb-2 image-wrapper">
                                 <img th:src="@{'/images/rentals/' + ${image.filePath}}" class="preview-image" 
-                                style="width:120px; height:120px; object-fit:contain;" alt="기존 이미지" >
+                                style="width:120px; height:120px; object-fit:contain;" alt="기존 이미지">
                                 <span class="position-absolute translate-middle badge rounded-pill bg-danger delete-badge" >X</span>
                                 <input type="hidden" name="existingImageIds" th:value="${image.id}" />
                             </div>

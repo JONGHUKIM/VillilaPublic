@@ -20,7 +20,35 @@ document.addEventListener("DOMContentLoaded", function() {
 	kakao.maps.load(function() {
 	    initializeMap(); // 여기가 진짜 실행 시점
 	});
+	
+	// Pre-signed URL 갱신 (4분 50초 후)
+	setTimeout(refreshImageUrls, 4.8 * 60 * 1000);
 });
+
+// Pre-signed URL 갱신 함수
+function refreshImageUrls() {
+    const slides = document.querySelectorAll(".slide-image");
+    slides.forEach(slide => {
+        const filePath = slide.dataset.filePath;
+        if (filePath) {
+            fetch(`/api/files/download-url?fileKey=${encodeURIComponent(filePath)}`, {
+                headers: { 'Content-Type': 'application/json' }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.url) {
+                    slide.src = data.url;
+                } else {
+                    slide.src = '/images/default-image.png';
+                }
+            })
+            .catch(error => {
+                console.error('Pre-signed URL 갱신 실패:', error);
+                slide.src = '/images/default-image.png';
+            });
+        }
+    });
+}
 
 // 지도 초기화
 function initializeMap() {
@@ -110,7 +138,6 @@ function initializeModal() {
 
     let currentIndex = 0;
 
-    // 이미지 클릭 시 모달 열기
     slides.forEach((slide, index) => {
         slide.addEventListener("click", function() {
             currentIndex = index;
@@ -129,7 +156,9 @@ function initializeModal() {
 
     function updateModalImage() {
         if (modalImg && slides[currentIndex]) {
-            modalImg.src = slides[currentIndex].src;
+            modalImg.src = slides[currentIndex].src || '/images/default-image.png';
+        } else {
+            modalImg.src = '/images/default-image.png';
         }
     }
 

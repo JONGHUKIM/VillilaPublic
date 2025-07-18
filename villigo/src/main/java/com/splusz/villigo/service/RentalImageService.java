@@ -1,24 +1,20 @@
 package com.splusz.villigo.service;
 
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
+import java.time.Duration;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
+import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.multipart.MultipartFile;
 
 import com.splusz.villigo.domain.Product;
 import com.splusz.villigo.domain.RentalImage;
-import com.splusz.villigo.dto.RentalImageCreateDto;
+import com.splusz.villigo.dto.RentalImageDto;
 import com.splusz.villigo.repository.ProductRepository;
 import com.splusz.villigo.repository.RentalImageRepository;
+import com.splusz.villigo.storage.FileStorageException;
+import com.splusz.villigo.storage.FileStorageService;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -28,109 +24,100 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class RentalImageService {
 
-    private final RentalImageRepository rentalImgRepo;
-    private final ProductRepository prodRepo;
-    private final String rentalImagePath = "/home/ubuntu/images/rentals";
+	private final RentalImageRepository rentalImgRepo;
+	private final ProductRepository prodRepo;
+	private final FileStorageService fileStorageService; // S3FileStorageService 주입
 
-    public Integer create(Long productId, RentalImageCreateDto dto) throws IOException {
-        for(MultipartFile image : dto.getImages())
-            {
-                if (image.isEmpty()) {
-                    log.info("빈 파일 건너뜁니다.");
-                    continue;
-                }
-                
-                if (image.getSize() > 20 * 1024 * 1024) {
-                    throw new IllegalArgumentException("파일 용량이 너무 큽니다.");
-                }
-                // 저장업로드 시간 숫자형식으로만 이미지에 파일명 추가용임!
-                LocalDateTime now = LocalDateTime.now();
-                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
-                String formattedDateTime = now.format(formatter);
+	// S3 기반 이미지 생성
+	@Transactional
+	public void create(Long productId, List<String> imageS3Keys) {
+	    Product product = prodRepo.findById(productId)
+	            .orElseThrow(() -> new IllegalArgumentException("유효하지 않은 제품 ID: " + productId));
 
-                String FileName = image.getOriginalFilename();
-                String extension = FileName.substring(FileName.lastIndexOf("."), FileName.length());
-                String uuid = UUID.randomUUID().toString();
-                String changedFileName = uuid + "-" + formattedDateTime + extension;
-                Path uploadPath = Paths.get(rentalImagePath);
-                if(!Files.exists(uploadPath)) {
-                    Files.createDirectories(uploadPath);
-                }
+	    List<RentalImage> entities = new ArrayList<>();
+	    for (String s3Key : imageS3Keys) {
+	        if (s3Key == null || s3Key.trim().isEmpty()) {
+	            log.warn("빈 S3 키 건너뜁니다: {}", s3Key);
+	            continue;
+	        }
+	        if (!s3Key.startsWith("product_images/")) {
+	            log.warn("잘못된 S3 키 형식: {}", s3Key);
+	            throw new IllegalArgumentException("잘못된 S3 키 형식: " + s3Key);
+	        }
 
-                Path targetPath = uploadPath.resolve(changedFileName).normalize();
+	        RentalImage entity = RentalImage.builder()
+	                .product(product)
+	                .filePath(s3Key)
+	                .build();
+	        entities.add(entity);
+	    }
 
-                image.transferTo(targetPath);
+	    if (!entities.isEmpty()) {
+	        rentalImgRepo.saveAll(entities);
+	        log.info("S3 키 {}개 저장 완료: productId={}", entities.size(), productId);
+	    } else {
+	        log.warn("저장할 S3 키가 없음: productId={}", productId);
+	    }
+	}
 
-                Product product = prodRepo.findById(productId).orElseThrow();
-                
-                RentalImage entity = RentalImage.builder()
-                    .product(product)
-                    .filePath(changedFileName)
+    public List<RentalImageDto> readByProductId(Long productId) {
+        List<RentalImage> images = rentalImgRepo.findByProductId(productId);
+        return images.stream().map(image -> {
+            String imageUrl = "/images/default-image.png"; // 기본값
+            try {
+                imageUrl = fileStorageService.generateDownloadPresignedUrl(image.getFilePath(), Duration.ofHours(1));
+            } catch (FileStorageException e) {
+                log.warn("Pre-signed URL 생성 실패: filePath={}, 오류: {}", image.getFilePath(), e.getMessage());
+            }
+            return RentalImageDto.builder()
+                    .imageId(image.getId())
+                    .filePath(image.getFilePath())
+                    .imageUrl(imageUrl)
                     .build();
-
-                rentalImgRepo.save(entity);
-                
-            }
-        return 0;
+        }).collect(Collectors.toList());
     }
 
-    public List<RentalImage> readByProductId(Long productId) {
-        List<RentalImage> rentalImages = rentalImgRepo.findByProductId(productId);
-        return rentalImages;
-    }
+	@Transactional
+	public void deleteBeforeUpdate(List<Long> imageIdsForDelete) {
+		List<RentalImage> images = rentalImgRepo.findAllById(imageIdsForDelete);
 
-    @Transactional
-    public void deleteBeforeUpdate(List<Long> imageIdsForDelete) {
+		for (RentalImage image : images) {
+			String s3Key = image.getFilePath();
+			try {
+				fileStorageService.deleteFile(s3Key); // S3에서 파일 삭제
+				log.info("S3 파일 삭제 성공: {}", s3Key);
+			} catch (FileStorageException e) {
+				log.warn("S3 파일 삭제 실패: {}, 오류: {}", s3Key, e.getMessage());
+			}
+		}
 
-        List<RentalImage> images = rentalImgRepo.findAllById(imageIdsForDelete);
-        
-        for(RentalImage image : images) {
-        	log.info("image = {}", image.toString());
-        }
+		rentalImgRepo.deleteAllByIdInBatch(imageIdsForDelete);
+	}
 
-        for (RentalImage image : images) {
-            String filename = image.getFilePath();
-            File file = new File(rentalImagePath, filename);
-    
-            if (file.exists()) {
-                boolean deleted = file.delete();
-                if (deleted) {
-                    log.info("파일 삭제 성공: {}", file.getAbsolutePath());
-                } else {
-                    log.warn("파일 삭제 실패: {}", file.getAbsolutePath());
-                }
-            } else {
-                log.warn("파일이 존재하지 않음: {}", file.getAbsolutePath());
-            }
-        }
-        
-        rentalImgRepo.deleteAllByIdInBatch(imageIdsForDelete);
-    }
-    
-    @Transactional
-    public void deleteByProductId(Long productId) {
-    	
-    	List<Long> imageIds = rentalImgRepo.findIdByProductId(productId);
-    	List<RentalImage> images = rentalImgRepo.findAllById(imageIds);
-    	
-    	for (RentalImage image : images) {
-    		String filename = image.getFilePath();
-    		File file = new File(rentalImagePath, filename);
-    		
-    		if (file.exists()) {
-    			boolean deleted = file.delete();
-    			if (deleted) {
-    				log.info("파일 삭제 성공: {}", file.getAbsolutePath());
-    			} else {
-    				log.warn("파일 삭제 실패: {}", file.getAbsolutePath());
-    			}
-    		} else {
-    			log.warn("파일이 존재하지 않음: {}", file.getAbsolutePath());
-    		}
-    	}
-    	
-        rentalImgRepo.deleteAllByIdInBatch(imageIds);
-    }
+	@Transactional
+	public void deleteByProductId(Long productId) {
+	    List<RentalImage> images = rentalImgRepo.findByProductId(productId); // filePath 직접 조회
+	    List<Long> imageIds = images.stream().map(RentalImage::getId).collect(Collectors.toList());
+	    List<String> failedKeys = new ArrayList<>();
 
+	    for (RentalImage image : images) {
+	        String s3Key = image.getFilePath();
+	        try {
+	            fileStorageService.deleteFile(s3Key);
+	            log.info("S3 파일 삭제 성공: {}", s3Key);
+	        } catch (FileStorageException e) {
+	            log.warn("S3 파일 삭제 실패: {}, 오류: {}", s3Key, e.getMessage());
+	            failedKeys.add(s3Key);
+	        }
+	    }
 
+	    if (!imageIds.isEmpty()) {
+	        rentalImgRepo.deleteAllByIdInBatch(imageIds);
+	        log.info("DB 이미지 삭제 완료: productId={}", productId);
+	    }
+
+	    if (!failedKeys.isEmpty()) {
+	        log.error("S3 파일 삭제 실패 키: {}", failedKeys);
+	    }
+	}
 }

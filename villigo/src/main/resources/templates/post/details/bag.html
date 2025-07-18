@@ -13,11 +13,15 @@
 			<!-- ✅ 이미지 슬라이드 (user-info 제거됨) -->
 			<div class="image-slider">
 			    <button class="prev-btn" onclick="changeSlide(-1)">&#10094;</button>
-			    <div class="image-container">
-			        <th:block th:each="image : ${rentalImages}" >
-			            <img th:src="@{'/images/rentals/' + ${image.filePath}}" alt="상품이미지" class="slide-image">
-			        </th:block>
-			    </div>
+	            <div class="image-container">
+	                <th:block th:each="image : ${rentalImages}">
+	                    <img th:src="${image.imageUrl != null} ? ${image.imageUrl} : '/images/default-image.png'" 
+	                         th:attr="data-file-path=${image.filePath}" 
+	                         alt="상품이미지" 
+	                         class="slide-image" 
+	                         onerror="this.src='/images/default-image.png'">
+	                </th:block>
+	            </div>
 			    <button class="next-btn" onclick="changeSlide(1)">&#10095;</button>
 			</div>
 				<div class="dots">

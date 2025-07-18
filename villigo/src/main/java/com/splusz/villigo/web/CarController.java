@@ -35,6 +35,7 @@ import com.splusz.villigo.dto.AddressUpdateDto;
 import com.splusz.villigo.dto.CarCreateDto;
 import com.splusz.villigo.dto.CarUpdateDto;
 import com.splusz.villigo.dto.RentalImageCreateDto;
+import com.splusz.villigo.dto.RentalImageDto;
 import com.splusz.villigo.dto.UserProfileDto;
 import com.splusz.villigo.service.AddressService;
 import com.splusz.villigo.service.CarService;
@@ -71,9 +72,8 @@ public class CarController {
 
     @PostMapping(path = "/create/car", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<?> create(@ModelAttribute CarCreateDto carDto,
-                         @ModelAttribute RentalImageCreateDto imgDto,
-                         @ModelAttribute AddressCreateDto addDto) throws Exception {
-
+                                   @RequestParam(name = "imageS3Keys", required = false) List<String> imageS3Keys,
+                                   @ModelAttribute AddressCreateDto addDto) throws Exception {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         User user = SecurityUserUtil.getUserFromPrincipal(authentication.getPrincipal());
 
@@ -86,9 +86,8 @@ public class CarController {
         }
 
         String username = user.getUsername();
-
         log.info("carDto={}", carDto);
-        log.info("imgDto={}", imgDto);
+        log.info("imageS3Keys={}", imageS3Keys);
         log.info("addDto={}", addDto);
 
         if (carDto.getBrandId() == 0) {
@@ -98,15 +97,14 @@ public class CarController {
 
         Product product = carServ.create(carDto, user, rentalCategoryNumber);
 
-        if (imgDto.getImages() != null && !imgDto.getImages().isEmpty()) {
-            rentalImgServ.create(product.getId(), imgDto);
+        if (imageS3Keys != null && !imageS3Keys.isEmpty()) {
+            rentalImgServ.create(product.getId(), imageS3Keys);
         } else {
             log.info("이미지 첨부 X");
         }
 
         addServ.create(product, addDto);
-        
-        // BagController와 동일한 방식으로 리다이렉트
+
         URI location = ServletUriComponentsBuilder.fromCurrentContextPath()
                 .path("/post/details/car")
                 .queryParam("id", product.getId())
@@ -122,7 +120,6 @@ public class CarController {
     public String detail(@RequestParam(name = "id") Long productId, Model model) {
         log.info("detail car(productId={})", productId);
         
-        // Product 정보 조회 (중복 선언 제거)
         Product product = prodServ.readById(productId);
         if (product == null) {
             log.warn("상품을 찾을 수 없습니다: productId={}", productId);
@@ -130,18 +127,12 @@ public class CarController {
         }
         log.info("product={}", product);
         
-        // 상품 소유자 User 엔티티 조회
         User productOwnerEntity = product.getUser();
         if (productOwnerEntity == null) {
             log.error("상품에 연결된 사용자 정보를 찾을 수 없습니다: productId={}", productId);
             return "error/500";
         }
 
-        // Car 정보 조회
-        Car car = carServ.readByProductId(productId);
-        log.info("car={}", car);
-        
-        // User 엔티티를 UserProfileDto로 변환하여 아바타 URL 포함
         UserProfileDto productOwnerProfile = null;
         try {
             productOwnerProfile = userServ.getUserProfileDto(productOwnerEntity);
@@ -161,15 +152,16 @@ public class CarController {
                 .build();
         }
 
-        // 나머지 정보들 조회
+        Car car = carServ.readByProductId(productId);
+        log.info("car={}", car);
+        
         Address address = addServ.readByProductId(productId);
         log.info("address={}", address);
-        List<RentalImage> rentalImages = rentalImgServ.readByProductId(productId);
+        List<RentalImageDto> rentalImages = rentalImgServ.readByProductId(productId);
         log.info("rentalImages={}", rentalImages);
 
-        // 모델에 추가
         model.addAttribute("product", product);
-        model.addAttribute("user", productOwnerProfile); // UserProfileDto를 "user" 이름으로 모델에 추가!
+        model.addAttribute("user", productOwnerProfile);
         model.addAttribute("car", car);
         model.addAttribute("address", address);
         model.addAttribute("rentalImages", rentalImages);
@@ -200,7 +192,7 @@ public class CarController {
         Product product = prodServ.readById(productId);
         Car car = carServ.readByProductId(productId);
         Address address = addServ.readByProductId(productId);
-        List<RentalImage> rentalImages = rentalImgServ.readByProductId(productId);
+        List<RentalImageDto> rentalImages = rentalImgServ.readByProductId(productId);
 
         model.addAttribute("product", product);
         model.addAttribute("car", car);
@@ -210,39 +202,30 @@ public class CarController {
 
     @PostMapping(path = "/update/car", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<?> update(@RequestParam(name = "id") Long productId,
-                         @RequestParam(name = "existingImageIds", required = false) List<Long> existingImageIds,
-                         @ModelAttribute CarUpdateDto carDto,
-                         @ModelAttribute RentalImageCreateDto imgDto,
-                         @ModelAttribute AddressUpdateDto addDto) throws IOException {
+                                   @RequestParam(name = "imageS3Keys", required = false) List<String> imageS3Keys,
+                                   @RequestParam(name = "deletedImageIds", required = false) List<Long> deletedImageIds,
+                                   @ModelAttribute CarUpdateDto carDto,
+                                   @ModelAttribute AddressUpdateDto addDto) {
         log.info("car update(productId={})", productId);
-        log.info("car update(existingImageIds={})", existingImageIds);
+        log.info("car update(imageS3Keys={})", imageS3Keys);
+        log.info("car update(deletedImageIds={})", deletedImageIds);
         log.info("car update(carUpdateDto={})", carDto);
-        log.info("car update(RentalImageCreateDto={})", imgDto);
         log.info("car update(AddressUpdateDto={})", addDto);
 
-        List<Long> safeExistingImageIds = existingImageIds != null ? existingImageIds : new ArrayList<>();
-
-        List<RentalImage> imagesBeforeUpdate = rentalImgServ.readByProductId(productId);
-        List<Long> imageIdsBeforeUpdate = imagesBeforeUpdate.stream()
-                .map(RentalImage::getId)
-                .collect(Collectors.toList());
-
-        List<Long> imageIdsForDelete = imageIdsBeforeUpdate.stream()
-                .filter(imageId -> !safeExistingImageIds.contains(imageId))
-                .collect(Collectors.toList());
+        List<Long> safeDeletedImageIds = deletedImageIds != null ? deletedImageIds : new ArrayList<>();
+        List<String> safeImageS3Keys = imageS3Keys != null ? imageS3Keys : new ArrayList<>();
 
         Product updatedProduct = carServ.update(productId, carDto);
         Address updatedAddress = addServ.update(productId, addDto);
 
-        if (!imageIdsForDelete.isEmpty()) {
-            rentalImgServ.deleteBeforeUpdate(imageIdsForDelete);
+        if (!safeDeletedImageIds.isEmpty()) {
+            rentalImgServ.deleteBeforeUpdate(safeDeletedImageIds);
         }
 
-        if (imgDto.getImages() != null && !imgDto.getImages().isEmpty()) {
-            rentalImgServ.create(productId, imgDto);
+        if (!safeImageS3Keys.isEmpty()) {
+            rentalImgServ.create(productId, safeImageS3Keys);
         }
 
-        // BagController와 동일한 방식으로 리다이렉트
         URI location = ServletUriComponentsBuilder.fromCurrentContextPath()
                 .path("/post/details/car")
                 .queryParam("id", productId)

@@ -13,4 +13,5 @@ public class RentalImageDto {
 
     private Long imageId;
     private String filePath;
+    private String imageUrl; // Pre-signed URL
 }

@@ -307,14 +307,14 @@ public class UserController {
             userProfileDto = UserProfileDto.builder() // 오류 시 기본값 설정
                 .id(userEntity.getId())
                 .nickname(userEntity.getNickname())
-                .avatarImageUrl("/images/default-avatar.png")
+                .avatarImageUrl(null)
                 .build();
         } catch (Exception e) {
             log.error("유저 상세 페이지 프로필 조회 중 알 수 없는 오류: {}", e.getMessage(), e);
              userProfileDto = UserProfileDto.builder() // 다른 예외 시 기본값 설정
                 .id(userEntity.getId())
                 .nickname(userEntity.getNickname())
-                .avatarImageUrl("/images/default-avatar.png")
+                .avatarImageUrl(null)
                 .build();
         }
 
