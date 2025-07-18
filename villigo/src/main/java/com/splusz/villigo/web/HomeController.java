@@ -99,14 +99,13 @@ public class HomeController {
             log.info("비로그인 사용자입니다. 기본 홈 상품을 보여줍니다.");
         }
         
-        // S3 pre-signed URL 생성
+     // S3 pre-signed 다운로드 URL 생성
         homeProducts.forEach((key, products) -> {
             products.forEach(product -> {
                 if (product.getFilePath() != null) {
                     try {
-                        String presignedUrl = s3FileStorageService.generateUploadPresignedUrl(
+                        String presignedUrl = s3FileStorageService.generateDownloadPresignedUrl(
                             product.getFilePath(), 
-                            "image/jpeg", // contentType은 상품에 따라 동적 설정 필요
                             Duration.ofHours(1)
                         );
                         product.setFilePath(presignedUrl); // filePath를 URL로 대체
@@ -133,13 +132,12 @@ public class HomeController {
         bagBrands = bagBrands != null ? bagBrands : Collections.emptyList();
         carBrands = carBrands != null ? carBrands : Collections.emptyList();
         
-     // 브랜드 이미지에도 S3 URL 적용
+        // 브랜드 이미지에 S3 pre-signed 다운로드 URL 적용
         bagBrands.forEach(brand -> {
             if (brand.getImagePath() != null) {
                 try {
-                    String presignedUrl = s3FileStorageService.generateUploadPresignedUrl(
+                    String presignedUrl = s3FileStorageService.generateDownloadPresignedUrl(
                         brand.getImagePath(), 
-                        "image/png", // contentType 조정 필요
                         Duration.ofHours(1)
                     );
                     brand.setImagePath(presignedUrl);
@@ -153,9 +151,8 @@ public class HomeController {
         carBrands.forEach(brand -> {
             if (brand.getImagePath() != null) {
                 try {
-                    String presignedUrl = s3FileStorageService.generateUploadPresignedUrl(
+                    String presignedUrl = s3FileStorageService.generateDownloadPresignedUrl(
                         brand.getImagePath(), 
-                        "image/png", 
                         Duration.ofHours(1)
                     );
                     brand.setImagePath(presignedUrl);
@@ -172,7 +169,7 @@ public class HomeController {
         String carBrandsJson = objectMapper.writeValueAsString(carBrands);
         String homeProductsJson = objectMapper.writeValueAsString(homeProducts);
 
-        // 모델에 추가
+        // 모델에 String 타입으로 추가
         model.addAttribute("bagBrandsJson", bagBrandsJson);
         model.addAttribute("carBrandsJson", carBrandsJson);
         model.addAttribute("homeProductsJson", homeProductsJson);

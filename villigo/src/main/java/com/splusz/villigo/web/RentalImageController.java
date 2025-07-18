@@ -1,45 +1,44 @@
 package com.splusz.villigo.web;
 
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.core.io.Resource;
-import org.springframework.core.io.UrlResource;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import java.time.Duration;
 
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.splusz.villigo.service.S3FileStorageService;
+import com.splusz.villigo.storage.FileStorageException;
+
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @RestController
 @RequestMapping("/api/images")
 public class RentalImageController {
 
-    // private static final String RENTAL_IMAGE_PATH = "C:/images/rentals/"; 로컬 환경
-    private static final String RENTAL_IMAGE_PATH = "/home/ubuntu/images/rentals";
+    private final S3FileStorageService s3FileStorageService;
+
+    @Value("${aws.s3.bucket}")
+    private String bucketName;
+
+    public RentalImageController(S3FileStorageService s3FileStorageService) {
+        this.s3FileStorageService = s3FileStorageService;
+    }
 
     @GetMapping("/{imageName:.+}")
-    public ResponseEntity<Resource> getRentalImage(@PathVariable String imageName) {
+    public ResponseEntity<String> getRentalImage(@PathVariable String imageName) {
         log.info("GET /api/images/{}", imageName);
         try {
-            Path filePath = Paths.get(RENTAL_IMAGE_PATH).resolve(imageName).normalize();
-            Resource resource = new UrlResource(filePath.toUri());
-
-            if (resource.exists() && resource.isReadable()) {
-                String contentType = Files.probeContentType(filePath);
-                return ResponseEntity.ok()
-                        .contentType(MediaType.parseMediaType(contentType != null ? contentType : "application/octet-stream"))
-                        .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + resource.getFilename() + "\"")
-                        .body(resource);
-            } else {
-                log.warn("Image not found or unreadable: {}", imageName);
-                return ResponseEntity.notFound().build();
-            }
-        } catch (Exception e) {
-            log.error("Failed to load image: {}", imageName, e);
-            return ResponseEntity.badRequest().build();
+            // S3에서 다운로드용 pre-signed URL 생성 (예: product_images/ 접두어 추가)
+            String s3Key = "product_images/" + imageName; // S3 키 구조에 맞게 조정
+            String presignedUrl = s3FileStorageService.generateDownloadPresignedUrl(s3Key, Duration.ofHours(1));
+            return ResponseEntity.ok(presignedUrl);
+        } catch (FileStorageException e) {
+            log.error("Failed to load image from S3: {}", imageName, e);
+            return ResponseEntity.badRequest().body("이미지 로드 실패: " + e.getMessage());
         }
     }
 }
