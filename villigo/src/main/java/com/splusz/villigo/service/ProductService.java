@@ -315,12 +315,12 @@ public class ProductService {
     // ProductImageMergeDto를 생성할 때 filePath를 Pre-signed URL로 변환하는 헬퍼 메서드
     private ProductImageMergeDto buildProductImageMergeDto(Product product, RentalImage pickedImage) {
         String imageUrl = null;
-        String s3KeyForDownload = null; // S3 다운로드 요청에 사용할 최종 키
+        String s3KeyForDownload = null;
 
         if (pickedImage != null && pickedImage.getFilePath() != null) {
             String dbFilePath = pickedImage.getFilePath();
 
-            // DB filePath가 이미 S3 Key 형태인지 확인
+            // DB filePath가 이미 S3 Key 형태인지 확인하고, 아니면 "product_images/"를 붙임
             if (dbFilePath.startsWith("product_images/") || dbFilePath.startsWith("avatars/") || dbFilePath.startsWith("chat_images/")) {
                 s3KeyForDownload = dbFilePath; // 이미 완전한 S3 Key
             } else {
@@ -330,6 +330,8 @@ public class ProductService {
 
             try {
                 imageUrl = s3FileStorageService.generateDownloadPresignedUrl(s3KeyForDownload, Duration.ofHours(1));
+                // 로그 확인
+                log.info("buildProductImageMergeDto: Generated presigned URL for S3 Key {}: {}", s3KeyForDownload, imageUrl);
             } catch (FileStorageException e) {
                 log.error("ProductImageMergeDto: S3 Pre-signed URL 생성 실패 for {}: {}", s3KeyForDownload, e.getMessage(), e);
                 imageUrl = "/images/default-product.png"; // 실패 시 대체 이미지
@@ -345,9 +347,8 @@ public class ProductService {
                 .productName(product.getProductName())
                 .fee(product.getFee())
                 .postName(product.getPostName())
-                .imageId(pickedImage != null ? pickedImage.getId() : null) // pickedImage가 null일 경우 id도 null
-                .filePath(imageUrl) // <--- filePath 필드에 Pre-signed URL을 담음
+                .imageId(pickedImage != null ? pickedImage.getId() : null)
+                .filePath(imageUrl) // filePath 필드에 Pre-signed URL을 담음
                 .build();
     }
-
 }

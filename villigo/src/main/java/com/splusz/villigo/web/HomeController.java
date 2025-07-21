@@ -99,16 +99,22 @@ public class HomeController {
             log.info("비로그인 사용자입니다. 기본 홈 상품을 보여줍니다.");
         }
         
-     // S3 pre-signed 다운로드 URL 생성
+        // S3 pre-signed 다운로드 URL 생성 (상품 이미지)
         homeProducts.forEach((key, products) -> {
             products.forEach(product -> {
                 if (product.getFilePath() != null) {
-                	try {
-                        String presignedUrl = s3FileStorageService.generateDownloadPresignedUrl(product.getFilePath(), Duration.ofHours(1));
-                        log.info("Generated presigned URL for productId {}: {}", product.getId(), presignedUrl);
-                        product.setFilePath(presignedUrl);
+                    try {
+                        // 이 S3 Key를 generateDownloadPresignedUrl에 그대로 전달해야 함
+                        String presignedUrl = s3FileStorageService.generateDownloadPresignedUrl(
+                            product.getFilePath(), // <-- 여기! 이미 완전한 S3 Key
+                            Duration.ofHours(1)
+                        );
+                        // 로그 확인: Generated presigned URL for productId X: [올바른 S3 URL]
+                        log.info("Generated presigned URL for productId {}: {}", product.getId(), presignedUrl); // 상세 로그
+                        product.setFilePath(presignedUrl); // filePath를 S3 Pre-signed URL로 대체
                     } catch (FileStorageException e) {
-                        log.error("S3 pre-signed URL 생성 실패 for productId {}: {}", product.getId(), e.getMessage(), e);
+                        log.error("S3 pre-signed URL 생성 실패 (상품): filePath={}, error={}", 
+                                product.getFilePath(), e.getMessage(), e);
                         product.setFilePath("/images/placeholder.jpg");
                     }
                 }

@@ -44,8 +44,6 @@ document.addEventListener('DOMContentLoaded', () => {
 	function makeReservationReqElements({content, page}) { // content는 List<ReservationDto>
 	    const divReservationReqList = document.getElementById('reservationReqList');
 	    
-	    // 이전에 중복으로 있던 초기화와 삽입 로직을 정리합니다.
-	    // 먼저 기존 내용을 완전히 지웁니다.
 	    divReservationReqList.innerHTML = ''; 
 	    let htmlStr = '';
 
@@ -56,12 +54,11 @@ document.addEventListener('DOMContentLoaded', () => {
 	        return; // 여기서 함수 종료
 	    }
 	            
-	    // DTO의 데이터를 이용하여 예약 현황 카드 생성 (content가 비어있지 않은 경우에만 실행)
-	    for (const dto of content) { // dto는 ReservationDto 객체
-	        // 예약의 status가 5(삭제처리됨)이면 예약카드를 생성하지 않음
-	        if (dto.status === 5) {
-	            continue; 
-	        }
+		// DTO의 데이터를 이용하여 예약 현황 카드 생성
+		for (const dto of content) { // dto는 ReservationDto 객체
+		    if (dto.status === 5) {
+		        continue; 
+		    }
 	        
 	        console.log('상품 카테고리 id: ', dto.rentalCategoryId);
 	        let postDetailsUrl = '/post/details';
