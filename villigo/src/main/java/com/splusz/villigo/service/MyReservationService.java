@@ -4,6 +4,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.splusz.villigo.domain.Reservation;
@@ -17,7 +18,8 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class MyReservationService {
 
-    private MyReservationRepository myReservationRepository;
+	
+    private final MyReservationRepository myReservationRepository;
     private final RentalImageService rentalImageService;
 
     public List<MyReservationDto> getMyReservations(Long userId) {
