@@ -1,25 +1,24 @@
 package com.splusz.villigo.service;
 
-import com.splusz.villigo.dto.MyReservationDto;
-import com.splusz.villigo.domain.Reservation;
-import com.splusz.villigo.domain.RentalImage;
-import com.splusz.villigo.repository.MyReservationRepository;
-import com.splusz.villigo.repository.RentalImageRepository;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.springframework.stereotype.Service;
+
+import com.splusz.villigo.domain.Reservation;
+import com.splusz.villigo.dto.MyReservationDto;
+import com.splusz.villigo.dto.RentalImageDto;
+import com.splusz.villigo.repository.MyReservationRepository;
+
+import lombok.RequiredArgsConstructor;
+
 @Service
+@RequiredArgsConstructor
 public class MyReservationService {
 
-    @Autowired
     private MyReservationRepository myReservationRepository;
-
-    @Autowired
-    private RentalImageRepository rentalImageRepository;
+    private final RentalImageService rentalImageService;
 
     public List<MyReservationDto> getMyReservations(Long userId) {
         List<Reservation> reservations = myReservationRepository.findByRenterIdWithProduct(userId);
@@ -39,17 +38,17 @@ public class MyReservationService {
             dto.setFee((long) reservation.getProduct().getFee());
             dto.setProductId(reservation.getProduct().getId());
 
-            // ⭐️ 오너 ID 설정
             dto.setProductOwnerId(reservation.getProduct().getUser().getId());
 
             dto.setRentalDate(reservation.getStartTime().format(dateFormatter));
             String timeRange = reservation.getStartTime().format(timeFormatter) + " ~ " +
-                               reservation.getEndTime().format(timeFormatter);
+                                 reservation.getEndTime().format(timeFormatter);
             dto.setRentalTimeRange(timeRange);
 
-            List<RentalImage> rentalImages = rentalImageRepository.findByProductId(reservation.getProduct().getId());
-            String imagePath = rentalImages.isEmpty() ? "/images/default.jpg" : rentalImages.get(0).getFilePath();
-            dto.setImagePath(imagePath);
+            // S3 Pre-signed URL을 가져와서 imageUrl 설정
+            List<RentalImageDto> rentalImages = rentalImageService.readByProductId(reservation.getProduct().getId());
+            String imageUrl = rentalImages.isEmpty() ? "/images/default-product.png" : rentalImages.get(0).getImageUrl();
+            dto.setImageUrl(imageUrl);
 
             dto.setStatus(reservation.getStatus());
 

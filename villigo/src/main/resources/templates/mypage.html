@@ -70,7 +70,7 @@
                 <div class="reservation-card" th:each="reservation : ${myReservations}" th:data-reservation-id="${reservation.reservationId}">
                     <div class="res-img">
                         <a th:href="@{|/post/details/${reservation.rentalCategoryId == 1 ? 'bag' : 'car'}?id=${reservation.productId}|}">
-                            <img th:src="@{|/images/rentals/${reservation.imagePath != null ? reservation.imagePath : 'default.jpg'}|}" alt="상품 이미지" />
+                            <img th:src="${reservation.imageUrl != null ? reservation.imageUrl : '/images/default-product.png'}" alt="상품 이미지" />
                         </a>
                     </div>
                     <div class="res-info">
