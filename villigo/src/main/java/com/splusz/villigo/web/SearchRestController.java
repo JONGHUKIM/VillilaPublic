@@ -35,21 +35,6 @@ public class SearchRestController {
     public ResponseEntity<Page<SearchedProductDto>> searching(@RequestBody Map<String, List<String>> filters) {
         log.info("filters={}", filters);
         Page<SearchedProductDto> searchedProducts = searServ.searchProduct(filters);
-
-        // S3 pre-signed URL 생성
-        searchedProducts.getContent().forEach(product -> {
-            if (product.getFilePath() != null) {
-            	try {
-                    String presignedUrl = fileStorageService.generateDownloadPresignedUrl(product.getFilePath(), Duration.ofHours(1));
-                    log.info("Generated presigned URL for productId {}: {}", product.getId(), presignedUrl);
-                    product.setFilePath(presignedUrl);
-                } catch (FileStorageException e) {
-                    log.error("S3 pre-signed URL 생성 실패 for productId {}: {}", product.getId(), e.getMessage(), e);
-                    product.setFilePath("/images/placeholder.jpg");
-                }
-            }
-        });
-
         return ResponseEntity.ok(searchedProducts);
     }
     

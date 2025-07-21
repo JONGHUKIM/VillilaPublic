@@ -268,6 +268,7 @@ function applyServiceFee(fee) {
 function loadProducts(sectionId, products) {
     const container = document.getElementById(sectionId);
     container.innerHTML = '';
+	console.log("Products data:", products);
 
     if (sectionId === 'AllProducts') {
         products.forEach(p => {

@@ -21,16 +21,6 @@ public class WebMvcConfig implements WebMvcConfigurer {
                 .allowCredentials(true)
                 .maxAge(3600);
     }
-
-//    @Override
-//    public void addResourceHandlers(ResourceHandlerRegistry registry) {
-//        registry.addResourceHandler("/images/rentals/**")
-//            .addResourceLocations("file:///C:/images/rentals/");
-//        
-//        // 프로필 이미지 경로: /images/** -> C:/images/avatar/
-//        registry.addResourceHandler("/images/avatar/**")
-//                .addResourceLocations("file:///C:/images/avatar/");
-//    }
     
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
