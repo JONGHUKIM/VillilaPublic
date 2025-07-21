@@ -41,125 +41,109 @@ document.addEventListener('DOMContentLoaded', () => {
         .catch((error) => console.log(error));
     }
     
-    function makeReservationReqElements({content, page}) {
-        // 예약 현황 카드들이 표시될 div 요소
-        const divReservationReqList = document.getElementById('reservationReqList');
-		divReservationReqList.innerHTML = ''; // 초기화 (append 전에)
-        let htmlStr = ''; // div에 삽입할 문자열
-		
-		if (content.length === 0) {
-		    divReservationReqList.innerHTML = '들어온 예약 신청이 없습니다.';
-		    document.getElementById('btnMore').style.display = 'none'; // 더보기 버튼 숨김
-		    return;
-		}
-                
-        // DTO의 데이터를 이용하여 예약 현황 카드 생성
-        for (const dto of content) {
-            // 예약의 status가 5(삭제처리됨)이면 예약카드를 생성하지 않음
-            if (dto.status === 5) {
-                continue; 
-            }
-			
-            console.log('상품 카테고리 id: ', dto.rentalCategoryId);
-            // 상품 디테일 페이지 링크 URL 생성
-            let postDetailsUrl = '/post/details';
-            switch (dto.rentalCategoryId) {
-                case 1: // bag
-                    postDetailsUrl += `/bag?id=${dto.productId}`;
-                    break;
-                case 2: // car
-                    postDetailsUrl += `/car?id=${dto.productId}`;
-                    break;
-            }
-            // 예약 카드 공통 내용
-			htmlStr += `
-			    <div class="reservation-card">
-			      <div class="res-img">
-			        <a href="${postDetailsUrl}">
-			        <img src="${dto.imageUrl}" alt="상품 이미지"> </a>
-			      </div>
-			      <div class="res-info">
-			        <p class="car-name">
-			        <a href="${postDetailsUrl}"><strong>${dto.productName}</strong></a>
-			        </p>
-			        <p><strong>대여 날짜:</strong> ${dto.rentalDate}</p>
-			        <p><strong>대여 시간:</strong> ${dto.rentalTimeRange}</p>
-			        <p><strong>요금:</strong> ${dto.fee} JJAM</p>
-			        <p><strong>예약자:</strong> ${dto.renterNickname || '알 수 없음'}</p> `; // <주의> 밑에 버튼 추가 필수!! 
-            // 예약 진행 상태(status)에 따라 버튼 추가
-            switch (dto.status) {
-                case 0:
-                case 1:
-                    htmlStr += `
-                        <div class="res-buttons">
-                          <button class="btn-decline" data-id="${dto.reservationId}" data-product-id="${dto.productId}">거절</button>
-                          <button class="btn-accept" data-id="${dto.reservationId}" data-product-id="${dto.productId}">수락</button>
-                          <button class="btn-chat" data-id="${dto.reservationId}">채팅</button>
-                        </div>
-                      </div>
-                    </div>
-                    `;
-                    break;
-                case 2:
-                    htmlStr += `
-                        <div class="res-buttons">
-                          <button class="btn-chat" data-id="${dto.reservationId}">채팅</button>
-                        </div>
-                      </div>
-                    </div>
-                    `;
-                    break;
-                case 3:
-                    htmlStr += `
-                        <div class="res-buttons">
-                          <button class="btn-complete" id="sendReviewToRenter" onclick="openCompletePopupForResReq(this)" 
-                              data-id="${dto.reservationId}" data-renter-id="${dto.renterId}">거래완료</button>
-                          <button class="btn-review d-none" disabled>후기 작성 완료</button> 
-                        </div>
-                      </div>
-                    </div>
-                    `;
-                    break;
-                case 4:
-                    htmlStr += `
-                        <div class="res-buttons">
-                          <button class="btn-rejected" disabled>거절함</button>
-                          <button class="btn-delete-reserv" data-id="${dto.reservationId}">삭제</button>
-                        </div>
-                      </div>
-                    </div>
-                    `;
-                    break;
-                case 7:
-                    htmlStr += `
-                        <div class="res-buttons">
-                            <button class="btn-review" disabled>후기 작성 완료</button> 
-                        </div>
-                      </div>
-                    </div>
-                    `;
-                    break;
-            }
-        }
-        
-        if (currentPageNo === 0) {
-            // 첫번째 페이지면 기존 내용을 다 지우고 새로 작성.
-            divReservationReqList.innerHTML = htmlStr;
-        } else {
-            // 첫번째 페이지가 아니면 기존 내용 밑에 예약 목록을 추가.
-            divReservationReqList.innerHTML += htmlStr;
-        }
-		
-		divReservationReqList.innerHTML = htmlStr; // content로 생성된 HTML을 삽입
+	function makeReservationReqElements({content, page}) { // content는 List<ReservationDto>
+	    const divReservationReqList = document.getElementById('reservationReqList');
+	    
+	    // 이전에 중복으로 있던 초기화와 삽입 로직을 정리합니다.
+	    // 먼저 기존 내용을 완전히 지웁니다.
+	    divReservationReqList.innerHTML = ''; 
+	    let htmlStr = '';
 
-        if (((page.number + 1) !== page.totalPages) && (page.totalPages !== 0)) {
-            // 현재 페이지가 마지막 페이지가 아니고,
-            // 마지막 페이지가 0이 아니면 [더보기] 버튼 보여주기
-            btnMore.style.display = 'block';    
-        } else {
-            // 현재 페이지가 마지막 페이지면 [더보기] 버튼 감추기
-            btnMore.style.display = 'none';
-        }
+	    if (content.length === 0) {
+	        // 데이터가 아예 없는 경우 메시지 표시
+	        divReservationReqList.innerHTML = '들어온 예약 신청이 없습니다.';
+	        document.getElementById('btnMore').style.display = 'none'; // 더보기 버튼 숨김
+	        return; // 여기서 함수 종료
+	    }
+	            
+	    // DTO의 데이터를 이용하여 예약 현황 카드 생성 (content가 비어있지 않은 경우에만 실행)
+	    for (const dto of content) { // dto는 ReservationDto 객체
+	        // 예약의 status가 5(삭제처리됨)이면 예약카드를 생성하지 않음
+	        if (dto.status === 5) {
+	            continue; 
+	        }
+	        
+	        console.log('상품 카테고리 id: ', dto.rentalCategoryId);
+	        let postDetailsUrl = '/post/details';
+	        switch (dto.rentalCategoryId) {
+	            case 1: postDetailsUrl += `/bag?id=${dto.productId}`; break;
+	            case 2: postDetailsUrl += `/car?id=${dto.productId}`; break;
+	            default: postDetailsUrl += `?id=${dto.productId}`; break;
+	        }
+	        
+	        htmlStr += `
+	            <div class="reservation-card">
+	              <div class="res-img">
+	                <a href="${postDetailsUrl}">
+	                <img src="${dto.imageUrl}" alt="상품 이미지"> </a>
+	              </div>
+	              <div class="res-info">
+	                <p class="car-name">
+	                <a href="${postDetailsUrl}"><strong>${dto.productName}</strong></a>
+	                </p>
+	                <p><strong>대여 날짜:</strong> ${dto.rentalDate}</p>
+	                <p><strong>대여 시간:</strong> ${dto.rentalTimeRange}</p>
+	                <p><strong>요금:</strong> ${dto.fee} JJAM</p>
+	                <p><strong>예약자:</strong> ${dto.renterNickname || '알 수 없음'}</p> `; 
+	        // 예약 진행 상태(status)에 따라 버튼 추가
+	        switch (dto.status) {
+	            case 0: case 1:
+	                htmlStr += `
+	                    <div class="res-buttons">
+	                      <button class="btn-decline" data-id="${dto.reservationId}" data-product-id="${dto.productId}">거절</button>
+	                      <button class="btn-accept" data-id="${dto.reservationId}" data-product-id="${dto.productId}">수락</button>
+	                      <button class="btn-chat" data-id="${dto.reservationId}">채팅</button>
+	                    </div>
+	                  </div>
+	                </div>`;
+	                break;
+	            case 2:
+	                htmlStr += `
+	                    <div class="res-buttons">
+	                      <button class="btn-chat" data-id="${dto.reservationId}">채팅</button>
+	                    </div>
+	                  </div>
+	                </div>`;
+	                break;
+	            case 3:
+	                htmlStr += `
+	                    <div class="res-buttons">
+	                      <button class="btn-complete" id="sendReviewToRenter" onclick="openCompletePopupForResReq(this)" 
+	                          data-id="${dto.reservationId}" data-renter-id="${dto.renterId}">거래완료</button>
+	                      <button class="btn-review d-none" disabled>후기 작성 완료</button> 
+	                    </div>
+	                  </div>
+	                </div>`;
+	                break;
+	            case 4:
+	                htmlStr += `
+	                    <div class="res-buttons">
+	                      <button class="btn-rejected" disabled>거절함</button>
+	                      <button class="btn-delete-reserv" data-id="${dto.reservationId}">삭제</button>
+	                    </div>
+	                  </div>
+	                </div>`;
+	                break;
+	            case 7:
+	                htmlStr += `
+	                    <div class="res-buttons">
+	                        <button class="btn-review" disabled>후기 작성 완료</button> 
+	                    </div>
+	                  </div>
+	                </div>`;
+	                break;
+	        }
+	    }
+	    
+	    // 모든 HTML 문자열이 완성되면 한 번에 DOM에 삽입
+	    divReservationReqList.innerHTML = htmlStr; 
+
+	    // 더보기 버튼 로직 (page.number, page.totalPages 사용)
+	    if (((page.number + 1) !== page.totalPages) && (page.totalPages !== 0)) {
+	        document.getElementById('btnMore').style.display = 'block';    
+	    } else {
+	        document.getElementById('btnMore').style.display = 'none';
+	    }
         
         // 표시해야하는 예약 현황이 없는 경우
         const contentLength = Object.keys(content).length;
