@@ -20,12 +20,12 @@ const brandData = {
     bag: bagbrand.map(brand => ({
         id: brand.id,
         name: brand.name,
-        img: `/images/test/` + brand.imagePath,
+        img: brand.imagePath, // <-- S3 pre-signed URL 사용
     })),
     car: carbrand.map(brand => ({
         id: brand.id,
         name: brand.name,
-        img: `/images/test/` + brand.imagePath,
+        img: brand.imagePath, // <-- S3 pre-signed URL 사용
     }))
 };
 
@@ -274,13 +274,12 @@ function loadProducts(sectionId, products) {
             const card = document.createElement('div');
             card.className = 'product-card grid-card';
             const displayFee = applyServiceFee(p.fee);
-            card.innerHTML = `
-                <img src="${p.img}" alt="${p.name}">
-                <div class="mt-1">
-                    <div class="product-name">${p.name}</div>
-                    <div class="product-price">${displayFee.toLocaleString()} 원</div>
-                </div>
-            `;
+			card.innerHTML = `
+			    <img src="${p.filePath}" alt="${p.postName}"> <div class="mt-1">
+			        <div class="product-name">${p.postName}</div>
+			        <div class="product-price">${displayFee.toLocaleString()} 원</div>
+			    </div>
+			`;
             container.appendChild(card);
         });
     } else {
