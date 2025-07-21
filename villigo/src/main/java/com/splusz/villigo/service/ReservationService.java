@@ -227,6 +227,7 @@ public class ReservationService {
         dto.setStatus(reservation.getStatus());
         dto.setChatRoomId(null);
         dto.setProductOwnerId(reservation.getProduct().getUser().getId());
+        dto.setRenterNickname(reservation.getRenter().getNickname());
 
         dto.setDetails("대여 날짜: " + dto.getRentalDate());
         

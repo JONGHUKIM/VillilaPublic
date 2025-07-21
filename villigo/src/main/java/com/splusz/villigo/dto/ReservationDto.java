@@ -24,4 +24,5 @@ public class ReservationDto {
     private String rentalTimeRange; // 대여 시간 범위 (String으로 형식화된)
     private Integer status; // 예약 상태
     private Long productOwnerId; // 상품 소유자 ID
+    private String renterNickname;
 }

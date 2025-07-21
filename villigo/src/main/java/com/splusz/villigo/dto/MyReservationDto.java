@@ -21,4 +21,5 @@ public class MyReservationDto {
     private Long productId; // 상품 아이디
     private Long productOwnerId;
     private Long chatRoomId;
+    private String renterNickname;
 }

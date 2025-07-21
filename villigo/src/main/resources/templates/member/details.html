@@ -49,7 +49,7 @@
 		<div class="product-wrapper">
 		  <div class="product-card" th:each="post : ${posts}">
 		    <a th:href="@{|/post/details/${post.rentalCategory}?id=${post.id}|}">
-		      <img th:src="${post.image != null} ? @{/images/rentals/{image}(image=${post.image})} : @{/images/default-product.png}" alt="상품 이미지">
+		      <img th:src="${post.image != null ? post.image : '/images/default-product.png'}" alt="상품 이미지">
 		    </a>
 		    <p>
 		      <a th:href="@{|/post/details/${post.rentalCategory}?id=${post.id}|}">

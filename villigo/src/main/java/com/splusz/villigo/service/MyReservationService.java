@@ -46,6 +46,7 @@ public class MyReservationService {
             String timeRange = reservation.getStartTime().format(timeFormatter) + " ~ " +
                                  reservation.getEndTime().format(timeFormatter);
             dto.setRentalTimeRange(timeRange);
+            dto.setRenterNickname(reservation.getRenter().getNickname());
 
             // S3 Pre-signed URL을 가져와서 imageUrl 설정
             List<RentalImageDto> rentalImages = rentalImageService.readByProductId(reservation.getProduct().getId());

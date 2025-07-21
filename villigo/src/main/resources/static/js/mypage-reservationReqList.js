@@ -44,8 +44,14 @@ document.addEventListener('DOMContentLoaded', () => {
     function makeReservationReqElements({content, page}) {
         // 예약 현황 카드들이 표시될 div 요소
         const divReservationReqList = document.getElementById('reservationReqList');
-        
+		divReservationReqList.innerHTML = ''; // 초기화 (append 전에)
         let htmlStr = ''; // div에 삽입할 문자열
+		
+		if (content.length === 0) {
+		    divReservationReqList.innerHTML = '들어온 예약 신청이 없습니다.';
+		    document.getElementById('btnMore').style.display = 'none'; // 더보기 버튼 숨김
+		    return;
+		}
                 
         // DTO의 데이터를 이용하여 예약 현황 카드 생성
         for (const dto of content) {
@@ -53,7 +59,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (dto.status === 5) {
                 continue; 
             }
-            
+			
             console.log('상품 카테고리 id: ', dto.rentalCategoryId);
             // 상품 디테일 페이지 링크 URL 생성
             let postDetailsUrl = '/post/details';
@@ -66,22 +72,20 @@ document.addEventListener('DOMContentLoaded', () => {
                     break;
             }
             // 예약 카드 공통 내용
-            htmlStr += `
-                <div class="reservation-card">
-                  <div class="res-img">
-                    <a href="${postDetailsUrl}">
-                    <img src="/images/rentals/${dto.imagePath}" alt="상품 이미지">
-                    </a>
-                  </div>
-                  <div class="res-info">
-                    <p class="car-name">
-                    <a href="${postDetailsUrl}"><strong>${dto.productName}</strong></a>
-                    </p>
-                    <p><strong>대여 날짜:</strong> ${dto.rentalDate}</p>
-                    <p><strong>대여 시간:</strong> ${dto.rentalTimeRange}</p>
-                    <p><strong>요금:</strong> ${dto.fee} JJAM</p>
-                    <p><strong>예약자:</strong> ${dto.renterNickname}</p>
-            `; // <주의> 밑에 버튼 추가 필수!! 
+			htmlStr += `
+			    <div class="reservation-card">
+			      <div class="res-img">
+			        <a href="${postDetailsUrl}">
+			        <img src="${dto.imageUrl}" alt="상품 이미지"> </a>
+			      </div>
+			      <div class="res-info">
+			        <p class="car-name">
+			        <a href="${postDetailsUrl}"><strong>${dto.productName}</strong></a>
+			        </p>
+			        <p><strong>대여 날짜:</strong> ${dto.rentalDate}</p>
+			        <p><strong>대여 시간:</strong> ${dto.rentalTimeRange}</p>
+			        <p><strong>요금:</strong> ${dto.fee} JJAM</p>
+			        <p><strong>예약자:</strong> ${dto.renterNickname || '알 수 없음'}</p> `; // <주의> 밑에 버튼 추가 필수!! 
             // 예약 진행 상태(status)에 따라 버튼 추가
             switch (dto.status) {
                 case 0:
@@ -145,6 +149,8 @@ document.addEventListener('DOMContentLoaded', () => {
             // 첫번째 페이지가 아니면 기존 내용 밑에 예약 목록을 추가.
             divReservationReqList.innerHTML += htmlStr;
         }
+		
+		divReservationReqList.innerHTML = htmlStr; // content로 생성된 HTML을 삽입
 
         if (((page.number + 1) !== page.totalPages) && (page.totalPages !== 0)) {
             // 현재 페이지가 마지막 페이지가 아니고,

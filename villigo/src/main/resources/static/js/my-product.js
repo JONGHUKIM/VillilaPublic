@@ -38,115 +38,112 @@ document.addEventListener('DOMContentLoaded', () => {
 
     }
 
-    function myProductPaging(data) {
-        if(data.totalElements == 0) {
-            myProductDiv.innerHTML = '등록한 상품이 없습니다!'
-            return;
+	function myProductPaging(data) {
+	    if(data.totalElements == 0) {
+	        myProductDiv.innerHTML = '등록한 상품이 없습니다!'
+	        return;
+	    }
+	    let html = '';
+	    data.content.forEach(product => { // product는 ProductImageMergeDto 객체
+	        html += `
+	                <div class="product-card">`;
+	                switch(product.rentalCategoryId) {
+	                    case 1:
+	                        html += `
+	                        <a href="/post/details/bag?id=${product.id}">`
+	                        break;
+	                    case 2:
+	                        html += `
+	                        <a href="/post/details/car?id=${product.id}">`
+	                        break;
+	                }
+	        html += `
+	                            <img src="${product.filePath}" alt="상품 이미지"> </a>
+	                        <p>`
+	                switch(product.rentalCategoryId) {
+	                    case 1:
+	                        html += `
+	                            <a href="/post/details/bag?id=${product.id}">`
+	                        break;
+	                    case 2:
+	                        html += `
+	                            <a href="/post/details/car?id=${product.id}">`
+	                        break;
+	                }
+	        html += `
+	                                <p class="product-name"><strong>${product.productName}</strong></p>
+	                            </a>
+	                        </p>
+	                        <p class="product-fee">${product.fee}JJAM</p>
+	                    </div>
+	                `;
+	    });
 
-        }
-        let html = '';
-        data.content.forEach(product => {
-            html += `
-					<div class="product-card">`;
-                    switch(product.rentalCategoryId) {
-                        case 1:
-                            html += `
-                            <a href="/post/details/bag?id=${product.id}">`
-                            break;
-                        case 2:
-                            html += `
-                            <a href="/post/details/car?id=${product.id}">`
-                            break;
-                    }
-			html += `
-                                <img src="/images/rentals/${product.filePath}" alt="상품 이미지">
-					        </a>
-							<p>`
-                    switch(product.rentalCategoryId) {
-                        case 1:
-                            html += `
-                                <a href="/post/details/bag?id=${product.id}">`
-                            break;
-                        case 2:
-                            html += `
-                                <a href="/post/details/car?id=${product.id}">`
-                            break;
-                    }
-            html += `
-                                    <p class="product-name"><strong>${product.productName}</strong></p>
-                                </a>
-							</p>
-						    <p class="product-fee">${product.fee}JJAM</p>
-					    </div>
-                    `;
-        });
+	    myProductDiv.innerHTML += html;
 
-        myProductDiv.innerHTML += html;
+	    console.log(data);
+	    const pageNumber = data.pageable.pageNumber;
+	    const totalPages = data.totalPages
+	    if(pageNumber < totalPages-1) {
+	        moreView(1, pageNumber, totalPages);
+	    } else {
+	        deleteBtnMoreView(1);
+	    }
+	}
 
-        console.log(data);
-        const pageNumber = data.pageable.pageNumber;
-        const totalPages = data.totalPages
-        if(pageNumber < totalPages-1) {
-            moreView(1, pageNumber, totalPages);
-        } else {
-            deleteBtnMoreView(1);
-        }
-    }
+	function likeProductPaging(data) {
+	    if(data.totalElements === 0) {
+	        likeProductDiv.innerHTML = '<span>찜 목록이 비어있습니다!</span>'
+	        return;
+	    }
+	    let html = ''
+	    data.content.forEach(product => { // product는 ProductImageMergeDto 객체
+	        html += `
+	            <div class="product-card">
+	                <button class="heart-btn active" onclick="toggleHeart(this)">❤️</button>` // productId를 인자로 넘기도록 수정할 수 있음
+	            switch(product.rentalCategoryId) {
+	                case 1:
+	                    html += `
+	                    <a href="/post/details/bag?id=${product.id}">`
+	                    break;
+	                case 2:
+	                    html += `
+	                    <a href="/post/details/car?id=${product.id}">`
+	                    break;
+	            }
+	            html += `
+	                        <img src="${product.filePath}" alt="찜상품"> </a>
+	                    <p>`
+	            switch(product.rentalCategoryId) {
+	                case 1:
+	                    html += `
+	                        <a href="/post/details/bag?id=${product.id}">`
+	                    break;
+	                case 2:
+	                    html += `
+	                        <a href="/post/details/car?id=${product.id}">`
+	                    break;
+	            }
+	            html += `
+	                            <strong>${product.productName}</strong>
+	                        </a>
+	                    </p>
+	                    <p><strong>${product.fee}JJAM</strong></p>
+	                    <button class="delete-btn" style="display: none;" onclick="deleteCard(this, ${product.id})">삭제</button>
+	                </div>`
+	    });
+	    likeProductDiv.innerHTML += html;
 
-    function likeProductPaging(data) {
-        if(data.totalElements === 0) {
-            likeProductDiv.innerHTML = '<span>등록한 상품이 없습니다!</span>'
-            return;
-        }
-        let html = ''
-        data.content.forEach(product => {
-            html += `
-                <div class="product-card">
-			        <button class="heart-btn active" onclick="toggleHeart(this)">❤️</button>`
-            switch(product.rentalCategoryId) {
-                case 1:
-                    html += `
-                    <a href="/post/details/bag?id=${product.id}">`
-                    break;
-                case 2:
-                    html += `
-                    <a href="/post/details/car?id=${product.id}">`
-                    break;
-            }
-		    html += `
-                        <img src="/images/rentals/${product.filePath}" alt="찜상품">
-			        </a>
-			        <p>`
-            switch(product.rentalCategoryId) {
-                case 1:
-                    html += `
-                        <a href="/post/details/bag?id=${product.id}">`
-                    break;
-                case 2:
-                    html += `
-                        <a href="/post/details/car?id=${product.id}">`
-                    break;
-            }
-			html += `
-                            <strong>${product.productName}</strong>
-			            </a>
-			        </p>
-			        <p><strong>${product.fee}JJAM</strong></p>
-			        <button class="delete-btn" style="display: none;" onclick="deleteCard(this, ${product.id})">삭제</button>
-			    </div>`
-        });
-        likeProductDiv.innerHTML += html;
-
-        console.log(data);
-        const pageNumber = data.pageable.pageNumber;
-        const totalPages = data.totalPages
-        console.log(pageNumber, totalPages);
-        if(pageNumber < totalPages-1) {
-            moreView(2, pageNumber, totalPages);
-        } else {
-            deleteBtnMoreView(2);
-        }
-    }
+	    console.log(data);
+	    const pageNumber = data.pageable.pageNumber;
+	    const totalPages = data.totalPages
+	    console.log(pageNumber, totalPages);
+	    if(pageNumber < totalPages-1) {
+	        moreView(2, pageNumber, totalPages);
+	    } else {
+	        deleteBtnMoreView(2);
+	    }
+	}
     
     // 좋아요 기능
         function toggleHeart(btn) {
