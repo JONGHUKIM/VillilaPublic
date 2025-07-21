@@ -103,16 +103,13 @@ public class HomeController {
         homeProducts.forEach((key, products) -> {
             products.forEach(product -> {
                 if (product.getFilePath() != null) {
-                    try {
-                        String presignedUrl = s3FileStorageService.generateDownloadPresignedUrl(
-                            product.getFilePath(), 
-                            Duration.ofHours(1)
-                        );
-                        product.setFilePath(presignedUrl); // filePath를 URL로 대체
+                	try {
+                        String presignedUrl = s3FileStorageService.generateDownloadPresignedUrl(product.getFilePath(), Duration.ofHours(1));
+                        log.info("Generated presigned URL for productId {}: {}", product.getId(), presignedUrl);
+                        product.setFilePath(presignedUrl);
                     } catch (FileStorageException e) {
-                        log.error("S3 pre-signed URL 생성 실패: filePath={}, error={}", 
-                                product.getFilePath(), e.getMessage(), e);
-                        product.setFilePath("/images/placeholder.jpg"); // 실패 시 플레이스홀더 이미지
+                        log.error("S3 pre-signed URL 생성 실패 for productId {}: {}", product.getId(), e.getMessage(), e);
+                        product.setFilePath("/images/placeholder.jpg");
                     }
                 }
             });

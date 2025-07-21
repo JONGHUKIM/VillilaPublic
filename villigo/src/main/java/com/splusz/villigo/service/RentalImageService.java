@@ -70,6 +70,9 @@ public class RentalImageService {
 	        log.warn("저장할 S3 키가 없음: productId={}", productId);
 	    }
 	}
+	public String generatePresignedUrl(String filePath) throws FileStorageException {
+        return fileStorageService.generateDownloadPresignedUrl(filePath, Duration.ofHours(1));
+    }
 
     public List<RentalImageDto> readByProductId(Long productId) {
         List<RentalImage> images = rentalImgRepo.findByProductId(productId);

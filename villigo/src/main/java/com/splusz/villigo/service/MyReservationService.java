@@ -13,9 +13,11 @@ import com.splusz.villigo.dto.RentalImageDto;
 import com.splusz.villigo.repository.MyReservationRepository;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class MyReservationService {
 
 	
@@ -39,18 +41,18 @@ public class MyReservationService {
             dto.setProductName(reservation.getProduct().getProductName());
             dto.setFee((long) reservation.getProduct().getFee());
             dto.setProductId(reservation.getProduct().getId());
-
             dto.setProductOwnerId(reservation.getProduct().getUser().getId());
 
             dto.setRentalDate(reservation.getStartTime().format(dateFormatter));
             String timeRange = reservation.getStartTime().format(timeFormatter) + " ~ " +
-                                 reservation.getEndTime().format(timeFormatter);
+                               reservation.getEndTime().format(timeFormatter);
             dto.setRentalTimeRange(timeRange);
             dto.setRenterNickname(reservation.getRenter().getNickname());
 
             // S3 Pre-signed URL을 가져와서 imageUrl 설정
             List<RentalImageDto> rentalImages = rentalImageService.readByProductId(reservation.getProduct().getId());
             String imageUrl = rentalImages.isEmpty() ? "/images/default-product.png" : rentalImages.get(0).getImageUrl();
+            log.info("Generated imageUrl for reservationId {}: {}", reservation.getId(), imageUrl);
             dto.setImageUrl(imageUrl);
 
             dto.setStatus(reservation.getStatus());

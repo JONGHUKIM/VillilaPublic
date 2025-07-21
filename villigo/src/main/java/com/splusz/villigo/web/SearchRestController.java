@@ -39,14 +39,13 @@ public class SearchRestController {
         // S3 pre-signed URL 생성
         searchedProducts.getContent().forEach(product -> {
             if (product.getFilePath() != null) {
-                try {
-                    String presignedUrl = fileStorageService.generateDownloadPresignedUrl(
-                        product.getFilePath(), Duration.ofHours(1));
-                    product.setFilePath(presignedUrl); // filePath를 pre-signed URL로 업데이트
+            	try {
+                    String presignedUrl = fileStorageService.generateDownloadPresignedUrl(product.getFilePath(), Duration.ofHours(1));
+                    log.info("Generated presigned URL for productId {}: {}", product.getId(), presignedUrl);
+                    product.setFilePath(presignedUrl);
                 } catch (FileStorageException e) {
-                    log.error("S3 pre-signed URL 생성 실패: filePath={}, error={}", 
-                        product.getFilePath(), e.getMessage());
-                    product.setFilePath("/images/placeholder.jpg"); // 실패 시 플레이스홀더
+                    log.error("S3 pre-signed URL 생성 실패 for productId {}: {}", product.getId(), e.getMessage(), e);
+                    product.setFilePath("/images/placeholder.jpg");
                 }
             }
         });
