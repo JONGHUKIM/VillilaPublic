@@ -237,6 +237,7 @@ public class ReservationService {
      dto.setProductOwnerId(reservation.getProduct().getUser().getId());
      dto.setRenterNickname(reservation.getRenter().getNickname());
      dto.setRenterId(reservation.getRenter().getId());
+     dto.setProductId(reservation.getProduct().getId());
 
      dto.setDetails("대여 날짜: " + dto.getRentalDate());
      
