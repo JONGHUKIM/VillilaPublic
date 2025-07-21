@@ -272,7 +272,6 @@ a {
   border: 1px solid #ccc;
   border-radius: 10px;
   position: relative;
-  min-height: 180px;
 }
 
 .res-img {
