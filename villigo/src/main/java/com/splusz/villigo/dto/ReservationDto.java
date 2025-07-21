@@ -25,4 +25,6 @@ public class ReservationDto {
     private Integer status; // 예약 상태
     private Long productOwnerId; // 상품 소유자 ID
     private String renterNickname;
+    
+    private Long renterId;
 }

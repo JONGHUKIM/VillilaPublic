@@ -20,19 +20,23 @@ document.addEventListener('DOMContentLoaded', () => {
     
 
     // functions
-	switch(category){
-	    case 1:
-	        uri = `/api/mypage/myproduct?p=${pageNum}`;
-	        axios
-	        .get(uri)
-	        .then((response) => { myProductPaging(response.data) })
-	        .catch((error) => { console.log(error); });
-	    case 2:
-	        uri = `/api/mypage/likeproduct?p=${pageNum}`;
-	        axios
-	        .get(uri)
-	        .then((response) => { likeProductPaging(response.data) })
-	        .catch((error) => { console.log(error); });
+	function axiosPaging(category, pageNum) {
+	    switch(category){
+	        case 1: // 내 상품
+	            uri = `/api/mypage/myproduct?p=${pageNum}`;
+	            axios
+	            .get(uri)
+	            .then((response) => { myProductPaging(response.data) })
+	            .catch((error) => { console.log(error); });
+	            break;
+	        case 2: // 찜 상품
+	            uri = `/api/mypage/likeproduct?p=${pageNum}`;
+	            axios
+	            .get(uri)
+	            .then((response) => { likeProductPaging(response.data) })
+	            .catch((error) => { console.log(error); });
+	            break;
+	    }
 	}
 
 	function myProductPaging(data) {
@@ -90,7 +94,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 	function likeProductPaging(data) {
 	    if(data.totalElements === 0) {
-	        likeProductDiv.innerHTML = '<span>등록한 상품이 없습니다!</span>'
+	        likeProductDiv.innerHTML = '<span>찜한 상품이 없습니다!</span>'
 	        return;
 	    }
 	    let html = ''
@@ -179,26 +183,28 @@ document.addEventListener('DOMContentLoaded', () => {
          window.deleteCard = deleteCard;
 
 
-    function moreView(category, pageNumber, totalPages) {
-        console.log("더보기 버튼 그리기");
-        switch(category) {
-            case 1:
-                html = `
-                <button class="moreViewBtn" id="btnMoreView">더보기(${pageNumber+1} / ${totalPages})</button>
-                `;
-                divMoreViewMyProduct.innerHTML = html;
-                break;
-            case 2:
-                html = `
-                <button class="moreViewBtn" id="btnMoreView">더보기(${pageNumber+1} / ${totalPages})</button>
-                `;
-                divMoreViewLike.innerHTML = html;
-        }
-
-        document.getElementById("btnMoreView").addEventListener('click', () => {
-            axiosPaging(category, pageNumber+1)
-        });
-    }
+		 function moreView(category, pageNumber, totalPages) {
+		     console.log("더보기 버튼 그리기");
+		     let html = ''; // html 변수를 함수 스코프 내에 선언
+		     switch(category) {
+		         case 1:
+		             html = `
+		             <button class="moreViewBtn" id="btnMoreViewMyProduct">더보기(${pageNumber+1} / ${totalPages})</button> `;
+		             divMoreViewMyProduct.innerHTML = html;
+		             document.getElementById("btnMoreViewMyProduct").addEventListener('click', () => { // id 변경
+		                 axiosPaging(category, pageNumber+1);
+		             });
+		             break;
+		         case 2:
+		             html = `
+		             <button class="moreViewBtn" id="btnMoreViewLike">더보기(${pageNumber+1} / ${totalPages})</button> `;
+		             divMoreViewLike.innerHTML = html;
+		             document.getElementById("btnMoreViewLike").addEventListener('click', () => { // id 변경
+		                 axiosPaging(category, pageNumber+1);
+		             });
+		             break;
+		     }
+		 }
 
     function deleteBtnMoreView(category) {
         switch(category) {
