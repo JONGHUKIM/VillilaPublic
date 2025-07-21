@@ -44,21 +44,22 @@ document.addEventListener('DOMContentLoaded', () => {
 	function makeReservationReqElements({content, page}) { // content는 List<ReservationDto>
 	    const divReservationReqList = document.getElementById('reservationReqList');
 	    
-	    divReservationReqList.innerHTML = ''; 
-	    let htmlStr = '';
+	    divReservationReqList.innerHTML = ''; // HTML 내용 초기화 (딱 한 번)
+	    let htmlStr = ''; // 동적으로 생성할 HTML 문자열
 
+	    // 데이터가 아예 없는 경우 (컨텐츠 배열이 비어있으면)
 	    if (content.length === 0) {
-	        // 데이터가 아예 없는 경우 메시지 표시
 	        divReservationReqList.innerHTML = '들어온 예약 신청이 없습니다.';
 	        document.getElementById('btnMore').style.display = 'none'; // 더보기 버튼 숨김
-	        return; // 여기서 함수 종료
+	        return; // 함수 종료
 	    }
 	            
-		// DTO의 데이터를 이용하여 예약 현황 카드 생성
-		for (const dto of content) { // dto는 ReservationDto 객체
-		    if (dto.status === 5) {
-		        continue; 
-		    }
+	    // DTO의 데이터를 이용하여 예약 현황 카드 생성 (content가 비어있지 않은 경우에만 실행)
+	    for (const dto of content) { // dto는 ReservationDto 객체
+	        // 예약의 status가 5(삭제처리됨)이면 예약카드를 생성하지 않음
+	        if (dto.status === 5) {
+	            continue; 
+	        }
 	        
 	        console.log('상품 카테고리 id: ', dto.rentalCategoryId);
 	        let postDetailsUrl = '/post/details';
@@ -81,7 +82,8 @@ document.addEventListener('DOMContentLoaded', () => {
 	                <p><strong>대여 날짜:</strong> ${dto.rentalDate}</p>
 	                <p><strong>대여 시간:</strong> ${dto.rentalTimeRange}</p>
 	                <p><strong>요금:</strong> ${dto.fee} JJAM</p>
-	                <p><strong>예약자:</strong> ${dto.renterNickname || '알 수 없음'}</p> `; 
+	                <p><strong>예약자:</strong> ${dto.renterNickname || '알 수 없음'}</p>
+	        `;
 	        // 예약 진행 상태(status)에 따라 버튼 추가
 	        switch (dto.status) {
 	            case 0: case 1:

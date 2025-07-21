@@ -320,7 +320,8 @@ public class ProductService {
         if (pickedImage != null && pickedImage.getFilePath() != null) {
             String dbFilePath = pickedImage.getFilePath();
 
-            // dbFilePath가 이미 S3 Key 형태인지 확인
+            // dbFilePath가 이미 S3 Key 형태인지 확인합니다.
+            // `product_images/`, `avatars/`, `chat_images/`, `test/` 로 시작하면 이미 S3 Key로 간주
             if (dbFilePath.startsWith("product_images/") || dbFilePath.startsWith("avatars/") || dbFilePath.startsWith("chat_images/") || dbFilePath.startsWith("test/")) {
                 actualS3Key = dbFilePath; // 이미 올바른 S3 Key
             } else {
@@ -329,9 +330,8 @@ public class ProductService {
             }
 
             try {
-                // generateDownloadPresignedUrl에 실제 S3 Key (actualS3Key)를 전달
+                // generateDownloadPresignedUrl에 실제 S3 Key (actualS3Key)를 전달합니다.
                 imageUrl = s3FileStorageService.generateDownloadPresignedUrl(actualS3Key, Duration.ofHours(1));
-                // 로그 확인: Generated presigned URL for S3 Key [actualS3Key]: [생성된 올바른 S3 URL]
                 log.info("ProductService: Generated presigned URL for S3 Key {}: {}", actualS3Key, imageUrl);
             } catch (FileStorageException e) {
                 log.error("ProductService: S3 Pre-signed URL 생성 실패 for {}: {}", actualS3Key, e.getMessage(), e);
