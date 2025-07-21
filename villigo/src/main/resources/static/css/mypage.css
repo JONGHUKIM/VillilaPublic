@@ -16,6 +16,11 @@ body {
   border: 1px solid #070707;
 }
 
+#reservationReqList {
+  height: 600px;      /* 필요에 따라 조절 */
+  overflow-y: auto;
+}
+
 .profile-left {
   display: flex;
   align-items: center;
