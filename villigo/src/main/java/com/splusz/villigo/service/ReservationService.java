@@ -23,6 +23,11 @@ import com.splusz.villigo.domain.RentalImage;
 import com.splusz.villigo.domain.Reservation;
 import com.splusz.villigo.domain.User;
 import com.splusz.villigo.dto.ReservationCardDto;
+<<<<<<< HEAD
+=======
+import com.splusz.villigo.dto.ReservationCreateDto;
+import com.splusz.villigo.dto.ReservationDto;
+>>>>>>> 4b57c67 (Reservation<DTO>로 수정)
 import com.splusz.villigo.repository.AlarmCategoryRepository;
 import com.splusz.villigo.repository.AlarmRepository;
 import com.splusz.villigo.repository.ChatRoomReservationRepository;
@@ -45,6 +50,11 @@ public class ReservationService {
 	private final SimpMessagingTemplate messagingTemplate; // 알림용
 	private final AlarmCategoryRepository alarmCatRepo;
 	private final AlarmRepository alarmRepo;
+<<<<<<< HEAD
+=======
+	private final RentalImageService rentalImgServ;
+	private final ProductRepository prodRepo;
+>>>>>>> 4b57c67 (Reservation<DTO>로 수정)
 	
 	public Reservation read(Long id) {
 		log.info("read(id={})", id);
@@ -209,6 +219,25 @@ public class ReservationService {
         List<Reservation> result = reserveRepo.findByProductIdAndStatusNotIn(productId, statuses);
         result.forEach(System.out::println);
         return result;
+    }
+    
+    @Transactional(readOnly = true) // 데이터베이스 읽기만 수행하므로 readOnly
+    public boolean checkIfReservationConflicts(ReservationCreateDto newReservationDto, User currentUser) {
+        // 현재 상품에 대한 모든 예약 엔티티를 조회
+        // DTO가 아닌 실제 Reservation 엔티티 리스트를 가져와야 isOverlapping 사용 가능
+        List<Reservation> existingReservations = reserveRepo.findByProductId(newReservationDto.getProductId());
+
+        // 조회된 예약들과 새로운 예약 요청(dto)이 겹치는지 확인
+        boolean isConflict = existingReservations.stream().anyMatch(existingReserv -> {
+            Product product = prodRepo.findById(newReservationDto.getProductId())
+                                      .orElseThrow(() -> new IllegalArgumentException("상품을 찾을 수 없습니다."));
+            Reservation newReservationEntity = newReservationDto.toEntity(product);
+            newReservationEntity.setRenter(currentUser); // isOverlapping에 Renter 정보가 필요할 경우 설정
+            return existingReserv.isOverlapping(newReservationDto); // Reservation 엔티티의 isOverlapping 메서드 사용
+        });
+
+        log.info("checkIfReservationConflicts: productId={}, isConflict={}", newReservationDto.getProductId(), isConflict);
+        return isConflict;
     }
 
 }

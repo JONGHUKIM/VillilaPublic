@@ -31,6 +31,7 @@ import com.splusz.villigo.dto.AddressUpdateDto;
 import com.splusz.villigo.dto.BagCreateDto;
 import com.splusz.villigo.dto.BagUpdateDto;
 import com.splusz.villigo.dto.RentalImageDto;
+import com.splusz.villigo.dto.ReservationDto;
 import com.splusz.villigo.dto.UserProfileDto;
 import com.splusz.villigo.service.AddressService;
 import com.splusz.villigo.service.BagService;
@@ -166,10 +167,12 @@ public class BagController {
     @DeleteMapping("/delete/bag")
     public ResponseEntity<String> delete(@RequestParam(name = "id") Long productId) {
         List<Integer> excludedStatuses = Arrays.asList(4, 5, 7);
-        List<Reservation> activeReservations = reservServ.readAllExceptStatuses(productId, excludedStatuses);
-        log.info("activeReservations={}", activeReservations);
+        // ReservationDto를 반환받도록 변경
+        List<ReservationDto> activeReservationsDto = reservServ.readAllExceptStatuses(productId, excludedStatuses); // <--- 수정
+        log.info("activeReservations={}", activeReservationsDto); // DTO 리스트 로그
 
-        if (!activeReservations.isEmpty()) {
+        // DTO 리스트를 사용하여 비어있는지 확인
+        if (!activeReservationsDto.isEmpty()) { // <--- DTO 리스트 사용
             return ResponseEntity.status(HttpStatus.CONFLICT).body("해당 제품에 있는 예약을 처리 후 삭제가 가능합니다.");
         } else {
             log.info("bag delete(productId={})", productId);

@@ -26,6 +26,7 @@ import com.splusz.villigo.domain.Reservation;
 import com.splusz.villigo.dto.BrandReadDto;
 import com.splusz.villigo.dto.PostSummaryDto;
 import com.splusz.villigo.dto.ProductImageMergeDto;
+import com.splusz.villigo.dto.ReservationDto;
 import com.splusz.villigo.dto.SearchedProductDto;
 import com.splusz.villigo.dto.SelectBrandsByCategoryDto;
 import com.splusz.villigo.repository.AddressRepository;
@@ -329,26 +330,24 @@ public class ProductService {
     }
 
     
-    @Transactional
+    @Transactional // 스프링의 @Transactional 사용
     public void deleteProduct(Long productId) {
-        // 모든 관련 예약 조회
-        List<Reservation> reservations = reservationService.readAll(productId);
+        // 모든 관련 예약 조회 (ReservationDto 리스트로 받음)
+        List<ReservationDto> reservations = reservationService.readAll(productId);
         
         if (reservations != null && !reservations.isEmpty()) {
             // 삭제 가능한 예약만 필터링 후 삭제 (상태 4, 5, 7)
             reservations.stream()
-                .filter(reservation -> reservation.getStatus() == 4 || reservation.getStatus() == 5 || reservation.getStatus() == 7)
-                .map(Reservation::getId)
-                .forEach(reservationService::delete);
+                .filter(reservationDto -> reservationDto.getStatus() == 4 || reservationDto.getStatus() == 5 || reservationDto.getStatus() == 7) // <--- ReservationDto 사용
+                .map(ReservationDto::getId) // <--- ReservationDto의 getId() 사용
+                .forEach(reservationService::delete); // 예약 삭제 서비스 호출
             
-            // 남은 예약이 있는지 확인
-            List<Reservation> remainingReservations = reservationService.readAll(productId);
+            // 남은 예약이 있는지 확인 (ReservationDto 리스트로 받음)
+            List<ReservationDto> remainingReservations = reservationService.readAll(productId);
             if (remainingReservations != null && !remainingReservations.isEmpty()) {
                 throw new IllegalStateException("삭제할 수 없는 예약이 존재합니다.");
             }
         }
-        
-        // 제품 삭제
         prodRepo.deleteById(productId);
     }
     

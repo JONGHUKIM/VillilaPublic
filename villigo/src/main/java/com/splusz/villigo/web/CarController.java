@@ -25,13 +25,13 @@ import com.splusz.villigo.domain.Address;
 import com.splusz.villigo.domain.Brand;
 import com.splusz.villigo.domain.Car;
 import com.splusz.villigo.domain.Product;
-import com.splusz.villigo.domain.Reservation;
 import com.splusz.villigo.domain.User;
 import com.splusz.villigo.dto.AddressCreateDto;
 import com.splusz.villigo.dto.AddressUpdateDto;
 import com.splusz.villigo.dto.CarCreateDto;
 import com.splusz.villigo.dto.CarUpdateDto;
 import com.splusz.villigo.dto.RentalImageDto;
+import com.splusz.villigo.dto.ReservationDto;
 import com.splusz.villigo.dto.UserProfileDto;
 import com.splusz.villigo.service.AddressService;
 import com.splusz.villigo.service.CarService;
@@ -170,9 +170,12 @@ public class CarController {
     @DeleteMapping("/delete/car")
     public ResponseEntity<String> delete(@RequestParam(name = "id") Long productId) {
         List<Integer> excludedStatuses = Arrays.asList(4, 5, 7);
-        List<Reservation> activeReservations = reservServ.readAllExceptStatuses(productId, excludedStatuses);
-        log.info("activeReservations={}", activeReservations);
-        if (!activeReservations.isEmpty()) {
+        // ReservationDto를 반환받도록 변경
+        List<ReservationDto> activeReservationsDto = reservServ.readAllExceptStatuses(productId, excludedStatuses); // <--- 수정
+        log.info("activeReservations={}", activeReservationsDto); // DTO 리스트 로그
+        
+        // DTO 리스트를 사용하여 비어있는지 확인
+        if (!activeReservationsDto.isEmpty()) { // <--- DTO 리스트 사용
             return ResponseEntity.status(HttpStatus.CONFLICT).body("해당 제품에 있는 예약을 처리 후 삭제가 가능합니다.");
         } else {
             log.info("car delete(productId={})", productId);
