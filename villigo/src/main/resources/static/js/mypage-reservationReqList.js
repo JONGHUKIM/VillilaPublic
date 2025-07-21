@@ -82,8 +82,7 @@ document.addEventListener('DOMContentLoaded', () => {
 	                <p><strong>대여 날짜:</strong> ${dto.rentalDate}</p>
 	                <p><strong>대여 시간:</strong> ${dto.rentalTimeRange}</p>
 	                <p><strong>요금:</strong> ${dto.fee} JJAM</p>
-	                <p><strong>예약자:</strong> ${dto.renterNickname || '알 수 없음'}</p>
-	        `;
+	                <p><strong>예약자:</strong> ${dto.renterNickname || '알 수 없음'}</p> `;
 	        // 예약 진행 상태(status)에 따라 버튼 추가
 	        switch (dto.status) {
 	            case 0: case 1:
@@ -143,57 +142,47 @@ document.addEventListener('DOMContentLoaded', () => {
 	    } else {
 	        document.getElementById('btnMore').style.display = 'none';
 	    }
-        
-        // 표시해야하는 예약 현황이 없는 경우
-        const contentLength = Object.keys(content).length;
-        console.log('표시되는 예약 갯수: ', contentLength);
-        if (contentLength === 0) {
-            divReservationReqList.innerHTML = '들어온 예약 신청이 없습니다.';
-        }
+	    
+	    // [거절], [수락], [삭제] 버튼을 찾고, click 이벤트 리스너를 설정
+	    const btnDecline = document.querySelectorAll('button.btn-decline');
+	    btnDecline.forEach((btn) => btn.addEventListener('click', declineReservation));
 
-        // [거절], [수락], [삭제] 버튼을 찾고, click 이벤트 리스너를 설정
-        const btnDecline = document.querySelectorAll('button.btn-decline');
-        btnDecline.forEach((btn) => btn.addEventListener('click', declineReservation));
+	    const btnAccept = document.querySelectorAll('button.btn-accept');
+	    btnAccept.forEach((btn) => btn.addEventListener('click', acceptReservation));
 
-        const btnAccept = document.querySelectorAll('button.btn-accept');
-        btnAccept.forEach((btn) => btn.addEventListener('click', acceptReservation));
+	    const btnDeleteReserv = document.querySelectorAll('button.btn.delete-reserv'); // 오타 수정: btn.delete-reserv
+	    btnDeleteReserv.forEach((btn) => btn.addEventListener('click', deleteReservation));
+	    
+	    const btnChatList = document.querySelectorAll('button.btn-chat');
+	    btnChatList.forEach((btn) => {
+	        btn.addEventListener('click', function () {
+	            const roomId = this.getAttribute('data-room-id');
+	            const reservationId = this.getAttribute('data-id');
+	            const currentUserId = document.body.getAttribute('data-user-id');
 
-        const btnDeleteReserv = document.querySelectorAll('button.btn-delete-reserv');
-        btnDeleteReserv.forEach((btn) => btn.addEventListener('click', deleteReservation));
-        
-		const btnChatList = document.querySelectorAll('button.btn-chat');
-		btnChatList.forEach((btn) => {
-		    btn.addEventListener('click', function () {
-		        const roomId = this.getAttribute('data-room-id');
-		        const reservationId = this.getAttribute('data-id');
-		        const currentUserId = document.body.getAttribute('data-user-id');
+	            if (roomId) {
+	                window.location.href = `/chat?chatRoomId=${roomId}`;
+	                return;
+	            }
 
-		        if (roomId) {
-		            // 이미 채팅방이 존재하면 바로 이동
-		            window.location.href = `/chat?chatRoomId=${roomId}`;
-		            return;
-		        }
+	            if (!reservationId || !currentUserId) {
+	                alert("예약 정보 또는 사용자 정보가 누락되었습니다.");
+	                return;
+	            }
 
-		        if (!reservationId || !currentUserId) {
-		            alert("예약 정보 또는 사용자 정보가 누락되었습니다.");
-		            return;
-		        }
-
-		        // 없으면 서버에 요청하여 채팅방 생성 or 조회
-		        axios.post('/api/chat/rooms/by-reservation', null, {
-		            params: { reservationId, currentUserId }
-		        })
-		        .then(response => {
-		            const chatRoomId = response.data.id;
-		            window.location.href = `/chat?chatRoomId=${chatRoomId}`;
-		        })
-		        .catch(error => {
-		            console.error("채팅방 열기 실패:", error);
-		            alert("채팅방을 열 수 없습니다.");
-		        });
-		    });
-		});
-
+	            axios.post('/api/chat/rooms/by-reservation', null, {
+	                params: { reservationId, currentUserId }
+	            })
+	            .then(response => {
+	                const chatRoomId = response.data.id;
+	                window.location.href = `/chat?chatRoomId=${chatRoomId}`;
+	            })
+	            .catch(error => {
+	                console.error("채팅방 열기 실패:", error);
+	                alert("채팅방을 열 수 없습니다.");
+	            });
+	        });
+	    });
 	}
     
     // "채팅" 버튼 클릭 시 호출되는 함수

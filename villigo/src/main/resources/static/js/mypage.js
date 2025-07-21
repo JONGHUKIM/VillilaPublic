@@ -4,15 +4,41 @@ document.addEventListener("DOMContentLoaded", () => {
     const contents = document.querySelectorAll(".tab-content");
 
     const activeTabIndex = Array.from(tabs).findIndex(tab => tab.classList.contains("active"));
-    if (activeTabIndex === 2) bindReservationCardEvents();
-    if (activeTabIndex === 4) loadReviews();
 
-    window.showTab = function(index) {
-        tabs.forEach((t, i) => t.classList.toggle("active", i === index));
-        contents.forEach((c, i) => c.classList.toggle("active", i === index));
-        if (index === 2) bindReservationCardEvents();
-        if (index === 4) loadReviews();
-    };
+	window.showTab = function(index) {
+	    tabs.forEach((t, i) => t.classList.toggle("active", i === index));
+	    contents.forEach((c, i) => c.classList.toggle("active", i === index));
+	    
+	    // 각 탭 인덱스에 맞춰 데이터 로드 함수 호출
+	    switch(index) {
+	        case 0: // 내상품 탭
+	            // my-product.js의 axiosPaging(1, 0) 호출
+	            if (typeof axiosPaging === 'function') { // 함수 존재 여부 확인 (my-product.js에서 옴)
+	                document.getElementById('myProductDiv').innerHTML = ''; // 초기화
+	                axiosPaging(1, 0);
+	            }
+	            break;
+	        case 1: // 예약현황 탭 (인덱스 1)
+	            if (typeof getAllReservationRequests === 'function') { // 함수 존재 여부 확인 (mypage-reservationReqList.js에서 옴)
+	                document.getElementById('reservationReqList').innerHTML = ''; // 초기화
+	                getAllReservationRequests(0); // 첫 페이지 로드
+	            }
+	            break;
+	        case 2: // 나의예약 탭 (인덱스 2)
+	            bindReservationCardEvents();
+	            break;
+	        case 3: // 찜 탭 (인덱스 3)
+	            // my-product.js의 axiosPaging(2, 0) 호출
+	            if (typeof axiosPaging === 'function') { // 함수 존재 여부 확인 (my-product.js에서 옴)
+	                document.getElementById('likeProductDiv').innerHTML = ''; // 초기화
+	                axiosPaging(2, 0);
+	            }
+	            break;
+	        case 4: // 후기 탭 (인덱스 4)
+	            loadReviews();
+	            break;
+	    }
+	};
 	
 	// WebSocket 알림 구독
 	const userId = document.body.dataset.userId;

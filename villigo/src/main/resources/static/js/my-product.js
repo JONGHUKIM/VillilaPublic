@@ -20,23 +20,20 @@ document.addEventListener('DOMContentLoaded', () => {
     
 
     // functions
-    function axiosPaging(category, pageNum) {
-        switch(category){
-            case 1: // 내 상품
-                uri = `/api/mypage/myproduct?p=${pageNum}`;
-                axios
-                .get(uri)
-                .then((response) => { myProductPaging(response.data) })
-                .catch((error) => { console.log(error); });
-            case 2: // 찜 상품
-                uri = `/api/mypage/likeproduct?p=${pageNum}`;
-                axios
-                .get(uri)
-                .then((response) => { likeProductPaging(response.data) })
-                .catch((error) => { console.log(error); });
-        }
-
-    }
+	switch(category){
+	    case 1:
+	        uri = `/api/mypage/myproduct?p=${pageNum}`;
+	        axios
+	        .get(uri)
+	        .then((response) => { myProductPaging(response.data) })
+	        .catch((error) => { console.log(error); });
+	    case 2:
+	        uri = `/api/mypage/likeproduct?p=${pageNum}`;
+	        axios
+	        .get(uri)
+	        .then((response) => { likeProductPaging(response.data) })
+	        .catch((error) => { console.log(error); });
+	}
 
 	function myProductPaging(data) {
 	    if(data.totalElements == 0) {
@@ -93,45 +90,46 @@ document.addEventListener('DOMContentLoaded', () => {
 
 	function likeProductPaging(data) {
 	    if(data.totalElements === 0) {
-	        likeProductDiv.innerHTML = '<span>찜 목록이 비어있습니다!</span>' // 메시지 변경
+	        likeProductDiv.innerHTML = '<span>등록한 상품이 없습니다!</span>'
 	        return;
 	    }
 	    let html = ''
-	    data.content.forEach(product => { // product는 ProductImageMergeDto 객체
-			    html += `
-			        <div class="product-card">
-			            <button class="heart-btn active" onclick="toggleHeart(this)">❤️</button>` // productId를 인자로 넘기도록 수정할 수 있음
-			        switch(product.rentalCategoryId) {
-			            case 1:
-			                html += `
-			                <a href="/post/details/bag?id=${product.id}">`
-			                break;
-			            case 2:
-			                html += `
-			                <a href="/post/details/car?id=${product.id}">`
-			                break;
-			        }
-			        html += `
-			                    <img src="${product.filePath}" alt="찜상품"> </a>
-			                <p>`
-			        switch(product.rentalCategoryId) {
-			            case 1:
-			                html += `
-			                    <a href="/post/details/bag?id=${product.id}">`
-			                break;
-			            case 2:
-			                html += `
-			                    <a href="/post/details/car?id=${product.id}">`
-			                break;
-			        }
-			        html += `
-			                        <strong>${product.productName}</strong>
-			                    </a>
-			                </p>
-			                <p><strong>${product.fee}JJAM</strong></p>
-			                <button class="delete-btn" style="display: none;" onclick="deleteCard(this, ${product.id})">삭제</button>
-			            </div>`
-			});
+	    data.content.forEach(product => {
+	        html += `
+	            <div class="product-card">
+			        <button class="heart-btn active" onclick="toggleHeart(this)">❤️</button>`
+	        switch(product.rentalCategoryId) {
+	            case 1:
+	                html += `
+	                <a href="/post/details/bag?id=${product.id}">`
+	                break;
+	            case 2:
+	                html += `
+	                <a href="/post/details/car?id=${product.id}">`
+	                break;
+	        }
+		    html += `
+	                    <img src="/images/rentals/${product.filePath}" alt="찜상품">
+			        </a>
+			        <p>`
+	        switch(product.rentalCategoryId) {
+	            case 1:
+	                html += `
+	                    <a href="/post/details/bag?id=${product.id}">`
+	                break;
+	            case 2:
+	                html += `
+	                    <a href="/post/details/car?id=${product.id}">`
+	                break;
+	        }
+			html += `
+	                        <strong>${product.productName}</strong>
+			            </a>
+			        </p>
+			        <p><strong>${product.fee}JJAM</strong></p>
+			        <button class="delete-btn" style="display: none;" onclick="deleteCard(this, ${product.id})">삭제</button>
+			    </div>`
+	    });
 	    likeProductDiv.innerHTML += html;
 
 	    console.log(data);
