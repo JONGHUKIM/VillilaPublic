@@ -113,7 +113,7 @@ document.addEventListener('DOMContentLoaded', () => {
 	                break;
 	        }
 		    html += `
-	                    <img src="/images/rentals/${product.filePath}" alt="찜상품">
+	                    <img src="${product.filePath}" alt="찜상품">
 			        </a>
 			        <p>`
 	        switch(product.rentalCategoryId) {
