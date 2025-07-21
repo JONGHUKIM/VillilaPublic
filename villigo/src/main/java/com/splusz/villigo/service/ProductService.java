@@ -1,20 +1,20 @@
 package com.splusz.villigo.service;
 
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.splusz.villigo.domain.Address;
 import com.splusz.villigo.domain.Brand;
@@ -22,7 +22,6 @@ import com.splusz.villigo.domain.Color;
 import com.splusz.villigo.domain.Product;
 import com.splusz.villigo.domain.RentalCategory;
 import com.splusz.villigo.domain.RentalImage;
-import com.splusz.villigo.domain.Reservation;
 import com.splusz.villigo.dto.BrandReadDto;
 import com.splusz.villigo.dto.PostSummaryDto;
 import com.splusz.villigo.dto.ProductImageMergeDto;
@@ -35,8 +34,8 @@ import com.splusz.villigo.repository.ColorRepository;
 import com.splusz.villigo.repository.ProductRepository;
 import com.splusz.villigo.repository.RentalCategoryRepository;
 import com.splusz.villigo.repository.RentalImageRepository;
+import com.splusz.villigo.storage.FileStorageException;
 
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -52,6 +51,7 @@ public class ProductService {
     private final RentalImageRepository rentalImgRepo;
     private final AddressRepository addrRepo;
     private final ReservationService reservationService;
+    private final S3FileStorageService s3FileStorageService;
 
     public List<RentalCategory> readRentalCategories() {
         List<RentalCategory> reatalCategories = rentalCateRepo.findAll();
@@ -161,82 +161,27 @@ public class ProductService {
         return new PageImpl<>(subList, pageable, list.size());
     }
     
+    // 첫 번째 이미지를 ProductImageMergeDto에 추가
+    @Transactional(readOnly = true)
     public List<ProductImageMergeDto> addFirstImageInProduct(List<Product> products) {
         List<Long> ids = products.stream()
-            .map(Product::getId)
-            .collect(Collectors.toList());
+                .map(Product::getId)
+                .collect(Collectors.toList());
 
         List<RentalImage> rentalImages = rentalImgRepo.findAllByProductIdIn(ids);
 
         Map<Long, List<RentalImage>> imagesMap = rentalImages.stream()
-            .collect(Collectors.groupingBy(img -> img.getProduct().getId()));
+                .collect(Collectors.groupingBy(img -> img.getProduct().getId()));
 
         List<ProductImageMergeDto> result = new ArrayList<>();
 
         for (Product product : products) {
             Long productId = product.getId();
-
             List<RentalImage> imageList = imagesMap.getOrDefault(productId, Collections.emptyList());
-            RentalImage pickedImage = imageList.isEmpty() ? new RentalImage() : imageList.get(0); // ❗ 첫 번째 이미지 고정
+            RentalImage pickedImage = imageList.isEmpty() ? null : imageList.get(0); // <--- 이미지가 없으면 null로 전달
 
-            ProductImageMergeDto dto = ProductImageMergeDto.builder()
-                .id(productId)
-                .rentalCategoryId(product.getRentalCategory().getId())
-                .rentalCategory(product.getRentalCategory().getCategory())
-                .productName(product.getProductName())
-                .fee(product.getFee())
-                .postName(product.getPostName())
-                .imageId(pickedImage.getId())
-                .filePath(pickedImage.getFilePath())
-                .build();
-
-            result.add(dto);
+            result.add(buildProductImageMergeDto(product, pickedImage)); // <--- 헬퍼 메서드 호출
         }
-
-        return result;
-    }
-
-
-    public List<ProductImageMergeDto> addRandomImageInProduct(List<Product> products) {
-        List<Long> ids = products.stream()
-            .map(Product :: getId)
-            .collect(Collectors.toList());
-
-        List<RentalImage> reantalImages = rentalImgRepo.findAllByProductIdIn(ids);
-
-        Map<Long, List<RentalImage>> imagesMap = reantalImages.stream()
-            .collect(Collectors.groupingBy(img -> img.getProduct().getId()));
-
-
-        List<ProductImageMergeDto> result = new ArrayList<>();
-
-        for(Product product : products) {
-            Long productId = product.getId();
-            int randomImageNum = 0;
-
-            List<RentalImage> imageList = imagesMap.getOrDefault(productId, Collections.emptyList());
-
-            if(!imageList.isEmpty()) {
-                Random random = new Random();
-                randomImageNum = random.nextInt(imageList.size());
-            }
-
-            RentalImage pickedImage = imageList.isEmpty() ? new RentalImage() : imageList.get(randomImageNum);
-
-            ProductImageMergeDto dto = ProductImageMergeDto.builder()
-                .id(productId)
-                .rentalCategoryId(product.getRentalCategory().getId())
-                .rentalCategory(product.getRentalCategory().getCategory())
-                .productName(product.getProductName())
-                .fee(product.getFee())
-                .postName(product.getPostName())
-                .imageId(pickedImage.getId())
-                .filePath(pickedImage.getFilePath())
-                .build();
-
-            result.add(dto);
-        }
-
         return result;
     }
 
@@ -278,21 +223,22 @@ public class ProductService {
         };
     }
     
- // 특정 유저의 상품 목록을 조회
+    // 특정 유저의 상품 목록을 조회
+    @Transactional(readOnly = true)
     public List<PostSummaryDto> getUserProducts(Long userId) {
         log.info("getUserProducts(userId={})", userId);
 
-        // 유저가 올린 모든 상품 조회
         List<Product> products = prodRepo.findByUser_IdOrderByCreatedTimeDesc(userId);
 
-        // 상품 목록을 PostSummaryDto로 변환
-        return addRandomImageInProduct(products).stream()
+        // addRandomImageInProduct가 이미 URL을 포함한 ProductImageMergeDto를 반환
+        // ProductImageMergeDto의 filePath 필드에 S3 URL이 있으므로, PostSummaryDto.image에 그대로 할당
+        return addFirstImageInProduct(products).stream()
                 .map(productImageMergeDto -> {
                     PostSummaryDto dto = new PostSummaryDto();
                     dto.setId(productImageMergeDto.getId());
                     dto.setTitle(productImageMergeDto.getPostName());
                     dto.setPrice(productImageMergeDto.getFee());
-                    dto.setImage(productImageMergeDto.getFilePath());
+                    dto.setImage(productImageMergeDto.getFilePath()); // <--- filePath에 이미 URL이 있으므로 그대로 사용
                     dto.setRentalCategory(mapCategoryToCode(productImageMergeDto.getRentalCategory()));
                     return dto;
                 })
@@ -364,6 +310,44 @@ public class ProductService {
             log.info("카테고리 {} 브랜드 반환 (CUSTOM 제외): {}", rentalCategoryId, brands);
         }
         return brands;
+    }
+    
+    // ProductImageMergeDto를 생성할 때 filePath를 Pre-signed URL로 변환하는 헬퍼 메서드
+    private ProductImageMergeDto buildProductImageMergeDto(Product product, RentalImage pickedImage) {
+        String imageUrl = null;
+        String s3KeyForDownload = null; // S3 다운로드 요청에 사용할 최종 키
+
+        if (pickedImage != null && pickedImage.getFilePath() != null) {
+            String dbFilePath = pickedImage.getFilePath();
+
+            // DB filePath가 이미 S3 Key 형태인지 확인
+            if (dbFilePath.startsWith("product_images/") || dbFilePath.startsWith("avatars/") || dbFilePath.startsWith("chat_images/")) {
+                s3KeyForDownload = dbFilePath; // 이미 완전한 S3 Key
+            } else {
+                // DB filePath가 순수 파일명(예: UUID.png)인 경우
+                s3KeyForDownload = "product_images/" + dbFilePath; // 접두사 추가
+            }
+
+            try {
+                imageUrl = s3FileStorageService.generateDownloadPresignedUrl(s3KeyForDownload, Duration.ofHours(1));
+            } catch (FileStorageException e) {
+                log.error("ProductImageMergeDto: S3 Pre-signed URL 생성 실패 for {}: {}", s3KeyForDownload, e.getMessage(), e);
+                imageUrl = "/images/default-product.png"; // 실패 시 대체 이미지
+            }
+        } else {
+            imageUrl = "/images/default-product.png"; // 이미지가 없는 경우 기본 이미지
+        }
+
+        return ProductImageMergeDto.builder()
+                .id(product.getId())
+                .rentalCategoryId(product.getRentalCategory().getId())
+                .rentalCategory(product.getRentalCategory().getCategory())
+                .productName(product.getProductName())
+                .fee(product.getFee())
+                .postName(product.getPostName())
+                .imageId(pickedImage != null ? pickedImage.getId() : null) // pickedImage가 null일 경우 id도 null
+                .filePath(imageUrl) // <--- filePath 필드에 Pre-signed URL을 담음
+                .build();
     }
 
 }
