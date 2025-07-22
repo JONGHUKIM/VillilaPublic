@@ -30,8 +30,11 @@
                     <div class="preview-container" id="imagePreview">
                         <th:block th:each="image : ${rentalImages}">
                             <div class="position-relative d-inline-block me-2 mb-2 image-wrapper">
-                                <img th:src="@{'/images/rentals/' + ${image.filePath}}" class="preview-image" 
-                                style="width:120px; height:120px; object-fit:contain;" alt="기존 이미지">
+							<img th:src="${image.imageUrl != null} ? ${image.imageUrl} : '/images/default-image.png'" 
+							     class="preview-image" 
+							     style="width:120px; height:120px; object-fit:contain;" 
+							     alt="기존 이미지" 
+							     onerror="this.src='/images/default-image.png'">
                                 <span class="position-absolute translate-middle badge rounded-pill bg-danger delete-badge" >X</span>
                                 <input type="hidden" name="existingImageIds" th:value="${image.id}" />
                             </div>
