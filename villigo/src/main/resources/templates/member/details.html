@@ -64,7 +64,7 @@
 				    remainder=${feeAmount % 10},
 				    adjustedFee=${remainder >= 5 ? (#numbers.formatInteger((feeAmount / 10), 0) * 10) + 10 : (#numbers.formatInteger((feeAmount / 10), 0) * 10)},
 				    finalPrice=${originalPrice + adjustedFee}">
-		      <strong th:text="${#numbers.formatInteger(post.price, 0, 'COMMA')} + ' JJAM'">가격</strong>
+		      <strong th:text="${#numbers.formatInteger(post.price, 0, 'COMMA')} + ' 원'">가격</strong>
 		    </p>
 		  </div>
 		</div>
