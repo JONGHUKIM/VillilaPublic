@@ -1,5 +1,6 @@
 package com.splusz.villigo.repository;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.jpa.repository.EntityGraph;
@@ -22,5 +23,8 @@ public interface UserRepository extends JpaRepository<User, Long> {
 	@Query("SELECT u FROM User u LEFT JOIN FETCH u.theme WHERE u.username = :username")
 	Optional<User> findByUsernameWithTheme(String username);
 	
+    // S3 아바타 키를 가져오는 쿼리
+    @Query("SELECT u.avatar FROM User u WHERE u.avatar IS NOT NULL")
+    List<String> findAllAvatarKeys();
 	
 }

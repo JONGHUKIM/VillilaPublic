@@ -62,6 +62,10 @@ public interface ChatMessageRepository extends JpaRepository<ChatMessage, Long> 
     ChatMessage findTopByChatRoom_IdOrderByCreatedTimeDesc(Long chatRoomId);
 
     List<ChatMessage> findByMessageTypeIn(List<ChatMessageType> messageTypes);
+    
+    // content 필드가 S3 이미지 경로를 저장하며, messageType이 IMAGE 또는 IMAGE_GROUP인 경우
+    @Query("SELECT cm.content FROM ChatMessage cm WHERE cm.content IS NOT NULL AND (cm.messageType = 'IMAGE' OR cm.messageType = 'IMAGE_GROUP')")
+    List<String> findAllChatImageContents();
   
     
 }
