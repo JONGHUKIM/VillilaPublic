@@ -17,6 +17,18 @@ document.addEventListener('DOMContentLoaded', () => {
         likeProductDiv.innerHTML = '';
         axiosPaging(2, 0)
     });
+	
+	// 가격에 5%를 적용하고 10원 단위로 반올림하는 함수
+	function calculateServiceFee(originalPrice) {
+	    // 5% 적용
+	    const feeAmount = originalPrice * 0.05;
+	    
+	    // 10원 단위로 반올림
+	    // Math.round를 사용하여 5원 이상은 올림, 4원 이하는 내림
+	    const roundedFee = Math.round(feeAmount / 10) * 10;
+	    
+	    return roundedFee;
+	}
     
 
     // functions
@@ -45,7 +57,11 @@ document.addEventListener('DOMContentLoaded', () => {
 	        return;
 	    }
 	    let html = '';
-	    data.content.forEach(product => { // product는 ProductImageMergeDto 객체
+	    data.content.forEach(product => {
+	        // 원래 가격에 5% 서비스 수수료 적용
+	        const serviceFee = calculateServiceFee(product.fee);
+	        const displayPrice = product.fee + serviceFee;
+	        
 	        html += `
 	                <div class="product-card">`;
 	                switch(product.rentalCategoryId) {
@@ -75,7 +91,7 @@ document.addEventListener('DOMContentLoaded', () => {
 	                                <p class="product-name"><strong>${product.productName}</strong></p>
 	                            </a>
 	                        </p>
-	                        <p class="product-fee">${product.fee}JJAM</p>
+	                        <p class="product-fee">${displayPrice.toLocaleString()}원</p>
 	                    </div>
 	                `;
 	    });
@@ -99,9 +115,13 @@ document.addEventListener('DOMContentLoaded', () => {
 	    }
 	    let html = ''
 	    data.content.forEach(product => {
+	        // 원래 가격에 5% 서비스 수수료 적용
+	        const serviceFee = calculateServiceFee(product.fee);
+	        const displayPrice = product.fee + serviceFee;
+	        
 	        html += `
 	            <div class="product-card">
-			        <button class="heart-btn active" onclick="toggleHeart(this)">❤️</button>`
+	                <button class="heart-btn active" onclick="toggleHeart(this)">❤️</button>`
 	        switch(product.rentalCategoryId) {
 	            case 1:
 	                html += `
@@ -112,10 +132,10 @@ document.addEventListener('DOMContentLoaded', () => {
 	                <a href="/post/details/car?id=${product.id}">`
 	                break;
 	        }
-		    html += `
+	        html += `
 	                    <img src="${product.filePath}" alt="찜상품">
-			        </a>
-			        <p>`
+	                </a>
+	                <p>`
 	        switch(product.rentalCategoryId) {
 	            case 1:
 	                html += `
@@ -126,13 +146,13 @@ document.addEventListener('DOMContentLoaded', () => {
 	                    <a href="/post/details/car?id=${product.id}">`
 	                break;
 	        }
-			html += `
+	        html += `
 	                        <strong>${product.productName}</strong>
-			            </a>
-			        </p>
-			        <p><strong>${product.fee}JJAM</strong></p>
-			        <button class="delete-btn" style="display: none;" onclick="deleteCard(this, ${product.id})">삭제</button>
-			    </div>`
+	                    </a>
+	                </p>
+	                <p><strong>${displayPrice.toLocaleString()}원</strong></p>
+	                <button class="delete-btn" style="display: none;" onclick="deleteCard(this, ${product.id})">삭제</button>
+	            </div>`
 	    });
 	    likeProductDiv.innerHTML += html;
 

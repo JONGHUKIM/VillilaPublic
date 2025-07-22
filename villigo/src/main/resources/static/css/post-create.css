@@ -159,7 +159,7 @@
             left: 0;
             width: 100%; /* 화면 전체 너비 */
             background: #f8f8f8; 
-            padding: 15px 385px; /* 상하 패딩 */
+            padding: 15px 550px; /* 상하 패딩 */
             border-top: 2px solid transparent; 
             border-image: linear-gradient(to right, #4a11be, #b98ff0, #e6d493, #f3cc3c) 1;
             display: flex;    

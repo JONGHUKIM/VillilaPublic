@@ -81,7 +81,7 @@
                         </p>
                         <p><strong>대여 날짜:</strong> <span th:text="${reservation.rentalDate} ?: '날짜 없음'"></span></p>
                         <p><strong>대여 시간:</strong> <span th:text="${reservation.rentalTimeRange} ?: '시간 없음'"></span></p>
-                        <p><strong>요금:</strong> <span th:text="${#numbers.formatInteger(reservation.fee, 3, 'COMMA')} + ' JJAM' ?: '요금 없음'"></span></p>
+                        <p><strong>요금:</strong> <span th:text="${#numbers.formatInteger(reservation.fee, 3, 'COMMA')} + ' 원' ?: '요금 없음'"></span></p>
 
                         <div class="status-container">
                             <div class="status-line"></div>

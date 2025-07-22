@@ -16,6 +16,8 @@ document.addEventListener("DOMContentLoaded", function() {
 	// 찜 상태 확인
 	initializeHeartState();
 	
+	initializePriceRounding(); // 요금 반올림 함수 초기화
+	
 	// 지도는 Kakao Maps가 완전히 로드된 후에만 초기화
 	kakao.maps.load(function() {
 	    initializeMap(); // 여기가 진짜 실행 시점
@@ -24,6 +26,49 @@ document.addEventListener("DOMContentLoaded", function() {
 	// Pre-signed URL 갱신 (4분 50초 후)
 	setTimeout(refreshImageUrls, 4.8 * 60 * 1000);
 });
+
+// 요금을 10원 단위로 반올림하는 함수
+function roundPriceTo10Won(price) {
+    const numPrice = parseFloat(price);
+    if (isNaN(numPrice)) return price;
+    
+    // 10으로 나눈 나머지가 5 이상이면 올림, 미만이면 내림
+    const remainder = numPrice % 10;
+    if (remainder >= 5) {
+        return Math.ceil(numPrice / 10) * 10;
+    } else {
+        return Math.floor(numPrice / 10) * 10;
+    }
+}
+
+// 동적으로 추가되는 요금에도 적용할 수 있는 함수
+function formatPrice(price) {
+    const rounded = roundPriceTo10Won(price);
+    return rounded.toLocaleString('ko-KR') + '원';
+}
+
+// 요금 표시 요소들에 반올림 적용
+function initializePriceRounding() {
+    // 요금 섹션의 temp-box 안에 있는 strong 태그를 찾아서 처리
+    const priceSection = document.querySelector('.section .section-title');
+    if (priceSection && priceSection.textContent.includes('요금')) {
+        const tempBox = priceSection.nextElementSibling;
+        if (tempBox && tempBox.classList.contains('temp-box')) {
+            const strongElement = tempBox.querySelector('strong');
+            if (strongElement) {
+                const originalText = strongElement.textContent;
+                const priceMatch = originalText.match(/(\d+(?:,\d{3})*)\s*원/);
+                
+                if (priceMatch) {
+                    const originalPrice = parseInt(priceMatch[1].replace(/,/g, ''));
+                    const roundedPrice = roundPriceTo10Won(originalPrice);
+                    const formattedPrice = roundedPrice.toLocaleString('ko-KR');
+                    strongElement.textContent = formattedPrice + '원';
+                }
+            }
+        }
+    }
+}
 
 // Pre-signed URL 갱신 함수
 function refreshImageUrls() {
