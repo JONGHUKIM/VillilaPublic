@@ -1,0 +1,17 @@
+[33m6c0544f[m[33m ([m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m 더보기 버튼 삭제, 스크롤 형식으로 구현
+[33ma3fb363[m 프론트에서 productId를 받아 예약 거절,수락을 해야하는데 못함 ReservationDto,Service에 productId 추가
+[33m54e5967[m 찜 목록 이미지 S3에서 불러오기로 수정
+[33m4550dc9[m 예약 서비스에 로그 추가, my-product.js에서 {content, page} 대신 data를 직접 받음, page.number와 page.totalPages 대신 data.number와 data.totalPages를 사용, 중복 선언 제거
+[33m7f2fea5[m 찜하기 이전 코드로 복구, 예약 현황 makeReservationReqElements 코드 수정
+[33mda4b204[m url 생성 코드 중복 제거, 찜 버튼 사라짐 복구, 예약 현황 상품 불러오기 코드 수정
+[33m019badd[m Search url 중복생성 , 필요없는 주석 제거
+[33m12c50a4[m 접두사 확인 로그 추가
+[33mcd360de[m log 추가 이미지가 안불러와지는 이유 확인 중
+[33mcc00c78[m makeReservationReqElements 함수 내의 innerHTML 초기화 및 삽입 로직을 정리
+[33m814272d[m 브랜드 이미지 로컬에서 불러오기
+[33ma20e63f[m S3 이미지 불러올 수 있도록 JS 수정
+[33m2bbe040[m Random image 삭제 addFirstImageInProduct로 수정, ProductImageMergeDto S3 이미지로 변환하는 헬퍼 메서드 추가
+[33m6bb6ebf[m 마이페이지 내상품 S3 이미지 불러오기, 예약현황 불러오기 및 S3 이미지 불러오기, 찜 목록 이미지 불러오기 js 및 Dto, html, service 수정
+[33m588b36b[m myReservationRepository final 선언으로 수정
+[33m4b57c67[m Reservation<DTO>로 수정
+[33m6ba8a3a[m MyPage 기존 로컬 -> S3 이미지로 변경
