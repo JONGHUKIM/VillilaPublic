@@ -316,7 +316,6 @@ public class ChatService {
         }
         
         // 프론트엔드에서 S3에 직접 업로드 후 S3 Key(들)을 content에 담아 보냈다고 가정
-        // 프론트엔드에서 S3에 직접 업로드 후 S3 Key(들)을 'content'에 담아 보냈다고 가정
         if (messageDto.getMessageType() == ChatMessageType.IMAGE || messageDto.getMessageType() == ChatMessageType.IMAGE_GROUP) {
             message.setContent(messageDto.getContent()); // S3 Key(들)을 그대로 저장
             log.info("S3 이미지 메시지 저장: chatRoom={} | sender={} | S3 Key(s)={}",
