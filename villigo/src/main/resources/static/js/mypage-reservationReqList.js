@@ -76,6 +76,21 @@ document.addEventListener('DOMContentLoaded', () => {
                 debugLog('로딩 상태 해제');
             });
     }
+	
+	function formatPrice(price) {
+	    if (typeof price !== 'number') {
+	        price = parseFloat(price) || 0; // 숫자가 아니면 0으로 처리하거나 파싱 시도
+	    }
+	    
+	    // 5% 인상
+	    const increasedPrice = price * 1.05;
+	    
+	    // 10원 단위로 반올림
+	    const roundedPrice = Math.round(increasedPrice / 10) * 10;
+	    
+	    // 콤마 형식으로 포맷
+	    return roundedPrice.toLocaleString('ko-KR');
+	}
 
     /* ------------------------------- DOM 생성 및 바인딩 ------------------------------- */
     function appendReservationReqElements(data, isInit = false) {
@@ -118,7 +133,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     </p>
                     <p><strong>대여 날짜:</strong> ${dto.rentalDate || '날짜 정보 없음'}</p>
                     <p><strong>대여 시간:</strong> ${dto.rentalTimeRange || '시간 정보 없음'}</p>
-                    <p><strong>요금:</strong> ${dto.fee || 0} JJAM</p>
+                    <p><strong>요금:</strong> ${formatPrice(dto.fee || 0)} 원</p>
                     <p><strong>예약자:</strong> ${dto.renterNickname || '알 수 없음'}</p> `;
 
             switch (dto.status) {
