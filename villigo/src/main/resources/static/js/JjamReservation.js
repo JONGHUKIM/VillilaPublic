@@ -26,33 +26,32 @@ document.addEventListener("DOMContentLoaded", function () {
     console.log("버튼 클릭됨");
 
     // 🔍 총 요금 가져오기
-    const priceText = document.getElementById("total-price").value.replace(/[^\d]/g, "");
-    const totalPrice = parseInt(priceText, 10);
-    console.log("총 요금(쩸 단위):", totalPrice);
+	const priceText = document.getElementById("total-price").value.replace(/[^\d]/g, "");
+	const totalPrice = parseInt(priceText, 10);
+	console.log("총 요금:", totalPrice);
 
     if (!totalPrice || isNaN(totalPrice)) {
       alert("날짜/시작/종료 시간을 확인하세요.");
       return;
     }
-
-    if (userJelly < totalPrice) {
-      const goToCharge = confirm(`현재 보유 JJAM(${userJelly}개)가 부족합니다.\n총 요금은 ${totalPrice}JJAM입니다.\n충전 페이지로 이동할까요?`);
-      if (goToCharge) {
-        const chargeWindow = window.open("", "_blank"); // 새 창 미리 열기
-        if (chargeWindow) {
-          chargeWindow.location.href = "/jjam/shop";
-        } else {
-          // 팝업 차단된 경우 fallback
-          window.location.href = "/jjam/shop";
-        }
-      }
-      return;
-    }
+	
+	if (userJelly < totalPrice) {
+	    const goToCharge = confirm(`현재 보유 JJAM(${userJelly}개)이 부족합니다.\n총 요금은 ${totalPrice}JJAM입니다.\n충전 페이지로 이동할까요?`);
+	    if (goToCharge) {
+	        const chargeWindow = window.open("", "_blank");
+	        if (chargeWindow) {
+	            chargeWindow.location.href = "/jjam/shop";
+	        } else {
+	            window.location.href = "/jjam/shop";
+	        }
+	    }
+	    return;
+	}
 
     // URL에서 productId 추출
-    const urlParams = new URLSearchParams(window.location.search);
-    const productId = urlParams.get("id") || urlParams.get("productId");
-    console.log("전송용 productId:", productId);
+	const urlParams = new URLSearchParams(window.location.search);
+	const productId = urlParams.get("id") || urlParams.get("productId");
+	console.log("전송용 productId:", productId);
 
     // 예약용 정보 구성
     const rentalDate = document.getElementById("rental-date").value;
@@ -62,60 +61,68 @@ document.addEventListener("DOMContentLoaded", function () {
     const endTime = `${rentalDate}T${end}:00`;
     const reservationData = { productId, startTime, endTime };
 
-    // ✅ 예약 요청
-    fetch(`./reservation/check?id=${productId}`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      credentials: "include",
-      body: JSON.stringify(reservationData)
-    })
-      .then(response => response.json())
-      .then(checkResult => {
-        console.log('예약 요청 진행 중...');
-        if (checkResult === true) {
-          // ✅ 예약 API 호출
-          return fetch("/api/jjam/reservations", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            credentials: "include",
-            body: JSON.stringify({ fee: totalPrice, productId: productId })
-          });
-        } else {
-          throw new Error('conflict');
-        }
-      })
-      .then(response => response.json())
-      .then(data => {
-        console.log("API 응답 데이터:", data);
-        if (data.success) {
-          alert(`💸 ${data.usedJjams} JJAM 차감 완료!\n남은 JJAM: ${data.remainingJjams}개`);
-          paymentSuccess = true;
-        } else {
-          const goToCharge = confirm(`${data.message}\n충전 페이지로 이동할까요?`);
-          if (goToCharge) {
-            const chargeWindow = window.open("", "_blank"); // 새 창 미리 열기
-            if (chargeWindow) {
-              chargeWindow.location.href = "/jjam/shop";
-            } else {
-              window.location.href = "/jjam/shop";
-            }
-          }
-        }
-      })
-      .then(() => {
-        if (paymentSuccess) {
-          reservationHandler(reservationData, productId);
-        }
-      })
-      .catch(error => {
-        if (error.message === 'conflict') {
-          alert("⚠️ 해당 시간대에 이미 예약이 존재합니다. 다른 시간대를 선택해주세요.");
-        } else {
-          console.error("예약 처리 중 오류 발생:", error);
-          alert("❗ 예약 처리 중 문제가 발생했습니다. 다시 시도해주세요.");
-        }
-      });
-  });
+	// ✅ 예약 요청
+	fetch(`./reservation/check?id=${productId}`, {
+	    method: "POST",
+	    headers: { "Content-Type": "application/json" },
+	    credentials: "include",
+	    body: JSON.stringify(reservationData)
+	})
+	.then(response => response.json())
+	.then(checkResult => {
+	    console.log('예약 요청 진행 중...');
+	    if (checkResult === true) {
+	        return fetch("/api/jjam/reservations", {
+	            method: "POST",
+	            headers: { "Content-Type": "application/json" },
+	            credentials: "include",
+	            body: JSON.stringify({ 
+	                fee: totalPrice,
+	                productId: productId 
+	            })
+	        });
+	    } else {
+	        throw new Error('conflict');
+	    }
+	})
+	    .then(response => response.json())
+	    .then(data => {
+	        console.log("API 응답 데이터:", data);
+	        if (data.success) {
+	            alert(`💸 예약금 ${data.usedJjams} JJAM 차감 완료!\n남은 JJAM: ${data.remainingJjams}개\n\n📝 예약 신청이 완료되었습니다.\n상대방이 수락하면 나머지 ${totalPrice - reservationDeposit} JJAM이 결제됩니다.`);
+	            paymentSuccess = true;
+	        } else {
+	            const goToCharge = confirm(`${data.message}\n충전 페이지로 이동할까요?`);
+	            if (goToCharge) {
+	                const chargeWindow = window.open("", "_blank");
+	                if (chargeWindow) {
+	                    chargeWindow.location.href = "/jjam/shop";
+	                } else {
+	                    window.location.href = "/jjam/shop";
+	                }
+	            }
+	        }
+	    })
+	    .then(() => {
+	        if (paymentSuccess) {
+	            reservationHandler(reservationData, productId);
+	        }
+	    })
+	    .catch(error => {
+	        if (error.message === 'conflict') {
+	            alert("⚠️ 해당 시간대에 이미 예약이 존재합니다. 다른 시간대를 선택해주세요.");
+	        } else {
+	            console.error("예약 처리 중 오류 발생:", error);
+	            alert("❗ 예약 처리 중 문제가 발생했습니다. 다시 시도해주세요.");
+	        }
+	    });
+	});
+	
+	// 10원 단위 반올림 함수 추가
+	function roundToNearest10Won(value) {
+	    const remainder = value % 10;
+	    return remainder < 5 ? value - remainder : value + (10 - remainder);
+	}
 
   /* 예약 등록 함수 */
   function reservationHandler(reservationData, productId) {

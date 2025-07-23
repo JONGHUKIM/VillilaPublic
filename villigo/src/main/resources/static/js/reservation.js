@@ -287,33 +287,41 @@ document.addEventListener("DOMContentLoaded", function () {
             .then(res => res.json())
             .then(data => {
                 pricePerMin = data;
-                document.getElementById("price-per-min").value = `${pricePerMin.toLocaleString()} 원 / 분`;
-                // 요금 정보 로드 후 초기 가격 계산
+				const displayPricePerMin = roundToNearest10Won(pricePerMin * 1.05);
+				document.getElementById("price-per-min").value = `${displayPricePerMin.toLocaleString()} 원 / 분`;
                 calculatePrice(); 
             });
 
         // 요금 계산
-        function calculatePrice() {
-            const startTime = document.getElementById("start-time").value;
-            const endTime = document.getElementById("end-time").value;
-            const inputTotalPrice = document.getElementById("total-price");
+		function calculatePrice() {
+		    const startTime = document.getElementById("start-time").value;
+		    const endTime = document.getElementById("end-time").value;
+		    const inputTotalPrice = document.getElementById("total-price");
 
-            if (startTime && endTime) {
-                // 날짜는 계산에 필요 없으므로 임의로 고정
-                const start = new Date(`2000-01-01T${startTime}:00`); 
-                const end = new Date(`2000-01-01T${endTime}:00`);     
-                const diffMinutes = (end - start) / (1000 * 60);
-                if (diffMinutes > 0) {
-                    const basePrice = diffMinutes * pricePerMin;
-                    const totalPriceWithFee = basePrice * 1.05; // 5% 수수료 적용
-                    inputTotalPrice.value = `${roundToNearest10Won(totalPriceWithFee).toLocaleString()} 원`;
-                } else {
-                    inputTotalPrice.value = "0 원";
-                }
-            } else {
-                inputTotalPrice.value = "0 원"; // 시간이 선택되지 않았다면 0원 표시
-            }
-        }
+		    if (startTime && endTime) {
+		        // 날짜는 계산에 필요 없으므로 임의로 고정
+		        const start = new Date(`2000-01-01T${startTime}:00`); 
+		        const end = new Date(`2000-01-01T${endTime}:00`);     
+		        const diffMinutes = (end - start) / (1000 * 60);
+		        
+		        if (diffMinutes > 0) {
+		            // 1. 분당 요금에 5% 수수료를 먼저 적용하고 10원 단위 반올림
+		            const pricePerMinWithFee = roundToNearest10Won(pricePerMin * 1.05);
+		            
+		            // 2. 반올림된 분당 요금에 사용 시간을 곱함
+		            const basePrice = pricePerMinWithFee * diffMinutes;
+		            
+		            // 3. 최종 총액도 10원 단위 반올림
+		            const finalTotalPrice = roundToNearest10Won(basePrice);
+		            
+		            inputTotalPrice.value = `${finalTotalPrice.toLocaleString()} 원`;
+		        } else {
+		            inputTotalPrice.value = "0 원";
+		        }
+		    } else {
+		        inputTotalPrice.value = "0 원"; // 시간이 선택되지 않았다면 0원 표시
+		    }
+		}
 
         // 10원 단위 반올림 함수
         function roundToNearest10Won(value) {
