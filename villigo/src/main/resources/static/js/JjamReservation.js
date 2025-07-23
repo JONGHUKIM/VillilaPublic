@@ -89,7 +89,7 @@ document.addEventListener("DOMContentLoaded", function () {
 	    .then(data => {
 	        console.log("API 응답 데이터:", data);
 	        if (data.success) {
-	            alert(`💸 예약금 ${data.usedJjams} JJAM 차감 완료!\n남은 JJAM: ${data.remainingJjams}개\n\n📝 예약 신청이 완료되었습니다.\n상대방이 수락하면 나머지 ${totalPrice - reservationDeposit} JJAM이 결제됩니다.`);
+	             alert(`💸 ${data.usedJjams} JJAM 결제 완료!\n남은 JJAM: ${data.remainingJjams}개\n\n📝 예약 신청이 완료되었습니다.`);
 	            paymentSuccess = true;
 	        } else {
 	            const goToCharge = confirm(`${data.message}\n충전 페이지로 이동할까요?`);
