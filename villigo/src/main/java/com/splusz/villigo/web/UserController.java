@@ -271,6 +271,7 @@ public class UserController {
     public String memberDetails(
         @RequestParam(value = "postId", required = false) Long postId,
         @RequestParam(value = "userId", required = false) Long userId,
+        @RequestParam(value = "roundingType", required = false, defaultValue = "ROUND") String roundingTypeStr,
         Model model
     ) {
         log.info("GET /member/details?postId={}, userId={}", postId, userId);
@@ -293,9 +294,16 @@ public class UserController {
             log.warn("Neither postId nor userId provided.");
             return "error/404";
         }
+        
+        // 반올림 타입 파싱 - 메서드로 분리하여 final 변수에 바로 할당
+        final PostSummaryDto.RoundingType roundingType = parseRoundingType(roundingTypeStr);
 
         Long resolvedUserId = userEntity.getId();
         List<PostSummaryDto> products = productService.getUserProducts(resolvedUserId);
+        
+        // 각 상품에 대해 지정된 반올림 방식으로 displayFee 계산
+        products.forEach(product -> product.calculateDisplayFee(roundingType));
+        
         List<ReviewDto> reviews = reviewService.getReviewsForUser(resolvedUserId);
 
         // UserProfileDto를 얻고, 그 정보를 UserDetailsDto에 매핑
@@ -334,7 +342,17 @@ public class UserController {
         model.addAttribute("user", userDetailsDto); // UserDetailsDto를 모델에 추가
         model.addAttribute("posts", products);
         model.addAttribute("reviews", reviews);
+        model.addAttribute("roundingType", roundingType.name());
         return "member/details";
+    }
+    
+    private PostSummaryDto.RoundingType parseRoundingType(String roundingTypeStr) {
+        try {
+            return PostSummaryDto.RoundingType.valueOf(roundingTypeStr.toUpperCase());
+        } catch (IllegalArgumentException e) {
+            log.warn("Invalid rounding type: {}, using default ROUND", roundingTypeStr);
+            return PostSummaryDto.RoundingType.ROUND;
+        }
     }
 
     

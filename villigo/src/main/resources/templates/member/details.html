@@ -58,6 +58,7 @@
 		    </p>
 		    <p>
 <<<<<<< HEAD
+<<<<<<< HEAD
 		    <!-- 수수료 계산 로직 -->
 				<th:block th:with="
 				    originalPrice=${post.price},
@@ -68,6 +69,9 @@
 =======
 >>>>>>> 898209e (예약현황 1.05 수수료 적용, JJAM -> 원 수정)
 		      <strong th:text="${#numbers.formatInteger(post.price, 0, 'COMMA')} + ' 원'">가격</strong>
+=======
+		      <strong th:text="${#numbers.formatInteger(post.displayFee != null ? post.displayFee : post.price, 0, 'COMMA')} + ' 원'">가격</strong>
+>>>>>>> ce5c631 (나의 예약탭 수수료 적용, 상대방 디테일 페이지 수수료 적용)
 		    </p>
 		  </div>
 		</div>

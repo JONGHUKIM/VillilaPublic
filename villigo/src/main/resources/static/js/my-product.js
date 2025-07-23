@@ -59,8 +59,11 @@ document.addEventListener('DOMContentLoaded', () => {
 	    let html = '';
 	    data.content.forEach(product => {
 	        // 원래 가격에 5% 서비스 수수료 적용
+			console.log('원래 가격:', product.fee, typeof product.fee);
 	        const serviceFee = calculateServiceFee(product.fee);
+			console.log('서비스 수수료:', serviceFee);
 	        const displayPrice = product.fee + serviceFee;
+			console.log('최종 표시 가격:', displayPrice);
 	        
 	        html += `
 	                <div class="product-card">`;
@@ -167,7 +170,7 @@ document.addEventListener('DOMContentLoaded', () => {
 	    }
 	}
     
-    // 좋아요 기능
+    	// 좋아요 기능
         function toggleHeart(btn) {
            const card = btn.closest(".product-card");
            const deleteBtn = card.querySelector(".delete-btn");
