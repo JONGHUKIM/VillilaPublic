@@ -91,9 +91,10 @@ document.addEventListener("DOMContentLoaded", function () {
 	    .then(data => {
 	        console.log("API 응답 데이터:", data);
 	        if (data.success) {
-	             alert(`💸 ${data.usedJjams} JJAM 결제 완료!\n남은 JJAM: ${data.remainingJjams}개\n\n📝 예약 신청이 완료되었습니다.`);
+	             // alert(`💸 ${data.usedJjams} JJAM 결제 완료!\n남은 JJAM: ${data.remainingJjams}개\n\n📝 예약 신청이 완료되었습니다.`);
+				 alert(`📝 예약 신청이 완료되었습니다.`); // 메시지 변경
 	            paymentSuccess = true;
-	        } else {
+	        } /* else { 광고용으로 추후 사용예정
 	            const goToCharge = confirm(`${data.message}\n충전 페이지로 이동할까요?`);
 	            if (goToCharge) {
 	                const chargeWindow = window.open("", "_blank");
@@ -103,7 +104,12 @@ document.addEventListener("DOMContentLoaded", function () {
 	                    window.location.href = "/jjam/shop";
 	                }
 	            }
-	        }
+	        } */
+			else {
+			        // 서버에서 예약 신청 실패 메시지를 반환하는 경우
+			        alert(`❗ 예약 신청에 실패했습니다: ${data.message || '알 수 없는 오류'}`); // 실패 메시지 표시
+			        paymentSuccess = false; // 실패 시 플래그 false 유지
+			    }
 	    })
 	    .then(() => {
 	        if (paymentSuccess) {
