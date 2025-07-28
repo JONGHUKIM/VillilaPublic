@@ -4,14 +4,14 @@ document.addEventListener("DOMContentLoaded", function () {
   let userJelly = 0;
   let paymentSuccess = false; // 예약용
 
-  // ✅ 현재 보유 젤리 개수 가져와서 화면에 표시
-  fetch("/jjam/api/jjams/total")
-    .then(response => response.json())
-    .then(data => {
-      userJelly = data.totalJjams ?? data;
-      document.getElementById("user-jjams").textContent = `현재 보유 JJAM: ${userJelly}개`;
-    })
-    .catch(error => console.error("쩸 개수 불러오기 실패", error));
+   // ✅ 현재 보유 젤리 개수 가져와서 화면에 표시 ( 광고용으로 표시 바꿀 예정, 결제 API 도입예정)
+ //  fetch("/jjam/api/jjams/total")
+ //    .then(response => response.json())
+ //   .then(data => {
+ //     userJelly = data.totalJjams ?? data;
+ //     document.getElementById("user-jjams").textContent = `현재 보유 JJAM: ${userJelly}개`;
+ //   })
+ //   .catch(error => console.error("쩸 개수 불러오기 실패", error));
 
   // ✅ 예약 버튼 처리
   const reserveButton = document.getElementById("submit-btn");
@@ -35,6 +35,7 @@ document.addEventListener("DOMContentLoaded", function () {
       return;
     }
 	
+	/* JJAM 잔액 확인 로직 주석 처리 ( 광고용으로 표시 바꿀 예정, 결제 API 도입예정)
 	if (userJelly < totalPrice) {
 	    const goToCharge = confirm(`현재 보유 JJAM(${userJelly}개)이 부족합니다.\n총 요금은 ${totalPrice}JJAM입니다.\n충전 페이지로 이동할까요?`);
 	    if (goToCharge) {
@@ -47,6 +48,7 @@ document.addEventListener("DOMContentLoaded", function () {
 	    }
 	    return;
 	}
+	*/
 
     // URL에서 productId 추출
 	const urlParams = new URLSearchParams(window.location.search);
