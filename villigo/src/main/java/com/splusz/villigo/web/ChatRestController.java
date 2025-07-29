@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -22,6 +23,7 @@ import com.splusz.villigo.domain.ChatRoomReservation;
 import com.splusz.villigo.domain.Reservation;
 import com.splusz.villigo.domain.User;
 import com.splusz.villigo.dto.ChatMessageDto;
+import com.splusz.villigo.dto.ChatRoomCreationRequest;
 import com.splusz.villigo.dto.ChatRoomDto;
 import com.splusz.villigo.repository.ChatRoomParticipantRepository;
 import com.splusz.villigo.repository.ChatRoomRepository;
@@ -61,6 +63,26 @@ public class ChatRestController {
         ChatRoom chatRoom = chatService.createChatRoom(userId1, userId2);
         ChatRoomDto chatRoomDto = chatService.getChatRoomDto(chatRoom.getId(), userId1);
         log.info("새 채팅방 생성: {}", chatRoomDto.getId());
+        return ResponseEntity.ok(chatRoomDto);
+    }
+    
+    @PostMapping("/rooms/inquiry")
+    public synchronized ResponseEntity<ChatRoomDto> createInquiryChatRoom(
+        @RequestBody ChatRoomCreationRequest request) { // JSON 요청 본문을 받음
+        Long userId1 = request.getUserId1(); // 현재 로그인한 사용자
+        Long userId2 = request.getUserId2(); // 상품 소유자
+
+        ChatRoom existingChatRoom = chatService.findExistingChatRoom(userId1, userId2);
+
+        if (existingChatRoom != null) {
+            ChatRoomDto chatRoomDto = chatService.getChatRoomDto(existingChatRoom.getId(), userId1);
+            log.info("상품 문의를 위한 기존 채팅방 반환: {}", chatRoomDto.getId());
+            return ResponseEntity.ok(chatRoomDto);
+        }
+
+        ChatRoom chatRoom = chatService.createChatRoom(userId1, userId2);
+        ChatRoomDto chatRoomDto = chatService.getChatRoomDto(chatRoom.getId(), userId1);
+        log.info("상품 문의를 위한 새 채팅방 생성: {}", chatRoomDto.getId());
         return ResponseEntity.ok(chatRoomDto);
     }
     
