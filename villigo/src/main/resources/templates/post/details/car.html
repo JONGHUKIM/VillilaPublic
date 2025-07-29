@@ -2,7 +2,7 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head th:replace="~{layout/fragments :: htmlHead('Villila｜상세페이지','/css/post-details.css')}">
 </head>
-<body>
+<body th:attr="data-user-id=${#authentication.principal.id}">
 
     <!-- 공통 헤더 & 푸터 포함 -->
     <th:block th:replace="~{layout/fragments :: commonLayout}"></th:block>
@@ -178,6 +178,10 @@
                         th:attr="disabled=${user.username.startsWith('탈퇴회원_')}"
                         th:onclick="'openReservationPopup()'"
                         th:classappend="${user.username.startsWith('탈퇴회원_')} ? 'disabled' : ''">예약 신청</button>
+                <button class="inquiry-btn"
+                        th:attr="data-owner-id=${user.id}, disabled=${user.username.startsWith('탈퇴회원_')}"
+                        th:onclick="openChatRoomWithOwner(this.getAttribute('data-owner-id'))"
+                        th:classappend="${user.username.startsWith('탈퇴회원_')} ? 'disabled' : ''">문의하기</button>
             </div>
     	</div>
     </main>

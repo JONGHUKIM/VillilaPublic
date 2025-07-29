@@ -365,3 +365,46 @@ function openReservationPopup() {
     // productId 포함한 URL로 팝업 열기
     window.open(`/reservation?productId=${productId}`, "예약 신청", popupOptions);
 }
+
+window.openChatRoomWithOwner = async function(ownerId) {
+    const currentUserId = document.body.dataset.userId; // body 태그에 data-user-id가 있다고 가정
+    if (!currentUserId) {
+        alert('채팅을 시작하려면 로그인해야 합니다.');
+        window.location.href = '/login'; // 로그인 페이지로 리다이렉트
+        return;
+    }
+
+    // String 타입으로 넘어올 수 있으므로, 비교 시에도 타입 일치 또는 형변환을 고려합니다.
+    if (String(currentUserId) === String(ownerId)) {
+        alert('자신에게 채팅을 보낼 수 없습니다.');
+        return;
+    }
+
+    try {
+        // 새로운 API 엔드포인트 호출: /api/chat/rooms/inquiry
+        const response = await fetch(`/api/chat/rooms/inquiry`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                userId1: parseInt(currentUserId), // 숫자로 변환하여 전송
+                userId2: parseInt(ownerId)       // 숫자로 변환하여 전송
+            })
+        });
+
+        if (!response.ok) {
+            throw new Error('채팅방 생성/조회에 실패했습니다.');
+        }
+
+        const chatRoom = await response.json();
+        const chatRoomId = chatRoom.id;
+
+        // 채팅방 페이지로 이동
+        window.location.href = `/chat?chatRoomId=${chatRoomId}`;
+
+    } catch (error) {
+        console.error("채팅방 연결 오류:", error);
+        alert("채팅방 연결 중 오류가 발생했습니다.");
+    }
+};

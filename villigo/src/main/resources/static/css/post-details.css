@@ -381,6 +381,21 @@ a {
 	background-color: #543fe4;
 }
 
+.inquiry-btn {
+	background-color: #6b59e8;
+	color: white;
+	font-size: 16px;
+	padding: 10px 20px;
+	border: none;
+	border-radius: 5px;
+	cursor: pointer;
+	font-weight: bold;
+}
+
+.inquiry-btn:hover {
+	background-color: #543fe4;
+}
+
 .user-info .username a, .user-info .user-avatar a {
 	text-decoration: none; /* 기본 링크 스타일 제거 */
 	color: inherit;
@@ -500,7 +515,8 @@ a {
   }
 
   .reserve-btn,
-  .owner-btn {
+  .owner-btn,
+  .inquiry-btn {
     font-size: 14px;
     padding: 8px 14px;
   }
