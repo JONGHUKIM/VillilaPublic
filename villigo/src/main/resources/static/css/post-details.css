@@ -414,7 +414,8 @@ a {
 	position: absolute;
 	z-index: 10;
 	padding: 8px 12px;
-	background-color: #ffffff;
+	background-color: #6b59e8;
+	color: white;
 	border: 1px solid #ccc;
 	border-radius: 4px;
 	font-weight: bold;
