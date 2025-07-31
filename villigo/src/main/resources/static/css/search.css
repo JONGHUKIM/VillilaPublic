@@ -105,6 +105,11 @@ main {
     font-size: 13px;
 }
 
+.filter-btn:hover {
+    background-color: #f0f0f0; /* 호버 시 배경색을 연한 회색으로 변경 */
+    cursor: pointer; /* 마우스 커서를 손가락 모양으로 변경 */
+}
+
 .price-input {
     padding: 0 12px;
     margin: 0 3px;
@@ -129,6 +134,10 @@ main {
     justify-content: center;
     margin-left: 4px;
     transition: background 0.2s;
+}
+
+.price-search-icon:hover {
+    background-color: #0056b3;
 }
 
 .price-search-icon:hover {
@@ -176,6 +185,12 @@ main {
     cursor: pointer;
     border: 1px solid #ccc;
     margin: 5px;
+}
+
+.color-circle:hover {
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.5); /* 호버 시 그림자 효과 추가 */
+    transform: scale(1.1); /* 호버 시 크기를 10% 확대 */
+    cursor: pointer; /* 마우스 커서를 손가락 모양으로 변경 */
 }
 
 .color-circle.selected {
